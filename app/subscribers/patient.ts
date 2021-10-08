@@ -67,6 +67,7 @@ export default class PatientSubscriber {
   @On("createPatient")
   public onPatientCreate({ patient, mflcode }: any) {
     let patients: Patient.Patient = patient[0];
+    console.log("create patient event ", patients.patient_ccc_number);
     const regimenLoader = new RegimenLoader();
     const regimen = regimenLoader.getRegimenCode(patients.start_regimen)[0];
     let payload = {
@@ -97,6 +98,7 @@ export default class PatientSubscriber {
       current_status: 1,
       service: patients.service,
       mfl_code: mflcode,
+      who_stage: 1,
       prep: {
         prep_reason: "test",
       },

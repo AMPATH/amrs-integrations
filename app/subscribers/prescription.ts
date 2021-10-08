@@ -29,7 +29,7 @@ export default class PrescriptionSubscriber {
       patient_number_ccc: patients.patient_ccc_number.replace("-", ""),
       order_details: {
         transaction_datetime: transTime.toISOString(),
-        order_number: order,
+        order_number: order.split("-")[1],
         ordering_physician: {
           first_name: provider.given_name,
           last_name: provider.family_name,
@@ -42,6 +42,13 @@ export default class PrescriptionSubscriber {
         {
           prescription_number: orderUUID,
           drug_code: regimen.toString(),
+          strength: "",
+          dosage: "",
+          units: "",
+          frequency: "",
+          duration: "",
+          quantity: "10",
+          prescription_notes: "",
         },
       ],
       patient_observation_details: {

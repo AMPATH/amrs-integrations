@@ -4,6 +4,7 @@ import ConnectionManager from "../loaders/mysql";
 import { loadPatientQueue } from "../models/patient";
 import { savePrescription } from "../models/prescription";
 import PatientService from "../services/patient";
+import PrescriptionService from "../services/prescription";
 export const adtRoutes: ServerRoute[] = [
   {
     method: "POST",
@@ -33,6 +34,22 @@ export const adtRoutes: ServerRoute[] = [
       // Test person id and test location mfl code.
       const a = await adt.searchADT();
       let response = h.response(a);
+      response.header("Content-Type", "application/json");
+      return response;
+    },
+  },
+  {
+    method: "POST",
+    path: "/adt/encounter-payload",
+    handler: async function (req, res: ResponseToolkit) {
+      const service = new PrescriptionService();
+      const result = await service.createPocPrescriptionPayload(req.payload);
+      let responseMessage: HTTPResponse = {
+        code: 200,
+        message: "Details to show on the  prescription form.",
+        body: result,
+      };
+      let response = res.response(responseMessage);
       response.header("Content-Type", "application/json");
       return response;
     },

@@ -105,4 +105,5 @@ build/
 # TernJS port file
 .tern-port
 
+/app/poc_sample_payload.ts
 /app/sample_data.ts

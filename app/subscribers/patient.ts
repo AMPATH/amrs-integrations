@@ -2,14 +2,17 @@ import ADTRESTClient from "../loaders/ADT-rest-client";
 import PatientService from "../services/patient";
 import { EventSubscriber, On } from "event-dispatch";
 import { HTTPResponse } from "../interfaces/response";
-import { loadProviderData } from "../models/patient";
 import PrescriptionService from "../services/prescription";
 import RegimenLoader from "../loaders/regimen-mapper";
 @EventSubscriber()
 export default class PatientSubscriber {
   @On("search")
-  public onPatientSearch({ patient, MFLCode }: any) {
-    console.log("Search event has reached here", MFLCode);
+  public onPatientSearch({ patient, MFLCode, order_payload }: any) {
+    console.log(
+      "Search event has reached here",
+      MFLCode,
+      patient[0].patient_ccc_number
+    );
     const data = new ADTRESTClient("");
     const prescriptionService = new PrescriptionService();
     const patientService = new PatientService();
@@ -18,19 +21,19 @@ export default class PatientSubscriber {
         params: {
           mflcode: MFLCode,
           identifier: "ccc",
-          ccc: patient,
+          ccc: patient[0],
         },
       })
       .then(async (resp: any) => {
         let result: Patient.Patient[] = resp;
         if (result[0]?.patient_number_ccc) {
-          await prescriptionService.createAMRSOrder(
-            patient,
-            MFLCode,
-            patient[0].patient_ccc_number
-          );
+          await prescriptionService.createAMRSOrder(order_payload);
         } else {
-          await patientService.createPatientOnADT(patient, MFLCode);
+          await patientService.createPatientOnADT(
+            patient[0],
+            MFLCode,
+            order_payload
+          );
         }
       })
       .catch(
@@ -65,40 +68,41 @@ export default class PatientSubscriber {
       );
   }
   @On("createPatient")
-  public onPatientCreate({ patient, mflcode }: any) {
-    let patients: Patient.Patient = patient[0];
-    console.log("create patient event ", patients.patient_ccc_number);
+  public onPatientCreate({ patient, mflcode, order_payload }: any) {
+    console.log("create patient event ", patient.patient_ccc_number);
     const regimenLoader = new RegimenLoader();
-    const regimen = regimenLoader.getRegimenCode(patients.start_regimen)[0];
+    const regimen = regimenLoader.getRegimenCode("3TC + NVP + AZT")[0];
     let payload = {
-      source: patients.source ? patients.source : "OUTPATIENT",
-      medical_record_no: patients.medical_record_no,
-      patient_number_ccc: patients.patient_ccc_number.replace("-", ""),
-      first_name: patients.first_name,
-      last_name: patients.last_name,
-      other_name: patients.other_name,
-      date_of_birth: new Date(patients.date_of_birth).toISOString(),
-      place_of_birth: patients.place_of_birth,
-      gender: patients.gender,
-      pregnant: patients.gender ? patients.gender : "",
-      breastfeeding: patients.breastfeeding ? patients.breastfeeding : "",
-      weight: patients.weight ? patients.weight.toString() : 0,
-      height: patients.height ? patients.height.toString() : 0,
+      source: patient.source ? patient.source : "OUTPATIENT",
+      medical_record_no: patient.medical_record_no,
+      patient_number_ccc: patient.patient_ccc_number.replace("-", ""),
+      first_name: patient.first_name,
+      last_name: patient.last_name,
+      other_name: patient.other_name,
+      date_of_birth: new Date(patient.date_of_birth).toISOString(),
+      place_of_birth: patient.place_of_birth,
+      gender: patient.gender,
+      pregnant: patient.is_pregnant ? patient.is_pregnant : "",
+      breastfeeding: patient.is_mother_breastfeeding
+        ? patient.is_mother_breastfeeding
+        : "",
+      weight: patient.weight ? patient.weight.toString() : 0,
+      height: patient.height ? patient.height.toString() : 0,
       start_regimen: regimen,
-      start_regimen_date: new Date(
-        patients.start_regimen_date
-      ).toLocaleDateString(),
-      enrollment_date: patients.enrollment_date,
-      phone: patients.phone,
-      address: patients.address,
+      start_regimen_date: new Date(patient.arv_start_date).toLocaleDateString(),
+      enrollment_date: new Date(patient.enrollment_date).toLocaleDateString(),
+      phone: patient.phone,
+      address: patient.address,
       partner_status: "Unknown",
-      family_planning: patients.family_planning ? patients.family_planning : "",
-      alcohol: patients.alcohol ? patients.alcohol : "",
-      smoke: patients.smoke ? patients.smoke : "",
+      family_planning: patient.contraceptive_method
+        ? patient.contraceptive_method
+        : "",
+      alcohol: patient.alcohol ? patient.alcohol : "",
+      smoke: patient.smoke ? patient.smoke : "",
       current_status: 1,
-      service: patients.service,
+      service: patient.service,
       mfl_code: mflcode,
-      who_stage: 1,
+      who_stage: patient.cur_who_stage,
       prep: {
         prep_reason: "test",
       },
@@ -115,11 +119,7 @@ export default class PatientSubscriber {
         console.log(resp.message);
         if (resp.code === 200) {
           //Publish event with payload and error that occurred
-          await prescriptionService.createAMRSOrder(
-            patient,
-            mflcode,
-            patients.patient_ccc_number
-          );
+          await prescriptionService.createAMRSOrder(order_payload);
         } else {
         }
       })

@@ -1,8 +1,8 @@
 import { EventDispatcher } from "event-dispatch";
 import ConnectionManager from "../loaders/mysql";
-import { fetchEncounterUUID } from "../models/patient";
 import ADTRESTClient from "../loaders/ADT-rest-client";
 import * as _ from "lodash";
+import PatientService from "../services/patient";
 const CM = ConnectionManager.getInstance();
 
 export default class PrescriptionService {
@@ -10,37 +10,22 @@ export default class PrescriptionService {
   constructor() {
     this.eventDispatcher = new EventDispatcher();
   }
-  public async createAMRSOrder(
-    patient: Patient.Patient,
-    MFLCode: string,
-    amrsCCC: string
-  ) {
-    patient.mfl_code = MFLCode;
-    patient.patient_ccc_number = amrsCCC;
-    const amrsCon = await CM.getConnectionAmrs();
-    const encounter = await fetchEncounterUUID(amrsCCC, amrsCon);
-    // TODO: Only create order if height and weight are available
-    console.log("Creating Order for patient on AMRS", amrsCCC, MFLCode);
-    this.eventDispatcher.dispatch("createAMRSOrder", {
-      patient,
-      encounter,
-    });
+  public async createAMRSOrder(order_payload: any) {
+    console.log("Initiate createAMRSOrder event", order_payload);
+    this.eventDispatcher.dispatch("createAMRSOrder", order_payload);
   }
-  public async createPatientPrescriptionOnADT(
-    patient: Patient.Patient,
-    MFLCode: string,
-    order: any,
-    amrsCCC: string,
-    orderUUID: string
-  ) {
+
+  public async createPatientPrescriptionOnADT(savedAmrsOrders: any[]) {
+    const patientService = new PatientService();
+    const patient = await patientService.loadPatientData(
+      savedAmrsOrders[0].patient.uuid
+    );
+    const CM = ConnectionManager.getInstance();
     const amrsCon = await CM.getConnectionAmrs();
     this.eventDispatcher.dispatch("createADTPrescription", {
+      savedAmrsOrders,
       patient,
-      MFLCode,
       amrsCon,
-      order,
-      amrsCCC,
-      orderUUID,
     });
   }
 

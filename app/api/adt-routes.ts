@@ -26,13 +26,13 @@ export const adtRoutes: ServerRoute[] = [
     },
   },
   {
-    method: "GET",
+    method: "POST",
     path: "/api/sync-prescription",
     handler: async function (request, h: ResponseToolkit) {
       // Receive ADT request and Save in drug orders table
       const adt = new PatientService();
       // Test person id and test location mfl code.
-      const a = await adt.searchADT();
+      const a = await adt.searchADT(request.payload);
       let response = h.response(a);
       response.header("Content-Type", "application/json");
       return response;

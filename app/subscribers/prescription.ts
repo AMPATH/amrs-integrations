@@ -5,33 +5,30 @@ import RegimenLoader from "../loaders/regimen-mapper";
 import { loadProviderData } from "../models/patient";
 import PrescriptionService from "../services/prescription";
 import * as _ from "lodash";
-import orderPayload from "../poc_sample_payload";
+const PromiseB = require("bluebird");
 
 @EventSubscriber()
 export default class PrescriptionSubscriber {
   @On("createADTPrescription")
   public async onPrescriptionCreate({
+    savedAmrsOrders,
     patient,
     amrsCon,
-    order,
-    amrsCCC,
-    orderUUID,
   }: any) {
-    let patients: Patient.Patient = patient[0];
+    let p = patient[0];
     let provider: EPrescription.OrderingPhysician = await loadProviderData(
-      amrsCCC,
+      savedAmrsOrders[0].orderer.uuid,
       amrsCon
     );
     const data = new ADTRESTClient("");
     const regimenLoader = new RegimenLoader();
-    const regimen = regimenLoader.getRegimenCode(patients.start_regimen)[0];
+    const regimen = regimenLoader.getRegimenCode(p.start_regimen)[0];
     let transTime = new Date();
-    let payload: EPrescription.DrugOrder = {
+    let payload: any = {
       mflcode: patient.mfl_code,
-      patient_number_ccc: patients.patient_ccc_number.replace("-", ""),
+      patient_number_ccc: p.patient_ccc_number.replace("-", ""),
       order_details: {
         transaction_datetime: transTime.toISOString(),
-        order_number: order.split("-")[1],
         ordering_physician: {
           first_name: provider.given_name,
           last_name: provider.family_name,
@@ -42,7 +39,6 @@ export default class PrescriptionSubscriber {
       },
       drug_details: [
         {
-          prescription_number: orderUUID,
           drug_code: regimen.toString(),
           strength: "",
           dosage: "",
@@ -54,15 +50,15 @@ export default class PrescriptionSubscriber {
         },
       ],
       patient_observation_details: {
-        current_weight: patients.weight,
-        current_height: patients.height,
+        current_weight: p.weight,
+        current_height: p.height,
         // Add the regimen mapping
 
         current_regimen: regimen.toString(),
       },
     };
-    console.log(patients.height, patients.weight);
-    if (patients.weight === null || patients.height === null) {
+    console.log(p.height, p.weight);
+    if (p.weight === null || p.height === null) {
       return;
       //publish errors
     }
@@ -107,11 +103,11 @@ export default class PrescriptionSubscriber {
       );
   }
   @On("createAMRSOrder")
-  public async onCreateAMRSOrder(x: any) {
+  public async onCreateAMRSOrder(orderPayload: any) {
     let savedOrders: any[] = [];
+    let promiseArray: any[] = [];
+    const prescriptionService = new PrescriptionService();
     if (orderPayload.drugOrders !== undefined) {
-      const data = new ADTRESTClient("amrs");
-      const lastItem = orderPayload.drugOrders.slice(-1)[0];
       orderPayload.drugOrders.forEach((curOrder: any) => {
         /** Construct AMRS order payload */
         let payload = {
@@ -132,103 +128,58 @@ export default class PrescriptionSubscriber {
           numRefills: 1,
           quantityUnits: "a8a07f8e-1350-11df-a1f1-0026b9348838",
         };
-        data.axios
-          .post("ws/rest/v1/order", payload)
-          .then(async (resp: HTTPResponse) => {
-            savedOrders.push(resp);
-            if (lastItem.uuid === curOrder.uuid) {
-              /** TODO
-               * Initiate events for creating and sending order prescription to ADT,
-               * pass AMRS order details that will be use to construct ADT prescription payload.
-               */
-              console.log("SAVED ORDERS ** ", savedOrders);
-            }
-          })
-          .catch(
-            (error: {
-              response: { data: any; status: any; headers: any };
-              request: any;
-              message: any;
-              config: any;
-            }) => {
-              // Error 😨
-              if (error.response) {
-                /*
-                 * The request was made and the server responded with a
-                 * status code that falls out of the range of 2xx
-                 */
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-              } else if (error.request) {
-                /*
-                 * The request was made but no response was received, `error.request`
-                 * is an instance of XMLHttpRequest in the browser and an instance
-                 * of http.ClientRequest in Node.js
-                 */
-                console.log(error.request);
-              } else {
-                // Something happened in setting up the request and triggered an Error
-                console.log("Error", error.message);
-              }
-              console.log(error.config);
-            }
-          );
+        promiseArray.push(this.createAmrsOrder(payload));
+      });
+
+      PromiseB.allSettled(promiseArray).then((r: any) => {
+        r.forEach(async (e: any) => {
+          savedOrders.push(e._settledValueField);
+        });
+        prescriptionService.createPatientPrescriptionOnADT(savedOrders);
+        console.log("SAVED ITEMS ", savedOrders);
       });
     }
   }
-  public async fetchOrderNumber(
-    body: any,
-    data: ADTRESTClient,
-    patient: Patient.Patient
-  ) {
-    let orderNumber = "";
-    const prescriptionService = new PrescriptionService();
-    data.axios
-      .get("ws/rest/v1/order/" + body)
-      .then(async (resp: HTTPResponse) => {
-        if (resp.orderNumber) {
-          //Publish event with payload and error that occurred
-          orderNumber = resp.orderNumber;
-          let orderUUID = resp.uuid;
-          await prescriptionService.createPatientPrescriptionOnADT(
-            patient,
-            patient.mfl_code,
-            orderNumber,
-            patient.patient_ccc_number,
-            orderUUID
-          );
-        }
-      })
-      .catch(
-        (error: {
-          response: { data: any; status: any; headers: any };
-          request: any;
-          message: any;
-          config: any;
-        }) => {
-          // Error 😨
-          if (error.response) {
-            /*
-             * The request was made and the server responded with a
-             * status code that falls out of the range of 2xx
-             */
-            console.log(error.response.data);
-            console.log(error.response.status);
-            console.log(error.response.headers);
-          } else if (error.request) {
-            /*
-             * The request was made but no response was received, `error.request`
-             * is an instance of XMLHttpRequest in the browser and an instance
-             * of http.ClientRequest in Node.js
-             */
-            console.log(error.request);
-          } else {
-            // Something happened in setting up the request and triggered an Error
-            console.log("Error", error.message);
+
+  public createAmrsOrder(payload: any) {
+    const data = new ADTRESTClient("amrs");
+    return new PromiseB((resolve: any, reject: any) => {
+      return data.axios
+        .post("ws/rest/v1/order", payload)
+        .then((resp: HTTPResponse) => {
+          resolve(resp);
+        })
+        .catch(
+          (error: {
+            response: { data: any; status: any; headers: any };
+            request: any;
+            message: any;
+            config: any;
+          }) => {
+            reject(error);
+            // Error 😨
+            if (error.response) {
+              /*
+               * The request was made and the server responded with a
+               * status code that falls out of the range of 2xx
+               */
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            } else if (error.request) {
+              /*
+               * The request was made but no response was received, `error.request`
+               * is an instance of XMLHttpRequest in the browser and an instance
+               * of http.ClientRequest in Node.js
+               */
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request and triggered an Error
+              console.log("Error", error.message);
+            }
+            console.log(error.config);
           }
-          console.log(error.config);
-        }
-      );
+        );
+    });
   }
 }

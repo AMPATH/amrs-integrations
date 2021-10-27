@@ -2,7 +2,7 @@ import { EventSubscriber, On } from "event-dispatch";
 import { HTTPResponse } from "../interfaces/response";
 import ADTRESTClient from "../loaders/ADT-rest-client";
 import RegimenLoader from "../loaders/regimen-mapper";
-import { loadProviderData } from "../models/patient";
+import { loadProviderData, loadEncounterData } from "../models/patient";
 import PrescriptionService from "../services/prescription";
 import * as _ from "lodash";
 const PromiseB = require("bluebird");
@@ -20,15 +20,33 @@ export default class PrescriptionSubscriber {
       savedAmrsOrders[0].orderer.uuid,
       amrsCon
     );
+    let encounter = await loadEncounterData(savedAmrsOrders[0].encounter.uuid);
     const data = new ADTRESTClient("");
     const regimenLoader = new RegimenLoader();
-    const regimen = regimenLoader.getRegimenCode(p.start_regimen)[0];
+    const regimen = regimenLoader.getRegimenCode("3TC + NVP + AZT")[0];
     let transTime = new Date();
+
+    let drug_details: any[] = [];
+    savedAmrsOrders.forEach((o: any) => {
+      drug_details.push({
+        prescription_number: o.orderNumber,
+        drug_code: regimen.toString(),
+        strength: o.dose,
+        dosage: o.dose,
+        units: o.doseUnits.display,
+        frequency: "ONCE A DAY",
+        duration: o.duration,
+        quantity: o.quantity,
+        prescription_notes: o.instructions,
+      });
+    });
+
     let payload: any = {
-      mflcode: patient.mfl_code,
+      mflcode: p.mfl_code,
       patient_number_ccc: p.patient_ccc_number.replace("-", ""),
       order_details: {
         transaction_datetime: transTime.toISOString(),
+        order_number: encounter[0].encounter_id,
         ordering_physician: {
           first_name: provider.given_name,
           last_name: provider.family_name,
@@ -37,18 +55,7 @@ export default class PrescriptionSubscriber {
         },
         notes: "",
       },
-      drug_details: [
-        {
-          drug_code: regimen.toString(),
-          strength: "",
-          dosage: "",
-          units: "",
-          frequency: "",
-          duration: "",
-          quantity: "10",
-          prescription_notes: "",
-        },
-      ],
+      drug_details: drug_details,
       patient_observation_details: {
         current_weight: p.weight,
         current_height: p.height,
@@ -136,7 +143,7 @@ export default class PrescriptionSubscriber {
           savedOrders.push(e._settledValueField);
         });
         prescriptionService.createPatientPrescriptionOnADT(savedOrders);
-        console.log("SAVED ITEMS ", savedOrders);
+        console.log("SAVED ITEMS ", savedOrders.length);
       });
     }
   }

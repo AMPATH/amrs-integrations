@@ -1,9 +1,8 @@
 import { EventDispatcher } from "event-dispatch";
 import ConnectionManager from "../loaders/mysql";
-import ADTRESTClient from "../loaders/ADT-rest-client";
 import * as _ from "lodash";
 import PatientService from "../services/patient";
-import DrugConcepts from "../loaders/drug-concepts";
+import DrugConcepts from "../loaders/drug-list";
 const CM = ConnectionManager.getInstance();
 const PromiseB = require("bluebird");
 
@@ -13,19 +12,24 @@ export default class PrescriptionService {
     this.eventDispatcher = new EventDispatcher();
   }
   public async createAMRSOrder(order_payload: any) {
-    console.log("Initiate createAMRSOrder event", order_payload);
+    console.log("Initiate createAMRSOrder event");
     this.eventDispatcher.dispatch("createAMRSOrder", order_payload);
   }
 
-  public async createPatientPrescriptionOnADT(savedAmrsOrders: any[]) {
+  public async createPatientPrescriptionOnADT(
+    savedAmrsOrders: any[],
+    orderPayload: any
+  ) {
     const patientService = new PatientService();
     const patient = await patientService.loadPatientData(
       savedAmrsOrders[0].patient.uuid
     );
     const CM = ConnectionManager.getInstance();
     const amrsCon = await CM.getConnectionAmrs();
+    console.log("Initiate createADTSOrder event");
     this.eventDispatcher.dispatch("createADTPrescription", {
       savedAmrsOrders,
+      orderPayload,
       patient,
       amrsCon,
     });
@@ -49,7 +53,7 @@ export default class PrescriptionService {
             ob.concept.uuid === "a899cf5e-1350-11df-a1f1-0026b9348838"
         );
         break;
-      /** CHANGE REGIMEN, CHANGE DOSE, CHANGE FORMULATION, DRUG SUBSTITUTION, START ARVS, RESTART*/
+      /** CHANGE REGIMEN, DOSE, FORMULATION, DRUG SUBSTITUTION, START ARVS, RESTART*/
       case "a89b7c50-1350-11df-a1f1-0026b9348838":
       case "a898c938-1350-11df-a1f1-0026b9348838":
       case "a89b7ae8-1350-11df-a1f1-0026b9348838":
@@ -63,7 +67,7 @@ export default class PrescriptionService {
         break;
     }
 
-    let drugConcepts = await this.getFormattedConcept(arvObs);
+    let drugConcepts = await this.getArvConcepts(arvObs);
 
     const pocPrescriptionPayload = {
       encounter: data.uuid,
@@ -74,7 +78,7 @@ export default class PrescriptionService {
     return pocPrescriptionPayload;
   }
 
-  public async getFormattedConcept(arvObs: any[]) {
+  public async getArvConcepts(arvObs: any[]) {
     let drugOrders: any = [];
     let promiseArray: any[] = [];
     _.forEach(arvObs, (ob) => {
@@ -89,80 +93,14 @@ export default class PrescriptionService {
   }
 
   public async getArvConcept(ob: any) {
-    const client = new ADTRESTClient("amrs");
     return new Promise((resolve: any, reject: any) => {
       if (ob.value.links[0].resourceAlias == "concept") {
-        this.getDrugConcept(client, ob.value.uuid)
-          .then((res) => {
-            resolve(res);
-          })
-          .catch((e) => reject(e));
+        const val = DrugConcepts.filter((c) => c.concept === ob.value.uuid);
+        resolve(val);
       } else if (ob.value.links[0].resourceAlias == "drug") {
-        this.getDrug(client, ob.value.uuid)
-          .then((res) => {
-            resolve(res);
-          })
-          .catch((e) => reject(e));
+        const val = DrugConcepts.filter((c) => c.drug_uuid === ob.value.uuid);
+        resolve(val);
       }
     });
-  }
-
-  public async getDrug(client: ADTRESTClient, uuid: String) {
-    return client.axios
-      .get("ws/rest/v1/drug/" + uuid)
-      .then(async (res: any) => {
-        const drugConcept = {
-          name: this.getConceptName(DrugConcepts, uuid)
-            ? this.getConceptName(DrugConcepts, uuid)
-            : res.name,
-          uuid: res.concept.uuid,
-          display: res.concept.display,
-          type: "drug",
-        };
-        return drugConcept;
-      })
-      .catch(
-        (error: {
-          response: { data: any; status: any; headers: any };
-          request: any;
-          message: any;
-          config: any;
-        }) => {
-          console.log(error.response.data);
-        }
-      );
-  }
-
-  public async getDrugConcept(client: ADTRESTClient, uuid: String) {
-    return client.axios
-      .get("ws/rest/v1/concept/" + uuid)
-      .then(async (res: any) => {
-        const drugConcept = {
-          name: this.getConceptName(DrugConcepts, uuid)
-            ? this.getConceptName(DrugConcepts, uuid)
-            : res.names[2].display,
-          uuid: res.uuid,
-          display: res.display,
-          type: "concept",
-        };
-        return drugConcept;
-      })
-      .catch(
-        (error: {
-          response: { data: any; status: any; headers: any };
-          request: any;
-          message: any;
-          config: any;
-        }) => {
-          console.log(error.message);
-        }
-      );
-  }
-
-  private getConceptName(concepts: any[], uuid: String) {
-    const curConcept = concepts.filter((c: any) => c.concept === uuid);
-    if (!_.isEmpty(curConcept)) {
-      return curConcept[0].label;
-    }
   }
 }

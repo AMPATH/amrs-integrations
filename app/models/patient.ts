@@ -57,7 +57,7 @@ function large_query(patient_uuid: string) {
         WHEN t1.program_id IN (11) THEN 2
         WHEN t1.program_id IN (10) THEN 5
         WHEN t1.program_id IN (29) THEN 7
-        ELSE NULL
+        ELSE 1
     END AS 'service',
     IF(is_pregnant = 1 AND p.gender = 'F',
         '1',
@@ -88,8 +88,11 @@ function large_query(patient_uuid: string) {
     fhs.location_id,
     rtc_date,
     fhs.uuid,
-    cur_arv_meds,
-    arv_start_date,
+    case when REPLACE(etl.get_arv_names(arv_first_regimen), '##', '+') is not null then REPLACE(etl.get_arv_names(arv_first_regimen), '##', '+')
+    else REPLACE(etl.get_arv_names(cur_arv_meds), '##', '+')
+    end arv_first_regimen,
+    case when arv_first_regimen_start_date is not null then arv_first_regimen_start_date else arv_start_date end as arv_first_regimen_start_date,
+    REPLACE(etl.get_arv_names(cur_arv_meds), '##', '+') as cur_arv_meds,
     cur_who_stage,
     enrollment_date,
     on_modern_contraceptive,

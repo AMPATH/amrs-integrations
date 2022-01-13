@@ -71,7 +71,18 @@ export default class PatientSubscriber {
   public onPatientCreate({ patient, mflcode, order_payload }: any) {
     console.log("create patient event ", patient.patient_ccc_number);
     const regimenLoader = new RegimenLoader();
-    const regimen = regimenLoader.getRegimenCode("3TC + NVP + AZT")[0];
+    const mapped = regimenLoader.getRegimenCode(patient.arv_first_regimen);
+    let regimen: String = "";
+    if (mapped.length > 0) {
+      regimen = mapped[0];
+    }
+    console.log(
+      "First arv regimen ",
+      patient.arv_first_regimen,
+      " is mapped to ",
+      regimen
+    );
+
     let payload = {
       source: patient.source ? patient.source : "OUTPATIENT",
       medical_record_no: patient.medical_record_no,
@@ -89,7 +100,9 @@ export default class PatientSubscriber {
       weight: patient.weight ? patient.weight.toString() : 0,
       height: patient.height ? patient.height.toString() : 0,
       start_regimen: regimen,
-      start_regimen_date: new Date(patient.arv_start_date).toLocaleDateString(),
+      start_regimen_date: new Date(
+        patient.arv_first_regimen_start_date
+      ).toLocaleDateString(),
       enrollment_date: new Date(patient.enrollment_date).toLocaleDateString(),
       phone: patient.phone,
       address: patient.address,

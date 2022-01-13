@@ -1,17 +1,67 @@
 import { EventSubscriber, On } from "event-dispatch";
 import { HTTPResponse } from "../interfaces/response";
 import ADTRESTClient from "../loaders/ADT-rest-client";
-import RegimenLoader from "../loaders/regimen-mapper";
 import { loadProviderData, loadEncounterData } from "../models/patient";
 import PrescriptionService from "../services/prescription";
+import RegimenLoader from "../loaders/regimen-mapper";
 import * as _ from "lodash";
 const PromiseB = require("bluebird");
 
 @EventSubscriber()
 export default class PrescriptionSubscriber {
+  @On("createAMRSOrder")
+  public async onCreateAMRSOrder(orderPayload: any) {
+    let savedOrders: any[] = [];
+    let promiseArray: any[] = [];
+    const prescriptionService = new PrescriptionService();
+    if (orderPayload.drugOrders !== undefined) {
+      orderPayload.drugOrders.forEach((curOrder: any) => {
+        /** Construct AMRS order payload */
+        let payload = {
+          type: "drugorder",
+          action: "new",
+          urgency: "ROUTINE",
+          dateActivated: new Date(),
+          careSetting: "OUTPATIENT",
+          encounter: orderPayload.encounter,
+          patient: orderPayload.patient,
+          concept: curOrder.uuid,
+          orderer: orderPayload.orderer[0].provider.uuid,
+          dose: 20,
+          doseUnits: curOrder.doseUnits,
+          route: curOrder.route,
+          frequency: curOrder.frequency,
+          quantity: curOrder.quantity,
+          quantityUnits: curOrder.quantityUnits,
+          duration: curOrder.duration,
+          durationUnits: curOrder.durationUnits,
+          numRefills: 1,
+          instructions: curOrder.instructions,
+          drug: curOrder.drug,
+        };
+        promiseArray.push(this.createAmrsOrder(payload));
+      });
+
+      PromiseB.allSettled(promiseArray).then((r: any) => {
+        r.forEach(async (e: any) => {
+          savedOrders.push(e._settledValueField);
+        });
+        prescriptionService.createPatientPrescriptionOnADT(
+          savedOrders,
+          orderPayload
+        );
+        console.log(
+          "Created AMRS orders successfully, Number of saved items = ",
+          savedOrders.length
+        );
+      });
+    }
+  }
+
   @On("createADTPrescription")
   public async onPrescriptionCreate({
     savedAmrsOrders,
+    orderPayload,
     patient,
     amrsCon,
   }: any) {
@@ -22,19 +72,34 @@ export default class PrescriptionSubscriber {
     );
     let encounter = await loadEncounterData(savedAmrsOrders[0].encounter.uuid);
     const data = new ADTRESTClient("");
-    const regimenLoader = new RegimenLoader();
-    const regimen = regimenLoader.getRegimenCode("3TC + NVP + AZT")[0];
     let transTime = new Date();
+
+    const regimenLoader = new RegimenLoader();
+    const mapped = regimenLoader.getRegimenCode(p.cur_arv_meds);
+    let regimen: String = "";
+    if (mapped.length > 0) {
+      regimen = mapped[0];
+    }
+    console.log(
+      "Current arv regimen ",
+      p.cur_arv_meds,
+      " is mapped to ",
+      regimen
+    );
 
     let drug_details: any[] = [];
     savedAmrsOrders.forEach((o: any) => {
+      console.log(
+        "DRUG CODE  ",
+        this.resolveDrugCode(o.concept.uuid, orderPayload)
+      );
       drug_details.push({
         prescription_number: o.orderNumber,
-        drug_code: regimen.toString(),
-        strength: o.dose,
-        dosage: o.dose,
-        units: o.doseUnits.display,
-        frequency: "ONCE A DAY",
+        drug_code: this.resolveDrugCode(
+          o.concept.uuid,
+          orderPayload
+        ) /*this is the drug name to appear in adt*/,
+        frequency: o.frequency.display,
         duration: o.duration,
         quantity: o.quantity,
         prescription_notes: o.instructions,
@@ -59,9 +124,8 @@ export default class PrescriptionSubscriber {
       patient_observation_details: {
         current_weight: p.weight,
         current_height: p.height,
-        // Add the regimen mapping
 
-        current_regimen: regimen.toString(),
+        current_regimen: regimen,
       },
     };
     console.log(p.height, p.weight);
@@ -87,65 +151,17 @@ export default class PrescriptionSubscriber {
         }) => {
           // Error 😨
           if (error.response) {
-            /*
-             * The request was made and the server responded with a
-             * status code that falls out of the range of 2xx
-             */
             console.log(error.response.data);
             console.log(error.response.status);
             console.log(error.response.headers);
           } else if (error.request) {
-            /*
-             * The request was made but no response was received, `error.request`
-             * is an instance of XMLHttpRequest in the browser and an instance
-             * of http.ClientRequest in Node.js
-             */
             console.log(error.request);
           } else {
-            // Something happened in setting up the request and triggered an Error
             console.log("Error", error.message);
           }
           console.log(error.config);
         }
       );
-  }
-  @On("createAMRSOrder")
-  public async onCreateAMRSOrder(orderPayload: any) {
-    let savedOrders: any[] = [];
-    let promiseArray: any[] = [];
-    const prescriptionService = new PrescriptionService();
-    if (orderPayload.drugOrders !== undefined) {
-      orderPayload.drugOrders.forEach((curOrder: any) => {
-        /** Construct AMRS order payload */
-        let payload = {
-          type: "drugorder",
-          action: "new",
-          urgency: "ROUTINE",
-          dateActivated: new Date(),
-          careSetting: "OUTPATIENT",
-          encounter: orderPayload.encounter,
-          patient: orderPayload.patient,
-          concept: curOrder.uuid,
-          orderer: orderPayload.orderer[0].provider.uuid,
-          dose: 20,
-          doseUnits: "a8a07f8e-1350-11df-a1f1-0026b9348838",
-          route: "db0c5937-3874-4eae-9566-9a645ad7ac65",
-          frequency: "bc1369f2-6795-11e7-843e-a0d3c1fcd41c",
-          quantity: 10,
-          numRefills: 1,
-          quantityUnits: "a8a07f8e-1350-11df-a1f1-0026b9348838",
-        };
-        promiseArray.push(this.createAmrsOrder(payload));
-      });
-
-      PromiseB.allSettled(promiseArray).then((r: any) => {
-        r.forEach(async (e: any) => {
-          savedOrders.push(e._settledValueField);
-        });
-        prescriptionService.createPatientPrescriptionOnADT(savedOrders);
-        console.log("SAVED ITEMS ", savedOrders.length);
-      });
-    }
   }
 
   public createAmrsOrder(payload: any) {
@@ -164,29 +180,23 @@ export default class PrescriptionSubscriber {
             config: any;
           }) => {
             reject(error);
-            // Error 😨
             if (error.response) {
-              /*
-               * The request was made and the server responded with a
-               * status code that falls out of the range of 2xx
-               */
               console.log(error.response.data);
               console.log(error.response.status);
               console.log(error.response.headers);
             } else if (error.request) {
-              /*
-               * The request was made but no response was received, `error.request`
-               * is an instance of XMLHttpRequest in the browser and an instance
-               * of http.ClientRequest in Node.js
-               */
               console.log(error.request);
             } else {
-              // Something happened in setting up the request and triggered an Error
               console.log("Error", error.message);
             }
             console.log(error.config);
           }
         );
     });
+  }
+
+  public resolveDrugCode(uuid: string, orderPayload: any) {
+    let c = orderPayload.drugOrders.filter((c: any) => c.uuid == uuid);
+    return c[0].drug_name;
   }
 }

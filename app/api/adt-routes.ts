@@ -39,7 +39,7 @@ export const adtRoutes: ServerRoute[] = [
   },
   {
     method: "POST",
-    path: "/adt/poc-prescription",
+    path: "/api/poc-prescription",
     handler: async function (req, res: ResponseToolkit) {
       const service = new PrescriptionService();
       const result = await service.createPocPrescriptionPayload(req.payload);

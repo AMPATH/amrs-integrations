@@ -26,13 +26,18 @@ export default class PrescriptionService {
     );
     const CM = ConnectionManager.getInstance();
     const amrsCon = await CM.getConnectionAmrs();
-    console.log("Initiate createADTSOrder event");
+    console.log("Initiate createADTOrder event");
     this.eventDispatcher.dispatch("createADTPrescription", {
       savedAmrsOrders,
       orderPayload,
       patient,
       amrsCon,
     });
+  }
+
+  public async updateAMRSOrder(payload: any, status: string) {
+    console.log("Initiate updateAMRSOrder event");
+    this.eventDispatcher.dispatch("updateAMRSOrder", { payload, status });
   }
 
   public async createPocPrescriptionPayload(data: any) {

@@ -21,4 +21,7 @@ export default {
     host: process.env.adtHost,
     port: process.env.adtPort,
   },
+  prodDbURL: process.env.prodDbURL,
+  prodDbPort: process.env.prodDbPort,
+  prodDb: process.env.prodDb,
 };

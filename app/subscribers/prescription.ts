@@ -4,6 +4,7 @@ import ADTRESTClient from "../loaders/ADT-rest-client";
 import { loadProviderData, loadEncounterData } from "../models/patient";
 import PrescriptionService from "../services/prescription";
 import RegimenLoader from "../loaders/regimen-mapper";
+import { updateAmrsOrderStatus } from "../models/prescription";
 import * as _ from "lodash";
 const PromiseB = require("bluebird");
 
@@ -73,6 +74,7 @@ export default class PrescriptionSubscriber {
     let encounter = await loadEncounterData(savedAmrsOrders[0].encounter.uuid);
     const data = new ADTRESTClient("");
     let transTime = new Date();
+    const prescriptionService = new PrescriptionService();
 
     const regimenLoader = new RegimenLoader();
     const mapped = regimenLoader.getRegimenCode(p.cur_arv_meds);
@@ -140,6 +142,7 @@ export default class PrescriptionSubscriber {
         if (resp.code !== 200) {
           //Publish event with payload and error that occurred
         } else {
+          prescriptionService.updateAMRSOrder(payload, "RECEIVED");
         }
       })
       .catch(
@@ -162,6 +165,11 @@ export default class PrescriptionSubscriber {
           console.log(error.config);
         }
       );
+  }
+
+  @On("updateAMRSOrder")
+  public updateAmrsOrder({ payload, status }: any) {
+    updateAmrsOrderStatus(payload, status);
   }
 
   public createAmrsOrder(payload: any) {

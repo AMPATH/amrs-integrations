@@ -1,5 +1,6 @@
 import { Server } from "@hapi/hapi";
 import { getPatientIdentifiers } from "./helpers/patient";
+import { getPatient } from "./models/queries";
 
 const init = async () => {
   const server = new Server({
@@ -14,6 +15,9 @@ const init = async () => {
       let identifiers: PatientPayload.PatientIdentifier[] = await getPatientIdentifiers(
         patientUUID.uuid
       );
+
+      let res: PatientPayload.Patient = await getPatient(patientUUID.uuid);
+      console.log("Fetched patient ", res.FirstName);
       return identifiers;
     },
   });

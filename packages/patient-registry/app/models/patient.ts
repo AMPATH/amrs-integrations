@@ -33,6 +33,7 @@ declare module PatientPayload {
     }
 
     export interface Patient {
+        uuid: string;
         ClientNumber: string;
         FirstName: string;
         MiddleName: string;

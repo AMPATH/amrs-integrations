@@ -1,9 +1,19 @@
-import config from "@amrs-integrations/core"
+import config from "@amrs-integrations/core";
+
+export async function getFacilityMfl(param: string) {
+  let CM = config.ConnectionManager.getInstance();
+  let amrsCON = await CM.getConnectionAmrs();
+  let sql = `select mfl_code from amrs.location
+     left join ndwr.mfl_codes using(location_id)
+     where uuid = '${param}';`;
+  const result = await CM.query(sql, amrsCON);
+  return result[0];
+}
 
 export async function getPatient(uuid: string) {
-    let CM = config.ConnectionManager.getInstance();
-    let amrsCON = await CM.getConnectionAmrs();
-    let sql = `select t1.uuid,
+  let CM = config.ConnectionManager.getInstance();
+  let amrsCON = await CM.getConnectionAmrs();
+  let sql = `select t1.uuid,
     null as ClientNumber,
     case when t5.given_name is not null then UPPER(t5.given_name)
          when t5.middle_name is not null then UPPER(t5.middle_name)
@@ -58,9 +68,9 @@ export async function getPatient(uuid: string) {
     left join amrs.person_attribute pakr on (pakr.person_id = t1.person_id and pakr.person_attribute_type_id = 70 and pakr.voided = 0)
     left join amrs.person_attribute pakt on (pakt.person_id = t1.person_id and pakt.person_attribute_type_id = 25 and pakt.voided = 0)
     left join amrs.person_attribute pakp on (pakp.person_id = t1.person_id and pakp.person_attribute_type_id = 71 and pakp.voided = 0)
-    where t1.uuid = '${uuid}' group by t1.person_id`
+    where t1.uuid = '${uuid}' group by t1.person_id`;
 
-    const result = await CM.query(sql, amrsCON);
+  const result = await CM.query(sql, amrsCON);
 
-    return result[0];
+  return result[0];
 }

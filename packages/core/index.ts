@@ -8,6 +8,7 @@ if (envFound.error) {
   throw new Error("⚠️  Couldn't find .env file  ⚠️");
 }
 export default {
+  devPort:process.env.devPort,
   databaseURL: process.env.mysqlHost,
   user: process.env.user,
   password: process.env.password,
@@ -17,7 +18,7 @@ export default {
   amrsUsername: process.env.amrsUsername,
   amrsPassword: process.env.amrsPassword,
   connectionLimit: process.env.connectionLimit,
-  server: process.env.server,
+  server: process.env.devServer,
   adt: {
     username: process.env.amrsUsername,
     password: process.env.amrsPassword,

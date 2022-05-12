@@ -6,6 +6,28 @@ import Gender from "../ClientRegistryLookupDictionaries/gender";
 import IdentificationTypes from "../ClientRegistryLookupDictionaries/identification-types";
 
 export default class PatientService {
+  public async searchPatientByID(params: any) {
+    let accessToken = await getAccessToken();
+    let httpClient = new config.HTTPInterceptor(
+      config.dhp.url || "",
+      "",
+      "",
+      "dhp",
+      accessToken.access_token
+    );
+
+    /**TODO: Check against all allowed identifier types (national id, birth number and passport) */
+      const url = "/search/identification-number/" + params.uno;
+      let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(
+        url,
+        { method: "get" }
+      );
+
+      console.log("dhpResponse ", dhpResponse);
+
+      return dhpResponse;
+  }
+
   public async searchPatient(params: any) {
     let accessToken = await getAccessToken();
     let httpClient = new config.HTTPInterceptor(
@@ -16,7 +38,7 @@ export default class PatientService {
       accessToken.access_token
     );
 
-    let identifiers = await getPatientIdentifiers(params.patientUuid)
+    let identifiers = await getPatientIdentifiers(params.patientUuid);
     const nationalId = identifiers.results.filter(
       (e: any) =>
         e.identifierType.uuid == "58a47054-1359-11df-a1f1-0026b9348838"
@@ -29,7 +51,11 @@ export default class PatientService {
         { method: "get" }
       );
 
-      console.log("Does client exist ", dhpResponse.clientExists,nationalId[0].location.uuid);
+      console.log(
+        "Does client exist ",
+        dhpResponse.clientExists,
+        nationalId[0].location.uuid
+      );
       if (dhpResponse.clientExists) {
         console.log("DHP client number", dhpResponse.client.clientNumber);
 
@@ -114,7 +140,7 @@ export default class PatientService {
     locationUuid: string
   ) {
     const result = await saveUpiIdentifier(upi, patientUuid, locationUuid);
-    console.log("result",result)
+    console.log("result", result);
     return result;
   }
 

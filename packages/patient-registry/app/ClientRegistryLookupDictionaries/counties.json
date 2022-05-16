@@ -1,127 +1,127 @@
 [
-    {
-      "label": "Baringo",
-      "value": "030",
+  {
+    "label": "Baringo",
+    "value": "030",
+    "children": [
+      {
+        "label": "Koibatek",
         "children": [
-            {
-                "label": "Koibatek",
-                "children": [
-                    {
-                        "label": "Koibatek"
-                    },
-                    {
-                        "label": "Ravine"
-                    },
-                    {
-                        "label": "Lembus/Perkerra"
-                    },
-                    {
-                        "label": "Mumberes/Maji mazuri"
-                    },
-                    {
-                        "label": "Lembus kwen"
-                    },
-                    {
-                        "label": "Lembus"
-                    }
-                ]
-            },
-            {
-                "label": "Mogotio",
-                "children": [
-                    {
-                        "label": "Kisanana"
-                    },
-                    {
-                        "label": "Emining"
-                    },
-                    {
-                        "label": "Mogotio"
-                    }
-                ]
-            },
-            {
-                "label": "Marigat",
-                "children": [
-                    {
-                        "label": "Mukutani"
-                    },
-                    {
-                        "label": "Mochongoi"
-                    },
-                    {
-                        "label": "Ilchamus"
-                    },
-                    {
-                        "label": "Marigat"
-                    }
-                ]
-            },
-            {
-                "label": "Baringo central",
-                "children": [
-                    {
-                        "label": "Kapropita"
-                    },
-                    {
-                        "label": "Ewalel chapchap"
-                    },
-                    {
-                        "label": "Tenges"
-                    },
-                    {
-                        "label": "Sacho"
-                    },
-                    {
-                        "label": "Kabarnet"
-                    }
-                ]
-            },
-            {
-                "label": "Baringo north",
-                "children": [
-                    {
-                        "label": "Bartabwa"
-                    },
-                    {
-                        "label": "Saimo soi"
-                    },
-                    {
-                        "label": "Kabartonjo"
-                    },
-                    {
-                        "label": "Barwessa"
-                    }
-                ]
-            },
-            {
-                "label": "Tiaty",
-                "children": [
-                    {
-                        "label": "Churo/Amaya"
-                    },
-                    {
-                        "label": "Tangulbei Korossi"
-                    },
-                    {
-                        "label": "Loiyamorock"
-                    },
-                    {
-                        "label": "Silale"
-                    },
-                    {
-                        "label": "Ribkwo"
-                    },
-                    {
-                        "label": "Kolowa"
-                    },
-                    {
-                        "label": "Tirioko"
-                    }
-                ]
-            }
+          {
+            "label": "Koibatek"
+          },
+          {
+            "label": "Ravine"
+          },
+          {
+            "label": "Lembus/Perkerra"
+          },
+          {
+            "label": "Mumberes/Maji mazuri"
+          },
+          {
+            "label": "Lembus kwen"
+          },
+          {
+            "label": "Lembus"
+          }
         ]
-    },
+      },
+      {
+        "label": "Mogotio",
+        "children": [
+          {
+            "label": "Kisanana"
+          },
+          {
+            "label": "Emining"
+          },
+          {
+            "label": "Mogotio"
+          }
+        ]
+      },
+      {
+        "label": "Marigat",
+        "children": [
+          {
+            "label": "Mukutani"
+          },
+          {
+            "label": "Mochongoi"
+          },
+          {
+            "label": "Ilchamus"
+          },
+          {
+            "label": "Marigat"
+          }
+        ]
+      },
+      {
+        "label": "Baringo central",
+        "children": [
+          {
+            "label": "Kapropita"
+          },
+          {
+            "label": "Ewalel chapchap"
+          },
+          {
+            "label": "Tenges"
+          },
+          {
+            "label": "Sacho"
+          },
+          {
+            "label": "Kabarnet"
+          }
+        ]
+      },
+      {
+        "label": "Baringo north",
+        "children": [
+          {
+            "label": "Bartabwa"
+          },
+          {
+            "label": "Saimo soi"
+          },
+          {
+            "label": "Kabartonjo"
+          },
+          {
+            "label": "Barwessa"
+          }
+        ]
+      },
+      {
+        "label": "Tiaty",
+        "children": [
+          {
+            "label": "Churo/Amaya"
+          },
+          {
+            "label": "Tangulbei Korossi"
+          },
+          {
+            "label": "Loiyamorock"
+          },
+          {
+            "label": "Silale"
+          },
+          {
+            "label": "Ribkwo"
+          },
+          {
+            "label": "Kolowa"
+          },
+          {
+            "label": "Tirioko"
+          }
+        ]
+      }
+    ]
+  },
   {
     "label": "Bomet",
     "value": "036",

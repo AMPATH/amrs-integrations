@@ -18,10 +18,11 @@ export default class PatientService {
     );
 
     /**TODO: Check against all allowed identifier types (national id, birth number and passport) */
-    const url = "/search/identification-number/" + params.uno;
-    let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(url, {
-      method: "get",
-    });
+      const url = "/search/national-id/" + params.uno;
+      let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(
+        url,
+        { method: "get" }
+      );
 
     console.log("dhpResponse ", dhpResponse);
 
@@ -45,7 +46,7 @@ export default class PatientService {
     );
     /**TODO: Check against all allowed identifier types (national id, birth number and passport) */
     if (nationalId !== undefined || nationalId.length != 0) {
-      const url = "/search/identification-number/" + nationalId[0].identifier;
+      const url = "/search/national-id/" + nationalId[0].identifier;
       let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(
         url,
         { method: "get" }

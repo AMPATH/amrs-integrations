@@ -10,8 +10,10 @@ import { Consumer, Message, Producer } from "redis-smq";
 import Religion from "../ClientRegistryLookupDictionaries/religions";
 import MaritalStatus from "../ClientRegistryLookupDictionaries/marital-status";
 import EducationLevels from "../ClientRegistryLookupDictionaries/education-levels";
+import SlackService from "../monitoring/slack-service";
 
 export default class PatientService {
+  constructor() {}
   public async searchPatientByID(params: any) {
     let accessToken = await validateToken();
     let httpClient = new config.HTTPInterceptor(
@@ -67,6 +69,10 @@ export default class PatientService {
     );
 
     let identifiers = await getPatientIdentifiers(params.patientUuid);
+    let universalId = identifiers.results.filter(
+      (id: any) =>
+        id.identifierType.uuid == "58a4732e-1359-11df-a1f1-0026b9348838"
+    );
     console.log("CURRENT PATIENT ", params.patientUuid);
     let idParam = "";
     let identifier = "";
@@ -120,42 +126,57 @@ export default class PatientService {
         console.log("Saved UPI, Existing Patient", savedUpi.identifier);
         return;
       }
-
-      /** Patient not found: Construct payload and save to Registry*/
+      params.amrsNumber = universalId[0]?.identifier;
       let payload = await this.constructPayload(params.patientUuid, location);
 
-      httpClient.axios
-        .post("", payload)
-        .then(async (dhpResponse: any) => {
-          let savedUpi: any = await this.saveUpiNumber(
-            dhpResponse.clientNumber,
-            params.patientUuid,
-            location
-          );
-          console.log(
-            "Created successfully, assigned UPI",
-            savedUpi.identifier
-          );
-        })
-        .catch((err: any) => {
-          console.log(
-            "Error Status Code",
-            err.response ? err.response.status : ""
-          );
-          console.log("Post Errors ", err.response.data.errors);
-          console.log("Post Payload ", err.response.config.data);
-          // Queue Patient
-          queueClientsToRetry({
-            payload: payload,
-            patientUuid: params.patientUuid,
-            locationUuid: location,
-          });
-        });
-
-      /** TODO: Incase of error, queue patient in Redis */
-
-      return payload;
+      return this.createNewPatient(payload, params, location, httpClient);
     }
+  }
+
+  public async createNewPatient(
+    payload: any,
+    params: any,
+    location: any,
+    httpClient: any
+  ) {
+    /** Patient not found: Construct payload and save to Registry*/
+    const slackService = new SlackService();
+
+    httpClient.axios
+      .post("", payload)
+      .then(async (dhpResponse: any) => {
+        let savedUpi: any = await this.saveUpiNumber(
+          dhpResponse.clientNumber,
+          params.patientUuid,
+          location
+        );
+        console.log("Created successfully, assigned UPI", savedUpi.identifier);
+      })
+      .catch((err: any) => {
+        const slackPayload = {
+          patientIdentifier: params.amrsNumber
+            ? params.amrsNumber
+            : params.patientUuid,
+          errors: "",
+        };
+
+        if (err.response.data.errors !== undefined) {
+          /**Send bad request error to slack, error 400 */
+          slackPayload.errors = JSON.stringify(err.response.data.errors);
+        } else {
+          /**Queue patient in Redis, error 500 */
+          slackPayload.errors = "Verification retried";
+          const redisBody = {
+            payload: payload,
+            params: params,
+            location: location,
+          };
+          this.queueClientsToRetry(redisBody);
+        }
+        slackService.postErrorMessage(slackPayload);
+      });
+
+    return payload;
   }
 
   private async constructPayload(patientUuid: string, locationUuid: string) {
@@ -211,7 +232,6 @@ export default class PatientService {
     locationUuid: string
   ) {
     const result = await saveUpiIdentifier(upi, patientUuid, locationUuid);
-    console.log("result", result);
     return result;
   }
 
@@ -322,46 +342,58 @@ export default class PatientService {
     const idType = IdentificationTypes.filter((i) => (i.amrs = amrsId));
     return idType[0].value;
   }
-}
-function queueClientsToRetry(patientPayload: any) {
-  const producer = new Producer();
-  const message = new Message();
-  message
-    .setBody(JSON.stringify(patientPayload))
-    .setTTL(3600000) // in millis
-    .setQueue("cl_queue");
-  producer.produce(message, (err) => {
-    if (err) console.log(err);
-    else {
-      const msgId = message.getId(); // string
-      console.log("Successfully produced. Message ID is ", msgId);
-    }
-  });
-  producer.shutdown();
-}
-function retryQueuedClients() {
-  const consumer = new Consumer();
 
-  const messageHandler = async (
-    msg: { getBody: () => any },
-    cb: () => void
-  ) => {
-    const payload: any = msg.getBody();
-    console.log("Message payload", payload);
-    // TODO : Implement logic to consume errors and resend requests to DHP
+  public async retryQueuedClients() {
+    console.log("STARTED REDIS CONSUMER");
+    const consumer = new Consumer();
 
-    //check response for success or error. if error
-    cb(); // acknowledging the message
-  };
+    const messageHandler = async (msg: any, cb: any) => {
+      const redisPayload = msg.getBody();
+      const accessToken = await validateToken();
+      const httpClient = new config.HTTPInterceptor(
+        config.dhp.url || "",
+        "",
+        "",
+        "dhp",
+        accessToken
+      );
 
-  consumer.consume("cl_queue", false, messageHandler, (err, isRunning) => {
-    if (err) console.error(err);
-    // the message handler will be started only if the consumer is running
-    else
-      console.log(
-        `Message handler has been registered. Running status: ${isRunning}`
-      ); // isRunning === false
-  });
+      /*Consume errors and retry request*/
+      const res = JSON.parse(redisPayload);
+      this.createNewPatient(
+        res.payload,
+        res.params,
+        res.location,
+        httpClient
+      ).then((s) => console.log("PATIENT UPDATING FROM REDIS"));
+      cb();
+    };
 
-  consumer.run();
+    consumer.consume("verb_queue", false, messageHandler, (err, isRunning) => {
+      if (err) console.error(err);
+      // the message handler will be started only if the consumer is running
+      else
+        console.log(
+          `Message handler has been registered. Running status: ${isRunning}`
+        ); // isRunning === false
+    });
+
+    consumer.run();
+  }
+  public async queueClientsToRetry(patientPayload: any) {
+    const producer = new Producer();
+    const message = new Message();
+    message
+      .setBody(JSON.stringify(patientPayload))
+      .setTTL(3600000)
+      .setQueue("verb_queue");
+    producer.produce(message, (err) => {
+      if (err) console.log(err);
+      else {
+        const msgId = message.getId();
+        console.log("Successfully produced. Message ID is ", msgId);
+      }
+    });
+    producer.shutdown();
+  }
 }

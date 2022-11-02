@@ -20,6 +20,7 @@ export default {
   connectionLimit: process.env.connectionLimit,
   server: process.env.devServer,
   accessToken: process.env.accessToken,
+  slackWebHook: process.env.slackWebHook,
   adt: {
     username: process.env.amrsUsername,
     password: process.env.amrsPassword,
@@ -84,7 +85,7 @@ export default {
     },
     message: {
         consumeTimeout:600000,
-        retryThreshold: 5,
+        retryThreshold: 10,
         retryDelay: 60000,
         ttl: 120000,
     },

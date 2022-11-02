@@ -12,13 +12,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@amrs-integrations/core": "^0.1.0-alpha.15",
-    "@hapi/hapi": "20.2.2"
+    "@amrs-integrations/core": "^0.1.0-alpha.17",
+    "@hapi/hapi": "20.2.2",
+    "node-fetch": "^2.6.7"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@types/hapi__hapi": "^20.0.12"
+    "@types/btoa": "^1.2.3",
+    "@types/hapi__hapi": "^20.0.12",
+    "@types/mysql": "^2.15.21",
+    "@types/node-fetch": "^2.6.2"
   }
 }

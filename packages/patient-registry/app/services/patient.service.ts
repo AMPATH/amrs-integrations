@@ -11,18 +11,12 @@ import Religion from "../ClientRegistryLookupDictionaries/religions";
 import MaritalStatus from "../ClientRegistryLookupDictionaries/marital-status";
 import EducationLevels from "../ClientRegistryLookupDictionaries/education-levels";
 import SlackService from "../monitoring/slack-service";
+import fetch from 'node-fetch';
 
 export default class PatientService {
-  constructor() {}
+  constructor() { }
   public async searchPatientByID(params: any) {
     let accessToken = await validateToken();
-    let httpClient = new config.HTTPInterceptor(
-      config.dhp.url || "",
-      "",
-      "",
-      "dhp",
-      accessToken
-    );
 
     const searchIdType = params.idType;
     let idParam = "national-id";
@@ -38,11 +32,18 @@ export default class PatientService {
         idParam = "passport";
         break;
     }
-    const url = `/search/${idParam}/${params.uno}`;
-    let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(url, {
-      method: "get",
-    });
+    const urlParam = encodeURIComponent(params.uno)
 
+    const url = `/search/${idParam}/${urlParam}`;
+    let dhpResponse: any;
+    await fetch(config.dhp.url + url, {
+      method: 'get',
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    }).then(res => res.json())
+      .then((json: PatientPayload.ClientObject) => {
+        dhpResponse = json
+      })
+      .catch((r: any) => console.log(r));
     if (dhpResponse.clientExists) {
       console.log("dhpResponse ", dhpResponse);
       dhpResponse.client.religion = this.mapToAmrsReligion(
@@ -110,11 +111,19 @@ export default class PatientService {
     );
 
     if (idParam.length != 0) {
-      const url = `/search/${idParam}/${identifier}`;
-      let dhpResponse: PatientPayload.ClientObject = await httpClient.axios(
-        url,
-        { method: "get" }
-      );
+
+      const urlParam = encodeURIComponent(identifier)
+
+      const url = `/search/${idParam}/${urlParam}`;
+      let dhpResponse: any;
+      await fetch(config.dhp.url + url, {
+        method: 'get',
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      }).then(res => res.json())
+        .then((json: PatientPayload.ClientObject) => {
+          dhpResponse = json
+        })
+        .catch((r: any) => console.log(r));
 
       console.log("Does client exist in registry ", dhpResponse.clientExists);
       if (dhpResponse.clientExists) {

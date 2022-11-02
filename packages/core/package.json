@@ -1,6 +1,6 @@
 {
   "name": "@amrs-integrations/core",
-  "version": "0.1.0-alpha.14",
+  "version": "0.1.0-alpha.17",
   "description": "Shared functions for AMRS integrations",
   "main": "dist/index.js",
   "scripts": {

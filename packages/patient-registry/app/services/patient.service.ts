@@ -11,14 +11,16 @@ import Religion from "../ClientRegistryLookupDictionaries/religions";
 import MaritalStatus from "../ClientRegistryLookupDictionaries/marital-status";
 import EducationLevels from "../ClientRegistryLookupDictionaries/education-levels";
 import SlackService from "../monitoring/slack-service";
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
+import { scheduleBatchUpdate } from "../models/batch-update";
 
 export default class PatientService {
-  constructor() { }
+  constructor() {}
   public async searchPatientByID(params: any) {
     let accessToken = await validateToken();
 
     const searchIdType = params.idType;
+    const countryCode = params.countryCode;
     let idParam = "national-id";
 
     switch (searchIdType) {
@@ -32,16 +34,16 @@ export default class PatientService {
         idParam = "passport";
         break;
     }
-    const urlParam = encodeURIComponent(params.uno)
-
-    const url = `/search/${idParam}/${urlParam}`;
+    const urlParam = encodeURIComponent(params.uno);
+    const url = `/search/${countryCode}/${idParam}/${urlParam}`;
     let dhpResponse: any;
     await fetch(config.dhp.url + url, {
-      method: 'get',
-      headers: { 'Authorization': 'Bearer ' + accessToken }
-    }).then(res => res.json())
+      method: "get",
+      headers: { Authorization: "Bearer " + accessToken },
+    })
+      .then((res) => res.json())
       .then((json: PatientPayload.ClientObject) => {
-        dhpResponse = json
+        dhpResponse = json;
       })
       .catch((r: any) => console.log(r));
     if (dhpResponse.clientExists) {
@@ -56,10 +58,12 @@ export default class PatientService {
         dhpResponse.client.educationLevel
       );
     }
+
     return dhpResponse;
   }
 
   public async searchPatient(params: any) {
+    // await scheduleBatchUpdate(); //TODO -> Trigger using cron job
     let accessToken = await validateToken();
     let httpClient = new config.HTTPInterceptor(
       config.dhp.url || "",
@@ -68,7 +72,6 @@ export default class PatientService {
       "dhp",
       accessToken
     );
-
     let identifiers = await getPatientIdentifiers(params.patientUuid);
     let universalId = identifiers.results.filter(
       (id: any) =>
@@ -101,27 +104,19 @@ export default class PatientService {
       }
     });
 
-    console.log(
-      "ID val ",
-      idParam,
-      "ID type ",
-      identifier,
-      "ID location ",
-      location
-    );
-
     if (idParam.length != 0) {
+      const urlParam = encodeURIComponent(identifier);
 
-      const urlParam = encodeURIComponent(identifier)
+      const url = `/search/${params.countryCode}/${idParam}/${urlParam}`;
 
-      const url = `/search/${idParam}/${urlParam}`;
       let dhpResponse: any;
       await fetch(config.dhp.url + url, {
-        method: 'get',
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-      }).then(res => res.json())
+        method: "get",
+        headers: { Authorization: "Bearer " + accessToken },
+      })
+        .then((res) => res.json())
         .then((json: PatientPayload.ClientObject) => {
-          dhpResponse = json
+          dhpResponse = json;
         })
         .catch((r: any) => console.log(r));
 
@@ -136,7 +131,11 @@ export default class PatientService {
         return;
       }
       params.amrsNumber = universalId[0]?.identifier;
-      let payload = await this.constructPayload(params.patientUuid, location);
+      let payload = await this.constructPayload(
+        params.patientUuid,
+        location,
+        params.countryCode
+      );
 
       return this.createNewPatient(payload, params, location, httpClient);
     }
@@ -148,6 +147,7 @@ export default class PatientService {
     location: any,
     httpClient: any
   ) {
+    console.log("Current patient payload ", payload);
     /** Patient not found: Construct payload and save to Registry*/
     const slackService = new SlackService();
 
@@ -188,13 +188,19 @@ export default class PatientService {
     return payload;
   }
 
-  private async constructPayload(patientUuid: string, locationUuid: string) {
+  private async constructPayload(
+    patientUuid: string,
+    locationUuid: string,
+    countryCode: String
+  ) {
     let p: any = await getPatient(patientUuid);
     let mflCode = await getFacilityMfl(locationUuid);
-    let identifiers: PatientPayload.PatientIdentifier[] = await getPatientIdentifiers(
-      patientUuid
+    let identifiers: PatientPayload.PatientIdentifier[] =
+      await getPatientIdentifiers(patientUuid);
+    let allowedIDS = await this.extractAllowedIdentifiers(
+      identifiers,
+      countryCode
     );
-    let allowedIDS = await this.extractAllowedIdentifiers(identifiers);
 
     const payload = {
       clientNumber: "",
@@ -215,11 +221,12 @@ export default class PatientService {
       countyOfBirth: p.CountryOfBirth ? this.mapCounty(p.CountryOfBirth) : "",
       originFacilityKmflCode: mflCode.mfl_code ? mflCode.mfl_code : "15204",
       isAlive: p.IsAlive,
+      isOnART: p.nascopCCCNumber ? true : false,
       nascopCCCNumber: p.nascopCCCNumber ? p.nascopCCCNumber : "",
       residence: {
         county: p.County ? this.mapCounty(p.County) : "",
-        subCounty: p.SubCounty ? p.SubCounty : "",
-        ward: p.Ward ? p.Ward : "",
+        subCounty: p.SubCounty ? this.mapSubCounty(p.County, p.SubCounty) : "",
+        ward: p.Ward ? this.mapWard(p.County, p.SubCounty, p.Ward) : "",
         village: p.Village ? p.Village : "",
         landmark: p.LandMark ? p.LandMark : "",
         address: p.Address ? p.Address : "",
@@ -232,6 +239,7 @@ export default class PatientService {
       },
       nextOfKins: [],
     };
+
     return payload;
   }
 
@@ -244,7 +252,10 @@ export default class PatientService {
     return result;
   }
 
-  private async extractAllowedIdentifiers(identifiers: any) {
+  private async extractAllowedIdentifiers(
+    identifiers: any,
+    countryCode: String
+  ) {
     const allowedIdentifiers = [
       "58a47054-1359-11df-a1f1-0026b9348838",
       "ced014a1-068a-4a13-b6b3-17412f754af2",
@@ -256,10 +267,10 @@ export default class PatientService {
         payloadIdentifiers.push({
           IdentificationType: this.mapIDTypes(e.identifierType.uuid),
           IdentificationNumber: e.identifier,
+          countryCode: countryCode,
         });
       }
     });
-
     return payloadIdentifiers;
   }
 
@@ -347,8 +358,41 @@ export default class PatientService {
     return country[0].value;
   }
 
+  private mapSubCounty(a: string, b: string) {
+    console.log("djksbcD 1 ", a, b);
+    if (b == null || b.length == 0) {
+      return;
+    }
+    const country: any = Counties.filter((co) => {
+      return a == co.label.toLowerCase();
+    });
+    const subCounty: any = country[0].children.filter((co: any) => {
+      return b == co.label.toLowerCase();
+    });
+    return subCounty[0].value;
+  }
+
+  private mapWard(a: string, b: string, c: string) {
+    if (c == null || c.length == 0) {
+      return;
+    }
+    const country: any = Counties.filter((co) => a == co.label.toLowerCase());
+    console.log("country country country ", country[0].children[0]);
+
+    const subCounty: any = country[0].children.filter(
+      (co: any) => b == co.label.toLowerCase()
+    );
+    const ward: any = subCounty[0].children.filter(
+      (co: any) => c == co.label.toLowerCase()
+    );
+
+    return ward[0].value;
+  }
+
   private mapIDTypes(amrsId: string) {
-    const idType = IdentificationTypes.filter((i) => (i.amrs = amrsId));
+    const idType = IdentificationTypes.filter((i) => {
+      return i.amrs == amrsId;
+    });
     return idType[0].value;
   }
 
@@ -398,7 +442,7 @@ export default class PatientService {
       .setQueue("verb_queue");
     producer.produce(message, (err) => {
       if (err) console.log(err);
-      else {
+      else { 
         const msgId = message.getId();
         console.log("Successfully produced. Message ID is ", msgId);
       }

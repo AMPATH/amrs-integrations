@@ -22,7 +22,6 @@ export async function saveUpiIdentifier(
   patientUuid: string,
   locationUuid: string
 ) {
-  console.log("saving", patientUuid,locationUuid)
   const payload = {
     identifier: upi,
     identifierType: "cba702b9-4664-4b43-83f1-9ab473cbd64d",

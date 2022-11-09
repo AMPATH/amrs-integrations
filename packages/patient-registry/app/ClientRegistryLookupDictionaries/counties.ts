@@ -1,7800 +1,7824 @@
 const Counties = [
   {
-    value: "030",
-    label: "Baringo",
-    children: [
+    "value": "county-n-a",
+    "label": "County N/A",
+    "children": [
       {
-        value: "koibatek",
-        label: "Koibatek",
-        children: [
+        "value": "subcounty-n-a",
+        "label": "Subcounty N/A",
+        "children": [
           {
-            value: "koibatek",
-            label: "Koibatek",
-          },
-          {
-            value: "ravine",
-            label: "Ravine",
-          },
-          {
-            value: "lembus/perkerra",
-            label: "Lembus/Perkerra",
-          },
-          {
-            value: "mumberes/maji-mazuri",
-            label: "Mumberes/Maji mazuri",
-          },
-          {
-            value: "lembus-kwen",
-            label: "Lembus kwen",
-          },
-          {
-            value: "lembus",
-            label: "Lembus",
-          },
-        ],
-      },
-      {
-        value: "mogotio",
-        label: "Mogotio",
-        children: [
-          {
-            value: "kisanana",
-            label: "Kisanana",
-          },
-          {
-            value: "emining",
-            label: "Emining",
-          },
-          {
-            value: "mogotio",
-            label: "Mogotio",
-          },
-        ],
-      },
-      {
-        value: "marigat",
-        label: "Marigat",
-        children: [
-          {
-            value: "mukutani",
-            label: "Mukutani",
-          },
-          {
-            value: "mochongoi",
-            label: "Mochongoi",
-          },
-          {
-            value: "ilchamus",
-            label: "Ilchamus",
-          },
-          {
-            value: "marigat",
-            label: "Marigat",
-          },
-        ],
-      },
-      {
-        value: "baringo-central",
-        label: "Baringo central",
-        children: [
-          {
-            value: "kapropita",
-            label: "Kapropita",
-          },
-          {
-            value: "ewalel-chapchap",
-            label: "Ewalel chapchap",
-          },
-          {
-            value: "tenges",
-            label: "Tenges",
-          },
-          {
-            value: "sacho",
-            label: "Sacho",
-          },
-          {
-            value: "kabarnet",
-            label: "Kabarnet",
-          },
-        ],
-      },
-      {
-        value: "baringo-north",
-        label: "Baringo north",
-        children: [
-          {
-            value: "bartabwa",
-            label: "Bartabwa",
-          },
-          {
-            value: "saimo-soi",
-            label: "Saimo soi",
-          },
-          {
-            value: "kabartonjo",
-            label: "Kabartonjo",
-          },
-          {
-            value: "barwessa",
-            label: "Barwessa",
-          },
-        ],
-      },
-      {
-        value: "tiaty",
-        label: "Tiaty",
-        children: [
-          {
-            value: "churo/amaya",
-            label: "Churo/Amaya",
-          },
-          {
-            value: "tangulbei-korossi",
-            label: "Tangulbei Korossi",
-          },
-          {
-            value: "loiyamorock",
-            label: "Loiyamorock",
-          },
-          {
-            value: "silale",
-            label: "Silale",
-          },
-          {
-            value: "ribkwo",
-            label: "Ribkwo",
-          },
-          {
-            value: "kolowa",
-            label: "Kolowa",
-          },
-          {
-            value: "tirioko",
-            label: "Tirioko",
-          },
-        ],
-      },
-    ],
+            "value": "ward-n-a",
+            "label": "Ward N/A"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "036",
-    label: "Bomet",
-    children: [
+    "value": "030",
+    "label": "Baringo",
+    "children": [
       {
-        value: "konoin",
-        label: "Konoin",
-        children: [
+        "value": "koibatek",
+        "label": "Koibatek",
+        "children": [
           {
-            value: "embomos",
-            label: "Embomos",
+            "value": "koibatek",
+            "label": "Koibatek"
           },
           {
-            value: "boito",
-            label: "Boito",
+            "value": "ravine",
+            "label": "Ravine"
           },
           {
-            value: "mogogosiek",
-            label: "Mogogosiek",
+            "value": "lembus-perkerra",
+            "label": "Lembus/Perkerra"
           },
           {
-            value: "kimulot",
-            label: "Kimulot",
+            "value": "mumberes-maji-mazuri",
+            "label": "Mumberes/Maji mazuri"
           },
           {
-            value: "chepchabas",
-            label: "Chepchabas",
-          },
-        ],
-      },
-      {
-        value: "bomet-central",
-        label: "Bomet Central",
-        children: [
-          {
-            value: "mutarakwa",
-            label: "Mutarakwa",
+            "value": "lembus-kwen",
+            "label": "Lembus kwen"
           },
           {
-            value: "chesoen",
-            label: "Chesoen",
-          },
-          {
-            value: "singorwet",
-            label: "Singorwet",
-          },
-          {
-            value: "ndaraweta",
-            label: "Ndaraweta",
-          },
-          {
-            value: "silibwet-township",
-            label: "Silibwet Township",
-          },
-        ],
-      },
-      {
-        value: "bomet-east",
-        label: "Bomet East",
-        children: [
-          {
-            value: "chemaner",
-            label: "Chemaner",
-          },
-          {
-            value: "kipreres",
-            label: "Kipreres",
-          },
-          {
-            value: "longisa",
-            label: "Longisa",
-          },
-          {
-            value: "kembu",
-            label: "Kembu",
-          },
-          {
-            value: "merigi",
-            label: "Merigi",
-          },
-          {
-            value: "",
-            label: "",
-          },
-        ],
-      },
-      {
-        value: "chepalungu",
-        label: "Chepalungu",
-        children: [
-          {
-            value: "siongiroi",
-            label: "Siongiroi",
-          },
-          {
-            value: "chebunyo",
-            label: "Chebunyo",
-          },
-          {
-            value: "sigor",
-            label: "Sigor",
-          },
-          {
-            value: "nyangores",
-            label: "Nyangores",
-          },
-          {
-            value: "kongasis",
-            label: "Kongasis",
-          },
-        ],
-      },
-      {
-        value: "sotik",
-        label: "Sotik",
-        children: [
-          {
-            value: "rongena/manaret",
-            label: "Rongena/Manaret",
-          },
-          {
-            value: "kapletundo",
-            label: "Kapletundo",
-          },
-          {
-            value: "kipsonoi",
-            label: "Kipsonoi",
-          },
-          {
-            value: "chemagel",
-            label: "Chemagel",
-          },
-          {
-            value: "ndanai/abosi",
-            label: "Ndanai/Abosi",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    value: "039",
-    label: "Bungoma",
-    children: [
-      {
-        value: "tongaren",
-        label: "Tongaren",
-        children: [
-          {
-            value: "soysambu/-mitua",
-            label: "Soysambu/ Mitua",
-          },
-          {
-            value: "tongaren",
-            label: "Tongaren",
-          },
-          {
-            value: "ndalu/-tabani",
-            label: "Ndalu/ Tabani",
-          },
-          {
-            value: "milima",
-            label: "Milima",
-          },
-          {
-            value: "naitiri/kabuyefwe",
-            label: "Naitiri/Kabuyefwe",
-          },
-          {
-            value: "mbakalo",
-            label: "Mbakalo",
-          },
-        ],
-      },
-      {
-        value: "kimilili",
-        label: "Kimilili",
-        children: [
-          {
-            value: "kamukuywa",
-            label: "Kamukuywa",
-          },
-          {
-            value: "maeni",
-            label: "Maeni",
-          },
-          {
-            value: "kimilili",
-            label: "Kimilili",
-          },
-          {
-            value: "kibingei",
-            label: "Kibingei",
-          },
-        ],
-      },
-      {
-        value: 'webuye-east',
-        label: 'Webuye East',
-        children: [
-          {
-            value: 'mihuu',
-            label: 'Mihuu'
-          },
-          {
-            value: 'maraka',
-            label: 'Maraka'
-          },
-          {
-            value: 'ndivisi',
-            label: 'Ndivisi'
+            "value": "lembus",
+            "label": "Lembus"
           }
         ]
       },
       {
-        value: "webuye-west",
-        label: "Webuye West",
-        children: [
+        "value": "mogotio",
+        "label": "Mogotio",
+        "children": [
           {
-            value: "bokoli",
-            label: "Bokoli",
+            "value": "kisanana",
+            "label": "Kisanana"
           },
           {
-            value: "matulo",
-            label: "Matulo",
+            "value": "emining",
+            "label": "Emining"
           },
           {
-            value: "sitikho",
-            label: "Sitikho",
-          },
-          {
-            value: "misikhu",
-            label: "Misikhu",
-          },
-          {
-            value: "maraka",
-            label: "Maraka",
-          },
-          {
-            value: "ndivisi",
-            label: "Ndivisi",
-          },
-          {
-            value: "mihuu",
-            label: "Mihuu",
-          },
-        ],
+            "value": "mogotio",
+            "label": "Mogotio"
+          }
+        ]
       },
       {
-        value: "kanduyi",
-        label: "Kanduyi",
-        children: [
+        "value": "marigat",
+        "label": "Marigat",
+        "children": [
           {
-            value: "west-sangalo",
-            label: "West Sangalo",
+            "value": "mukutani",
+            "label": "Mukutani"
           },
           {
-            value: "marakaru/tuuti",
-            label: "Marakaru/Tuuti",
+            "value": "mochongoi",
+            "label": "Mochongoi"
           },
           {
-            value: "east-sangalo",
-            label: "East Sangalo",
+            "value": "ilchamus",
+            "label": "Ilchamus"
           },
           {
-            value: "musikoma",
-            label: "Musikoma",
-          },
-          {
-            value: "khalaba",
-            label: "Khalaba",
-          },
-          {
-            value: "township",
-            label: "Township",
-          },
-          {
-            value: "bukembe-east",
-            label: "Bukembe East",
-          },
-          {
-            value: "bukembe-west",
-            label: "Bukembe West",
-          },
-        ],
+            "value": "marigat",
+            "label": "Marigat"
+          }
+        ]
       },
       {
-        value: "bumula",
-        label: "Bumula",
-        children: [
+        "value": "baringo-central",
+        "label": "Baringo central",
+        "children": [
           {
-            value: "siboti",
-            label: "Siboti",
+            "value": "kapropita",
+            "label": "Kapropita"
           },
           {
-            value: "west-bukusu",
-            label: "West Bukusu",
+            "value": "ewalel-chapchap",
+            "label": "Ewalel chapchap"
           },
           {
-            value: "kimaeti",
-            label: "Kimaeti",
+            "value": "tenges",
+            "label": "Tenges"
           },
           {
-            value: "kabula",
-            label: "Kabula",
+            "value": "sacho",
+            "label": "Sacho"
           },
           {
-            value: "khasoko",
-            label: "Khasoko",
-          },
-          {
-            value: "bumula",
-            label: "Bumula",
-          },
-          {
-            value: "south-bukusu",
-            label: "South Bukusu",
-          },
-        ],
+            "value": "kabarnet",
+            "label": "Kabarnet"
+          }
+        ]
       },
       {
-        value: "kabuchai",
-        label: "Kabuchai",
-        children: [
+        "value": "baringo-north",
+        "label": "Baringo north",
+        "children": [
           {
-            value: "mukuyuni",
-            label: "Mukuyuni",
+            "value": "bartabwa",
+            "label": "Bartabwa"
           },
           {
-            value: "bwake/luuya",
-            label: "Bwake/Luuya",
+            "value": "saimo-soi",
+            "label": "Saimo soi"
           },
           {
-            value: "west-nalondo",
-            label: "West Nalondo",
+            "value": "kabartonjo",
+            "label": "Kabartonjo"
           },
           {
-            value: "kabuchai/chwele",
-            label: "Kabuchai/Chwele",
-          },
-        ],
+            "value": "barwessa",
+            "label": "Barwessa"
+          }
+        ]
       },
       {
-        value: "sirisia",
-        label: "Sirisia",
-        children: [
+        "value": "tiaty",
+        "label": "Tiaty",
+        "children": [
           {
-            value: "lwandanyi",
-            label: "Lwandanyi",
+            "value": "churo-amaya",
+            "label": "Churo/Amaya"
           },
           {
-            value: "malakisi/south-kulisiru",
-            label: "Malakisi/South Kulisiru",
+            "value": "tangulbei-korossi",
+            "label": "Tangulbei Korossi"
           },
           {
-            value: "namwela",
-            label: "Namwela",
-          },
-        ],
-      },
-      {
-        value: "mt.-elgon",
-        label: "Mt. Elgon",
-        children: [
-          {
-            value: "elgon",
-            label: "Elgon",
+            "value": "loiyamorock",
+            "label": "Loiyamorock"
           },
           {
-            value: "kaptama",
-            label: "Kaptama",
+            "value": "silale",
+            "label": "Silale"
           },
           {
-            value: "kapkateny",
-            label: "Kapkateny",
+            "value": "ribkwo",
+            "label": "Ribkwo"
           },
           {
-            value: "chepyuk",
-            label: "Chepyuk",
+            "value": "kolowa",
+            "label": "Kolowa"
           },
           {
-            value: "chesikaki",
-            label: "Chesikaki",
-          },
-          {
-            value: "cheptais",
-            label: "Cheptais",
-          },
-        ],
-      },
-    ],
+            "value": "tirioko",
+            "label": "Tirioko"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "040",
-    label: "Busia",
-    children: [
+    "value": "036",
+    "label": "Bomet",
+    "children": [
       {
-        value: "bunyala",
-        label: "Bunyala",
-        children: [
+        "value": "konoin",
+        "label": "Konoin",
+        "children": [
           {
-            value: "bunyala-south",
-            label: "Bunyala South",
+            "value": "embomos",
+            "label": "Embomos"
           },
           {
-            value: "bunyala-west",
-            label: "Bunyala West",
+            "value": "boito",
+            "label": "Boito"
           },
           {
-            value: "bunyala-north",
-            label: "Bunyala North",
+            "value": "mogogosiek",
+            "label": "Mogogosiek"
           },
           {
-            value: "bunyala-central",
-            label: "Bunyala Central",
+            "value": "kimulot",
+            "label": "Kimulot"
           },
-        ],
+          {
+            "value": "chepchabas",
+            "label": "Chepchabas"
+          }
+        ]
       },
       {
-        value: "samia",
-        label: "Samia",
-        children: [
+        "value": "bomet-central",
+        "label": "Bomet Central",
+        "children": [
           {
-            value: "bwiri",
-            label: "Bwiri",
+            "value": "mutarakwa",
+            "label": "Mutarakwa"
           },
           {
-            value: "agenga-nanguba",
-            label: "Agenga Nanguba",
+            "value": "chesoen",
+            "label": "Chesoen"
           },
           {
-            value: "nangina",
-            label: "Nangina",
+            "value": "singorwet",
+            "label": "Singorwet"
           },
           {
-            value: "namboboto-nambuku",
-            label: "Namboboto Nambuku",
+            "value": "ndaraweta",
+            "label": "Ndaraweta"
           },
-        ],
+          {
+            "value": "silibwet-township",
+            "label": "Silibwet Township"
+          }
+        ]
       },
       {
-        value: "butula",
-        label: "Butula",
-        children: [
+        "value": "bomet-east",
+        "label": "Bomet East",
+        "children": [
           {
-            value: "elugulu",
-            label: "Elugulu",
+            "value": "chemaner",
+            "label": "Chemaner"
           },
           {
-            value: "marachi-north",
-            label: "Marachi North",
+            "value": "kipreres",
+            "label": "Kipreres"
           },
           {
-            value: "marachi-east",
-            label: "Marachi East",
+            "value": "longisa",
+            "label": "Longisa"
           },
           {
-            value: "marachi-central",
-            label: "Marachi Central",
+            "value": "kembu",
+            "label": "Kembu"
           },
           {
-            value: "kingandole",
-            label: "Kingandole",
+            "value": "merigi",
+            "label": "Merigi"
           },
           {
-            value: "marachi-west",
-            label: "Marachi West",
-          },
-        ],
+            "value": "",
+            "label": ""
+          }
+        ]
       },
       {
-        value: "matayos",
-        label: "Matayos",
-        children: [
+        "value": "chepalungu",
+        "label": "Chepalungu",
+        "children": [
           {
-            value: "burumba",
-            label: "Burumba",
+            "value": "siongiroi",
+            "label": "Siongiroi"
           },
           {
-            value: "busibwabo",
-            label: "Busibwabo",
+            "value": "chebunyo",
+            "label": "Chebunyo"
           },
           {
-            value: "matayos-south",
-            label: "Matayos South",
+            "value": "sigor",
+            "label": "Sigor"
           },
           {
-            value: "mayenje",
-            label: "Mayenje",
+            "value": "nyangores",
+            "label": "Nyangores"
           },
           {
-            value: "bukhayo-west",
-            label: "Bukhayo West",
-          },
-        ],
+            "value": "kongasis",
+            "label": "Kongasis"
+          }
+        ]
       },
       {
-        value: "nambale",
-        label: "Nambale",
-        children: [
+        "value": "sotik",
+        "label": "Sotik",
+        "children": [
           {
-            value: "bukhayo-central",
-            label: "Bukhayo Central",
+            "value": "rongena-manaret",
+            "label": "Rongena/Manaret"
           },
           {
-            value: "bukhayo-east",
-            label: "Bukhayo East",
+            "value": "kapletundo",
+            "label": "Kapletundo"
           },
           {
-            value: "bukhayo-north/walatsi",
-            label: "Bukhayo North/Walatsi",
+            "value": "kipsonoi",
+            "label": "Kipsonoi"
           },
           {
-            value: "nambale-township",
-            label: "Nambale Township",
-          },
-        ],
-      },
-      {
-        value: "teso-south",
-        label: "Teso South",
-        children: [
-          {
-            value: "amukura-central",
-            label: "Amukura Central",
+            "value": "chemagel",
+            "label": "Chemagel"
           },
           {
-            value: "amukura-east",
-            label: "Amukura East",
-          },
-          {
-            value: "amukura-west",
-            label: "Amukura West",
-          },
-          {
-            value: "chakol-north",
-            label: "Chakol North",
-          },
-          {
-            value: "chakol-south",
-            label: "Chakol South",
-          },
-          {
-            value: "angorom",
-            label: "Angorom",
-          },
-        ],
-      },
-      {
-        value: "teso-north",
-        label: "Teso North",
-        children: [
-          {
-            value: "malaba-south",
-            label: "Malaba South",
-          },
-          {
-            value: "angurai-east",
-            label: "Angurai East",
-          },
-          {
-            value: "angurai-north",
-            label: "Angurai North",
-          },
-          {
-            value: "angurai-south",
-            label: "Angurai South",
-          },
-          {
-            value: "malaba-north",
-            label: "Malaba North",
-          },
-          {
-            value: "malaba-central",
-            label: "Malaba Central",
-          },
-        ],
-      },
-    ],
+            "value": "ndanai-abosi",
+            "label": "Ndanai/Abosi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "028",
-    label: "Elgeyo Marakwet",
-    children: [
+    "value": "039",
+    "label": "Bungoma",
+    "children": [
       {
-        value: "keiyo-south",
-        label: "Keiyo South",
-        children: [
+        "value": "tongaren",
+        "label": "Tongaren",
+        "children": [
           {
-            value: "metkei",
-            label: "Metkei",
+            "value": "soysambu-mitua",
+            "label": "Soysambu/Mitua"
           },
           {
-            value: "kabiemit",
-            label: "Kabiemit",
+            "value": "tongaren",
+            "label": "Tongaren"
           },
           {
-            value: "soy-south",
-            label: "Soy South",
+            "value": "ndalu-tabani",
+            "label": "Ndalu/Tabani"
           },
           {
-            value: "soy-north",
-            label: "Soy North",
+            "value": "milima",
+            "label": "Milima"
           },
           {
-            value: "chepkorio",
-            label: "Chepkorio",
+            "value": "naitiri-kabuyefwe",
+            "label": "Naitiri/Kabuyefwe"
           },
           {
-            value: "kaptarakwa",
-            label: "Kaptarakwa",
-          },
-        ],
+            "value": "mbakalo",
+            "label": "Mbakalo"
+          }
+        ]
       },
       {
-        value: "keiyo-north",
-        label: "Keiyo North",
-        children: [
+        "value": "kimilili",
+        "label": "Kimilili",
+        "children": [
           {
-            value: "tambach",
-            label: "Tambach",
+            "value": "kamukuywa",
+            "label": "Kamukuywa"
           },
           {
-            value: "kapchemutwa",
-            label: "Kapchemutwa",
+            "value": "maeni",
+            "label": "Maeni"
           },
           {
-            value: "kamariny",
-            label: "Kamariny",
+            "value": "kimilili",
+            "label": "Kimilili"
           },
           {
-            value: "emsoo",
-            label: "Emsoo",
-          },
-        ],
+            "value": "kibingei",
+            "label": "Kibingei"
+          }
+        ]
       },
       {
-        value: "marakwet-east",
-        label: "Marakwet East",
-        children: [
+        "value": "webuye-west",
+        "label": "Webuye West",
+        "children": [
           {
-            value: "embobut-/-embulot",
-            label: "Embobut / Embulot",
+            "value": "bokoli",
+            "label": "Bokoli"
           },
           {
-            value: "endo",
-            label: "Endo",
+            "value": "matulo",
+            "label": "Matulo"
           },
           {
-            value: "sambirir",
-            label: "Sambirir",
+            "value": "sitikho",
+            "label": "Sitikho"
           },
           {
-            value: "kapyego",
-            label: "Kapyego",
+            "value": "misikhu",
+            "label": "Misikhu"
           },
-        ],
+          {
+            "value": "maraka",
+            "label": "Maraka"
+          },
+          {
+            "value": "ndivisi",
+            "label": "Ndivisi"
+          },
+          {
+            "value": "mihuu",
+            "label": "Mihuu"
+          }
+        ]
       },
       {
-        value: "marakwet-west",
-        label: "Marakwet West",
-        children: [
+        "value": "webuye-east",
+        "label": "Webuye East",
+        "children": [
           {
-            value: "sengwer-kamoi",
-            label: "Sengwer Kamoi",
+            "value": "mihuu",
+            "label": "Mihuu"
           },
           {
-            value: "lelan",
-            label: "Lelan",
+            "value": "maraka",
+            "label": "Maraka"
           },
           {
-            value: "arror",
-            label: "Arror",
-          },
-          {
-            value: "kapsowar",
-            label: "Kapsowar",
-          },
-          {
-            value: "moiben-kuserwo",
-            label: "Moiben Kuserwo",
-          },
-        ],
+            "value": "ndivisi",
+            "label": "Ndivisi"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kanduyi",
+        "label": "Kanduyi",
+        "children": [
+          {
+            "value": "west-sangalo",
+            "label": "West Sangalo"
+          },
+          {
+            "value": "marakaru-tuuti",
+            "label": "Marakaru/Tuuti"
+          },
+          {
+            "value": "east-sangalo",
+            "label": "East Sangalo"
+          },
+          {
+            "value": "musikoma",
+            "label": "Musikoma"
+          },
+          {
+            "value": "khalaba",
+            "label": "Khalaba"
+          },
+          {
+            "value": "township",
+            "label": "Township"
+          },
+          {
+            "value": "bukembe-east",
+            "label": "Bukembe East"
+          },
+          {
+            "value": "bukembe-west",
+            "label": "Bukembe West"
+          }
+        ]
+      },
+      {
+        "value": "bumula",
+        "label": "Bumula",
+        "children": [
+          {
+            "value": "siboti",
+            "label": "Siboti"
+          },
+          {
+            "value": "west-bukusu",
+            "label": "West Bukusu"
+          },
+          {
+            "value": "kimaeti",
+            "label": "Kimaeti"
+          },
+          {
+            "value": "kabula",
+            "label": "Kabula"
+          },
+          {
+            "value": "khasoko",
+            "label": "Khasoko"
+          },
+          {
+            "value": "bumula",
+            "label": "Bumula"
+          },
+          {
+            "value": "south-bukusu",
+            "label": "South Bukusu"
+          }
+        ]
+      },
+      {
+        "value": "kabuchai",
+        "label": "Kabuchai",
+        "children": [
+          {
+            "value": "mukuyuni",
+            "label": "Mukuyuni"
+          },
+          {
+            "value": "bwake-luuya",
+            "label": "Bwake/Luuya"
+          },
+          {
+            "value": "west-nalondo",
+            "label": "West Nalondo"
+          },
+          {
+            "value": "kabuchai-chwele",
+            "label": "Kabuchai/Chwele"
+          }
+        ]
+      },
+      {
+        "value": "sirisia",
+        "label": "Sirisia",
+        "children": [
+          {
+            "value": "lwandanyi",
+            "label": "Lwandanyi"
+          },
+          {
+            "value": "malakisi-south-kulisiru",
+            "label": "Malakisi/South Kulisiru"
+          },
+          {
+            "value": "namwela",
+            "label": "Namwela"
+          }
+        ]
+      },
+      {
+        "value": "mt.-elgon",
+        "label": "Mt. Elgon",
+        "children": [
+          {
+            "value": "elgon",
+            "label": "Elgon"
+          },
+          {
+            "value": "kaptama",
+            "label": "Kaptama"
+          },
+          {
+            "value": "kapkateny",
+            "label": "Kapkateny"
+          },
+          {
+            "value": "chepyuk",
+            "label": "Chepyuk"
+          },
+          {
+            "value": "chesikaki",
+            "label": "Chesikaki"
+          },
+          {
+            "value": "cheptais",
+            "label": "Cheptais"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "014",
-    label: "Embu",
-    children: [
+    "value": "040",
+    "label": "Busia",
+    "children": [
       {
-        value: "mbeere-north",
-        label: "Mbeere North",
-        children: [
+        "value": "bunyala",
+        "label": "Bunyala",
+        "children": [
           {
-            value: "evurore",
-            label: "Evurore",
+            "value": "bunyala-south",
+            "label": "Bunyala South"
           },
           {
-            value: "muminji",
-            label: "Muminji",
+            "value": "bunyala-west",
+            "label": "Bunyala West"
           },
           {
-            value: "nthawa",
-            label: "Nthawa",
+            "value": "bunyala-north",
+            "label": "Bunyala North"
           },
-        ],
+          {
+            "value": "bunyala-central",
+            "label": "Bunyala Central"
+          }
+        ]
       },
       {
-        value: "mbeere-south",
-        label: "Mbeere South",
-        children: [
+        "value": "samia",
+        "label": "Samia",
+        "children": [
           {
-            value: "kiambere",
-            label: "Kiambere",
+            "value": "bwiri",
+            "label": "Bwiri"
           },
           {
-            value: "mavuria",
-            label: "Mavuria",
+            "value": "agenga-nanguba",
+            "label": "Agenga Nanguba"
           },
           {
-            value: "mbeti-south",
-            label: "Mbeti South",
+            "value": "nangina",
+            "label": "Nangina"
           },
           {
-            value: "makima",
-            label: "Makima",
-          },
-          {
-            value: "mwea",
-            label: "Mwea",
-          },
-        ],
+            "value": "namboboto-nambuku",
+            "label": "Namboboto Nambuku"
+          }
+        ]
       },
       {
-        value: "runyenjes",
-        label: "Runyenjes",
-        children: [
+        "value": "butula",
+        "label": "Butula",
+        "children": [
           {
-            value: "kyeni-south",
-            label: "Kyeni South",
+            "value": "elugulu",
+            "label": "Elugulu"
           },
           {
-            value: "kyeni-north",
-            label: "Kyeni North",
+            "value": "marachi-north",
+            "label": "Marachi North"
           },
           {
-            value: "kagaari-north",
-            label: "Kagaari North",
+            "value": "marachi-east",
+            "label": "Marachi East"
           },
           {
-            value: "central-ward",
-            label: "Central Ward",
+            "value": "marachi-central",
+            "label": "Marachi Central"
           },
           {
-            value: "kagaari-south",
-            label: "Kagaari South",
+            "value": "kingandole",
+            "label": "Kingandole"
           },
-        ],
+          {
+            "value": "marachi-west",
+            "label": "Marachi West"
+          }
+        ]
       },
       {
-        value: "manyatta",
-        label: "Manyatta",
-        children: [
+        "value": "matayos",
+        "label": "Matayos",
+        "children": [
           {
-            value: "",
-            label: "",
+            "value": "burumba",
+            "label": "Burumba"
           },
           {
-            value: "gaturi-north",
-            label: "Gaturi North",
+            "value": "busibwabo",
+            "label": "Busibwabo"
           },
           {
-            value: "gaturi-south",
-            label: "Gaturi South",
+            "value": "matayos-south",
+            "label": "Matayos South"
           },
           {
-            value: "kirimari",
-            label: "Kirimari",
+            "value": "mayenje",
+            "label": "Mayenje"
           },
           {
-            value: "mbeti-north",
-            label: "Mbeti North",
-          },
-          {
-            value: "nginda",
-            label: "Nginda",
-          },
-          {
-            value: "kithimu",
-            label: "Kithimu",
-          },
-          {
-            value: "ruguru/ngandori",
-            label: "Ruguru/Ngandori",
-          },
-        ],
+            "value": "bukhayo-west",
+            "label": "Bukhayo West"
+          }
+        ]
       },
-    ],
+      {
+        "value": "nambale",
+        "label": "Nambale",
+        "children": [
+          {
+            "value": "bukhayo-central",
+            "label": "Bukhayo Central"
+          },
+          {
+            "value": "bukhayo-east",
+            "label": "Bukhayo East"
+          },
+          {
+            "value": "bukhayo-north-walatsi",
+            "label": "Bukhayo North/Walatsi"
+          },
+          {
+            "value": "nambale-township",
+            "label": "Nambale Township"
+          }
+        ]
+      },
+      {
+        "value": "teso-south",
+        "label": "Teso South",
+        "children": [
+          {
+            "value": "amukura-central",
+            "label": "Amukura Central"
+          },
+          {
+            "value": "amukura-east",
+            "label": "Amukura East"
+          },
+          {
+            "value": "amukura-west",
+            "label": "Amukura West"
+          },
+          {
+            "value": "chakol-north",
+            "label": "Chakol North"
+          },
+          {
+            "value": "chakol-south",
+            "label": "Chakol South"
+          },
+          {
+            "value": "angorom",
+            "label": "Angorom"
+          }
+        ]
+      },
+      {
+        "value": "teso-north",
+        "label": "Teso North",
+        "children": [
+          {
+            "value": "malaba-south",
+            "label": "Malaba South"
+          },
+          {
+            "value": "angurai-east",
+            "label": "Angurai East"
+          },
+          {
+            "value": "angurai-north",
+            "label": "Angurai North"
+          },
+          {
+            "value": "angurai-south",
+            "label": "Angurai South"
+          },
+          {
+            "value": "malaba-north",
+            "label": "Malaba North"
+          },
+          {
+            "value": "malaba-central",
+            "label": "Malaba Central"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "007",
-    label: "Garissa",
-    children: [
+    "value": "028",
+    "label": "Elgeyo Marakwet",
+    "children": [
       {
-        value: "ijara",
-        label: "Ijara",
-        children: [
+        "value": "keiyo-south",
+        "label": "Keiyo South",
+        "children": [
           {
-            value: "masalani",
-            label: "Masalani",
+            "value": "metkei",
+            "label": "Metkei"
           },
           {
-            value: "ijara",
-            label: "Ijara",
+            "value": "kabiemit",
+            "label": "Kabiemit"
           },
-        ],
+          {
+            "value": "soy-south",
+            "label": "Soy South"
+          },
+          {
+            "value": "soy-north",
+            "label": "Soy North"
+          },
+          {
+            "value": "chepkorio",
+            "label": "Chepkorio"
+          },
+          {
+            "value": "kaptarakwa",
+            "label": "Kaptarakwa"
+          }
+        ]
       },
       {
-        value: "hulugho",
-        label: "Hulugho",
-        children: [
+        "value": "keiyo-north",
+        "label": "Keiyo North",
+        "children": [
           {
-            value: "sangailu",
-            label: "Sangailu",
+            "value": "tambach",
+            "label": "Tambach"
           },
           {
-            value: "hulugho",
-            label: "Hulugho",
+            "value": "kapchemutwa",
+            "label": "Kapchemutwa"
           },
-        ],
+          {
+            "value": "kamariny",
+            "label": "Kamariny"
+          },
+          {
+            "value": "emsoo",
+            "label": "Emsoo"
+          }
+        ]
       },
       {
-        value: "fafi",
-        label: "Fafi",
-        children: [
+        "value": "marakwet-east",
+        "label": "Marakwet East",
+        "children": [
           {
-            value: "nanighi",
-            label: "Nanighi",
+            "value": "embobut-embulot",
+            "label": "Embobut/Embulot"
           },
           {
-            value: "fafi",
-            label: "Fafi",
+            "value": "endo",
+            "label": "Endo"
           },
           {
-            value: "jarajila",
-            label: "Jarajila",
+            "value": "sambirir",
+            "label": "Sambirir"
           },
           {
-            value: "dekaharia",
-            label: "Dekaharia",
-          },
-          {
-            value: "bura",
-            label: "Bura",
-          },
-        ],
+            "value": "kapyego",
+            "label": "Kapyego"
+          }
+        ]
       },
       {
-        value: "daadab",
-        label: "Daadab",
-        children: [
+        "value": "marakwet-west",
+        "label": "Marakwet West",
+        "children": [
           {
-            value: "abakaile",
-            label: "Abakaile",
+            "value": "sengwer-kamoi",
+            "label": "Sengwer Kamoi"
           },
           {
-            value: "liboi",
-            label: "Liboi",
+            "value": "lelan",
+            "label": "Lelan"
           },
           {
-            value: "damajale",
-            label: "Damajale",
+            "value": "arror",
+            "label": "Arror"
           },
           {
-            value: "labasigale",
-            label: "Labasigale",
+            "value": "kapsowar",
+            "label": "Kapsowar"
           },
           {
-            value: "dadaab",
-            label: "Dadaab",
-          },
-          {
-            value: "dertu",
-            label: "Dertu",
-          },
-        ],
-      },
-      {
-        value: "lagdera",
-        label: "Lagdera",
-        children: [
-          {
-            value: "baraki",
-            label: "Baraki",
-          },
-          {
-            value: "sabena",
-            label: "Sabena",
-          },
-          {
-            value: "maalimin",
-            label: "Maalimin",
-          },
-          {
-            value: "goreale",
-            label: "Goreale",
-          },
-          {
-            value: "benane",
-            label: "Benane",
-          },
-          {
-            value: "modogashe",
-            label: "Modogashe",
-          },
-        ],
-      },
-      {
-        value: "balambala",
-        label: "Balambala",
-        children: [
-          {
-            value: "sankuri",
-            label: "Sankuri",
-          },
-          {
-            value: "saka",
-            label: "Saka",
-          },
-          {
-            value: "jara-jara",
-            label: "Jara Jara",
-          },
-          {
-            value: "danyere",
-            label: "Danyere",
-          },
-          {
-            value: "balambala",
-            label: "Balambala",
-          },
-        ],
-      },
-      {
-        value: "garissa",
-        label: "Garissa",
-        children: [
-          {
-            value: "iftin",
-            label: "Iftin",
-          },
-          {
-            value: "township",
-            label: "Township",
-          },
-          {
-            value: "galbet",
-            label: "Galbet",
-          },
-          {
-            value: "waberi",
-            label: "Waberi",
-          },
-        ],
-      },
-    ],
+            "value": "moiben-kuserwo",
+            "label": "Moiben Kuserwo"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "043",
-    label: "Homa Bay",
-    children: [
+    "value": "014",
+    "label": "Embu",
+    "children": [
       {
-        value: "suba",
-        label: "Suba",
-        children: [
+        "value": "mbeere-north",
+        "label": "Mbeere North",
+        "children": [
           {
-            value: "ruma-kaksingiri-east",
-            label: "Ruma-Kaksingiri East",
+            "value": "evurore",
+            "label": "Evurore"
           },
           {
-            value: "kaksingri-west",
-            label: "Kaksingri West",
+            "value": "muminji",
+            "label": "Muminji"
           },
           {
-            value: "gwassi-north",
-            label: "Gwassi North",
-          },
-          {
-            value: "gwassi-south",
-            label: "Gwassi South",
-          },
-        ],
+            "value": "nthawa",
+            "label": "Nthawa"
+          }
+        ]
       },
       {
-        value: "mbita",
-        label: "Mbita",
-        children: [
+        "value": "mbeere-south",
+        "label": "Mbeere South",
+        "children": [
           {
-            value: "lambwe",
-            label: "Lambwe",
+            "value": "kiambere",
+            "label": "Kiambere"
           },
           {
-            value: "gembe",
-            label: "Gembe",
+            "value": "mavuria",
+            "label": "Mavuria"
           },
           {
-            value: "kasgunga",
-            label: "Kasgunga",
+            "value": "mbeti-south",
+            "label": "Mbeti South"
           },
           {
-            value: "rusinga-island",
-            label: "Rusinga Island",
+            "value": "makima",
+            "label": "Makima"
           },
           {
-            value: "mfangano-island",
-            label: "Mfangano Island",
-          },
-        ],
+            "value": "mwea",
+            "label": "Mwea"
+          }
+        ]
       },
       {
-        value: "ndhiwa",
-        label: "Ndhiwa",
-        children: [
+        "value": "runyenjes",
+        "label": "Runyenjes",
+        "children": [
           {
-            value: "kanyamwa-kosewe",
-            label: "Kanyamwa Kosewe",
+            "value": "kyeni-south",
+            "label": "Kyeni South"
           },
           {
-            value: "kanyamwa-kologi",
-            label: "Kanyamwa Kologi",
+            "value": "kyeni-north",
+            "label": "Kyeni North"
           },
           {
-            value: "kabuoch-south/pala",
-            label: "Kabuoch South/Pala",
+            "value": "kagaari-north",
+            "label": "Kagaari North"
           },
           {
-            value: "kabuoch-north",
-            label: "Kabuoch North",
+            "value": "central-ward",
+            "label": "Central Ward"
           },
           {
-            value: "kanyikela",
-            label: "Kanyikela",
-          },
-          {
-            value: "kwabwai",
-            label: "Kwabwai",
-          },
-        ],
+            "value": "kagaari-south",
+            "label": "Kagaari South"
+          }
+        ]
       },
       {
-        value: "homa-bay-town",
-        label: "Homa Bay Town",
-        children: [
+        "value": "manyatta",
+        "label": "Manyatta",
+        "children": [
           {
-            value: "homa-bay-east",
-            label: "Homa Bay East",
+            "value": "",
+            "label": ""
           },
           {
-            value: "homa-bay-west",
-            label: "Homa Bay West",
+            "value": "gaturi-north",
+            "label": "Gaturi North"
           },
           {
-            value: "homa-bay-arujo",
-            label: "Homa Bay Arujo",
+            "value": "gaturi-south",
+            "label": "Gaturi South"
           },
           {
-            value: "homa-bay-central",
-            label: "Homa Bay Central",
-          },
-        ],
-      },
-      {
-        value: "rangwe",
-        label: "Rangwe",
-        children: [
-          {
-            value: "kochia",
-            label: "Kochia",
+            "value": "kirimari",
+            "label": "Kirimari"
           },
           {
-            value: "kagan",
-            label: "Kagan",
+            "value": "mbeti-north",
+            "label": "Mbeti North"
           },
           {
-            value: "east-gem",
-            label: "East Gem",
+            "value": "nginda",
+            "label": "Nginda"
           },
           {
-            value: "west-gem",
-            label: "West Gem",
-          },
-        ],
-      },
-      {
-        value: "karachuonyo",
-        label: "Karachuonyo",
-        children: [
-          {
-            value: "kendu-bay-town",
-            label: "Kendu Bay Town",
+            "value": "kithimu",
+            "label": "Kithimu"
           },
           {
-            value: "wangchieng",
-            label: "Wangchieng",
-          },
-          {
-            value: "kibiri",
-            label: "Kibiri",
-          },
-          {
-            value: "kanyaluo",
-            label: "Kanyaluo",
-          },
-          {
-            value: "central",
-            label: "Central",
-          },
-          {
-            value: "north-karachuonyo",
-            label: "North Karachuonyo",
-          },
-          {
-            value: "west-karachuonyo",
-            label: "West Karachuonyo",
-          },
-        ],
-      },
-      {
-        value: "kabondo-kasipul",
-        label: "Kabondo Kasipul",
-        children: [
-          {
-            value: "kojwach",
-            label: "Kojwach",
-          },
-          {
-            value: "kokwanyo/kakelo",
-            label: "Kokwanyo/Kakelo",
-          },
-          {
-            value: "kabondo-west",
-            label: "Kabondo West",
-          },
-          {
-            value: "kabondo-east",
-            label: "Kabondo East",
-          },
-        ],
-      },
-      {
-        value: "kasipul",
-        label: "Kasipul",
-        children: [
-          {
-            value: "west-kamagak",
-            label: "West Kamagak",
-          },
-          {
-            value: "east-kamagak",
-            label: "East Kamagak",
-          },
-          {
-            value: "central-kasipul",
-            label: "Central Kasipul",
-          },
-          {
-            value: "south-kasipul",
-            label: "South Kasipul",
-          },
-          {
-            value: "west-kasipul",
-            label: "West Kasipul",
-          },
-        ],
-      },
-    ],
+            "value": "ruguru-ngandori",
+            "label": "Ruguru/Ngandori"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "011",
-    label: "Isiolo",
-    children: [
+    "value": "007",
+    "label": "Garissa",
+    "children": [
       {
-        value: "garbatulla",
-        label: "Garbatulla",
-        children: [
+        "value": "ijara",
+        "label": "Ijara",
+        "children": [
           {
-            value: "sericho",
-            label: "Sericho",
+            "value": "masalani",
+            "label": "Masalani"
           },
           {
-            value: "kinna",
-            label: "Kinna",
-          },
-          {
-            value: "garba-tulla",
-            label: "Garba Tulla",
-          },
-        ],
+            "value": "ijara",
+            "label": "Ijara"
+          }
+        ]
       },
       {
-        value: "isiolo",
-        label: "Isiolo",
-        children: [
+        "value": "hulugho",
+        "label": "Hulugho",
+        "children": [
           {
-            value: "oldonyiro",
-            label: "Oldonyiro",
+            "value": "sangailu",
+            "label": "Sangailu"
           },
           {
-            value: "burat",
-            label: "Burat",
-          },
-          {
-            value: "ngare-mara",
-            label: "Ngare Mara",
-          },
-          {
-            value: "bulla-pesa",
-            label: "Bulla Pesa",
-          },
-          {
-            value: "wabera",
-            label: "Wabera",
-          },
-        ],
+            "value": "hulugho",
+            "label": "Hulugho"
+          }
+        ]
       },
       {
-        value: "merti",
-        label: "Merti",
-        children: [
+        "value": "fafi",
+        "label": "Fafi",
+        "children": [
           {
-            value: "cherab",
-            label: "Cherab",
+            "value": "nanighi",
+            "label": "Nanighi"
           },
           {
-            value: "chari",
-            label: "Chari",
+            "value": "fafi",
+            "label": "Fafi"
           },
-        ],
+          {
+            "value": "jarajila",
+            "label": "Jarajila"
+          },
+          {
+            "value": "dekaharia",
+            "label": "Dekaharia"
+          },
+          {
+            "value": "bura",
+            "label": "Bura"
+          }
+        ]
       },
-    ],
+      {
+        "value": "daadab",
+        "label": "Daadab",
+        "children": [
+          {
+            "value": "abakaile",
+            "label": "Abakaile"
+          },
+          {
+            "value": "liboi",
+            "label": "Liboi"
+          },
+          {
+            "value": "damajale",
+            "label": "Damajale"
+          },
+          {
+            "value": "labasigale",
+            "label": "Labasigale"
+          },
+          {
+            "value": "dadaab",
+            "label": "Dadaab"
+          },
+          {
+            "value": "dertu",
+            "label": "Dertu"
+          }
+        ]
+      },
+      {
+        "value": "lagdera",
+        "label": "Lagdera",
+        "children": [
+          {
+            "value": "baraki",
+            "label": "Baraki"
+          },
+          {
+            "value": "sabena",
+            "label": "Sabena"
+          },
+          {
+            "value": "maalimin",
+            "label": "Maalimin"
+          },
+          {
+            "value": "goreale",
+            "label": "Goreale"
+          },
+          {
+            "value": "benane",
+            "label": "Benane"
+          },
+          {
+            "value": "modogashe",
+            "label": "Modogashe"
+          }
+        ]
+      },
+      {
+        "value": "balambala",
+        "label": "Balambala",
+        "children": [
+          {
+            "value": "sankuri",
+            "label": "Sankuri"
+          },
+          {
+            "value": "saka",
+            "label": "Saka"
+          },
+          {
+            "value": "jara-jara",
+            "label": "Jara Jara"
+          },
+          {
+            "value": "danyere",
+            "label": "Danyere"
+          },
+          {
+            "value": "balambala",
+            "label": "Balambala"
+          }
+        ]
+      },
+      {
+        "value": "garissa",
+        "label": "Garissa",
+        "children": [
+          {
+            "value": "iftin",
+            "label": "Iftin"
+          },
+          {
+            "value": "township",
+            "label": "Township"
+          },
+          {
+            "value": "galbet",
+            "label": "Galbet"
+          },
+          {
+            "value": "waberi",
+            "label": "Waberi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "034",
-    label: "Kajiado",
-    children: [
+    "value": "043",
+    "label": "Homa Bay",
+    "children": [
       {
-        value: "loitoktok",
-        label: "Loitoktok",
-        children: [
+        "value": "suba",
+        "label": "Suba",
+        "children": [
           {
-            value: "kimana",
-            label: "Kimana",
+            "value": "ruma-kaksingiri-east",
+            "label": "Ruma-Kaksingiri East"
           },
           {
-            value: "rombo",
-            label: "Rombo",
+            "value": "kaksingri-west",
+            "label": "Kaksingri West"
           },
           {
-            value: "kuku",
-            label: "Kuku",
+            "value": "gwassi-north",
+            "label": "Gwassi North"
           },
           {
-            value: "mbirikani/eselenkei",
-            label: "Mbirikani/Eselenkei",
-          },
-          {
-            value: "entonet/lenkisim",
-            label: "Entonet/Lenkisim",
-          },
-        ],
+            "value": "gwassi-south",
+            "label": "Gwassi South"
+          }
+        ]
       },
       {
-        value: "kajiado-west",
-        label: "Kajiado West",
-        children: [
+        "value": "mbita",
+        "label": "Mbita",
+        "children": [
           {
-            value: "mosiro",
-            label: "Mosiro",
+            "value": "lambwe",
+            "label": "Lambwe"
           },
           {
-            value: "ewuaso-oonkidongi",
-            label: "Ewuaso Oonkidongi",
+            "value": "gembe",
+            "label": "Gembe"
           },
           {
-            value: "magadi",
-            label: "Magadi",
+            "value": "kasgunga",
+            "label": "Kasgunga"
           },
           {
-            value: "iloodokilani",
-            label: "Iloodokilani",
+            "value": "rusinga-island",
+            "label": "Rusinga Island"
           },
           {
-            value: "keekonyokie",
-            label: "Keekonyokie",
-          },
-        ],
+            "value": "mfangano-island",
+            "label": "Mfangano Island"
+          }
+        ]
       },
       {
-        value: "kajiado-east",
-        label: "Kajiado East",
-        children: [
+        "value": "ndhiwa",
+        "label": "Ndhiwa",
+        "children": [
           {
-            value: "imaroro",
-            label: "Imaroro",
+            "value": "kanyamwa-kosewe",
+            "label": "Kanyamwa Kosewe"
           },
           {
-            value: "kenyawa-poka",
-            label: "Kenyawa-Poka",
+            "value": "kanyamwa-kologi",
+            "label": "Kanyamwa Kologi"
           },
           {
-            value: "oloosirkon/sholinke",
-            label: "Oloosirkon/Sholinke",
+            "value": "kabuoch-south-pala",
+            "label": "Kabuoch South/Pala"
           },
           {
-            value: "kitengela",
-            label: "Kitengela",
+            "value": "kabuoch-north",
+            "label": "Kabuoch North"
           },
           {
-            value: "kaputiei-north",
-            label: "Kaputiei North",
+            "value": "kanyikela",
+            "label": "Kanyikela"
           },
-        ],
+          {
+            "value": "kwabwai",
+            "label": "Kwabwai"
+          }
+        ]
       },
       {
-        value: "kajiado-central",
-        label: "Kajiado Central",
-        children: [
+        "value": "homa-bay-town",
+        "label": "Homa Bay Town",
+        "children": [
           {
-            value: "matapato-south",
-            label: "Matapato South",
+            "value": "homa-bay-east",
+            "label": "Homa Bay East"
           },
           {
-            value: "matapato-north",
-            label: "Matapato North",
+            "value": "homa-bay-west",
+            "label": "Homa Bay West"
           },
           {
-            value: "dalalekutuk",
-            label: "Dalalekutuk",
+            "value": "homa-bay-arujo",
+            "label": "Homa Bay Arujo"
           },
           {
-            value: "ildamat",
-            label: "Ildamat",
-          },
-          {
-            value: "purko",
-            label: "Purko",
-          },
-        ],
+            "value": "homa-bay-central",
+            "label": "Homa Bay Central"
+          }
+        ]
       },
       {
-        value: "kajiado-north",
-        label: "Kajiado North",
-        children: [
+        "value": "rangwe",
+        "label": "Rangwe",
+        "children": [
           {
-            value: "ngong",
-            label: "Ngong",
+            "value": "kochia",
+            "label": "Kochia"
           },
           {
-            value: "oloolua",
-            label: "Oloolua",
+            "value": "kagan",
+            "label": "Kagan"
           },
           {
-            value: "nkaimurunya",
-            label: "Nkaimurunya",
+            "value": "east-gem",
+            "label": "East Gem"
           },
           {
-            value: "ongata-rongai",
-            label: "Ongata Rongai",
-          },
-          {
-            value: "olkeri",
-            label: "Olkeri",
-          },
-        ],
+            "value": "west-gem",
+            "label": "West Gem"
+          }
+        ]
       },
-    ],
+      {
+        "value": "karachuonyo",
+        "label": "Karachuonyo",
+        "children": [
+          {
+            "value": "kendu-bay-town",
+            "label": "Kendu Bay Town"
+          },
+          {
+            "value": "wangchieng",
+            "label": "Wangchieng"
+          },
+          {
+            "value": "kibiri",
+            "label": "Kibiri"
+          },
+          {
+            "value": "kanyaluo",
+            "label": "Kanyaluo"
+          },
+          {
+            "value": "central",
+            "label": "Central"
+          },
+          {
+            "value": "north-karachuonyo",
+            "label": "North Karachuonyo"
+          },
+          {
+            "value": "west-karachuonyo",
+            "label": "West Karachuonyo"
+          }
+        ]
+      },
+      {
+        "value": "kabondo-kasipul",
+        "label": "Kabondo Kasipul",
+        "children": [
+          {
+            "value": "kojwach",
+            "label": "Kojwach"
+          },
+          {
+            "value": "kokwanyo-kakelo",
+            "label": "Kokwanyo/Kakelo"
+          },
+          {
+            "value": "kabondo-west",
+            "label": "Kabondo West"
+          },
+          {
+            "value": "kabondo-east",
+            "label": "Kabondo East"
+          }
+        ]
+      },
+      {
+        "value": "kasipul",
+        "label": "Kasipul",
+        "children": [
+          {
+            "value": "west-kamagak",
+            "label": "West Kamagak"
+          },
+          {
+            "value": "east-kamagak",
+            "label": "East Kamagak"
+          },
+          {
+            "value": "central-kasipul",
+            "label": "Central Kasipul"
+          },
+          {
+            "value": "south-kasipul",
+            "label": "South Kasipul"
+          },
+          {
+            "value": "west-kasipul",
+            "label": "West Kasipul"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "037",
-    label: "Kakamega",
-    children: [
+    "value": "011",
+    "label": "Isiolo",
+    "children": [
       {
-        value: "ikolomani",
-        label: "Ikolomani",
-        children: [
+        "value": "garbatulla",
+        "label": "Garbatulla",
+        "children": [
           {
-            value: "idakho-central",
-            label: "Idakho Central",
+            "value": "sericho",
+            "label": "Sericho"
           },
           {
-            value: "idakho-north",
-            label: "Idakho North",
+            "value": "kinna",
+            "label": "Kinna"
           },
           {
-            value: "idakho-east",
-            label: "Idakho East",
-          },
-          {
-            value: "idakho-south",
-            label: "Idakho South",
-          },
-        ],
+            "value": "garba-tulla",
+            "label": "Garba Tulla"
+          }
+        ]
       },
       {
-        value: "shinyalu",
-        label: "Shinyalu",
-        children: [
+        "value": "isiolo",
+        "label": "Isiolo",
+        "children": [
           {
-            value: "isukha-west",
-            label: "Isukha West",
+            "value": "oldonyiro",
+            "label": "Oldonyiro"
           },
           {
-            value: "isukha-east",
-            label: "Isukha East",
+            "value": "burat",
+            "label": "Burat"
           },
           {
-            value: "isukha-south",
-            label: "Isukha South",
+            "value": "ngare-mara",
+            "label": "Ngare Mara"
           },
           {
-            value: "isukha-central",
-            label: "Isukha Central",
+            "value": "bulla-pesa",
+            "label": "Bulla Pesa"
           },
           {
-            value: "murhanda",
-            label: "Murhanda",
-          },
-          {
-            value: "isukha-north",
-            label: "Isukha North",
-          },
-        ],
+            "value": "wabera",
+            "label": "Wabera"
+          }
+        ]
       },
       {
-        value: "khwisero",
-        label: "Khwisero",
-        children: [
+        "value": "merti",
+        "label": "Merti",
+        "children": [
           {
-            value: "kisa-west",
-            label: "Kisa West",
+            "value": "cherab",
+            "label": "Cherab"
           },
           {
-            value: "kisa-east",
-            label: "Kisa East",
-          },
-          {
-            value: "kisa-central",
-            label: "Kisa Central",
-          },
-          {
-            value: "kisa-north",
-            label: "Kisa North",
-          },
-        ],
-      },
-      {
-        value: "butere",
-        label: "Butere",
-        children: [
-          {
-            value: "marama-west",
-            label: "Marama West",
-          },
-          {
-            value: "marama-south",
-            label: "Marama South",
-          },
-          {
-            value: "marama-central",
-            label: "Marama Central",
-          },
-          {
-            value: "marenyo-shianda",
-            label: "Marenyo Shianda",
-          },
-          {
-            value: "marama-north",
-            label: "Marama North",
-          },
-        ],
-      },
-      {
-        value: "matungu",
-        label: "Matungu",
-        children: [
-          {
-            value: "koyonzo",
-            label: "Koyonzo",
-          },
-          {
-            value: "kholera",
-            label: "Kholera",
-          },
-          {
-            value: "khalaba",
-            label: "Khalaba",
-          },
-          {
-            value: "mayoni",
-            label: "Mayoni",
-          },
-          {
-            value: "namamali",
-            label: "Namamali",
-          },
-        ],
-      },
-      {
-        value: "mumias-east",
-        label: "Mumias East",
-        children: [
-          {
-            value: "east-wanga",
-            label: "East Wanga",
-          },
-          {
-            value: "malaha/isongo/makunga",
-            label: "Malaha/Isongo/Makunga",
-          },
-          {
-            value: "lusheya/lubinu",
-            label: "Lusheya/Lubinu",
-          },
-        ],
-      },
-      {
-        value: "mumias-west",
-        label: "Mumias West",
-        children: [
-          {
-            value: "musanda",
-            label: "Musanda",
-          },
-          {
-            value: "mumias-central",
-            label: "Mumias Central",
-          },
-          {
-            value: "enteje",
-            label: "Entenje",
-          },
-          {
-            value: "mumias-north",
-            label: "Mumias North",
-          },
-        ],
-      },
-      {
-        value: "navakholo",
-        label: "Navakholo",
-        children: [
-          {
-            value: "ingostse-mathia",
-            label: "Ingoste Mathia",
-          },
-          {
-            value: "shinoyi-shikomari",
-            label: "Shinoyi Shikomari",
-          },
-          {
-            value: "esumeyia",
-            label: "Esumeyia",
-          },
-          {
-            value: "bunyala-central",
-            label: "Bunyala Central",
-          },
-          {
-            value: "bunyala-east",
-            label: "Bunyala East",
-          },
-          {
-            value: "bunyala-west",
-            label: "Bunyala West",
-          },
-        ],
-      },
-      {
-        value: "lurambi",
-        label: "Lurambi",
-        children: [
-          {
-            value: "sheywe",
-            label: "Sheywe",
-          },
-          {
-            value: "butsotso-east",
-            label: "Butsotso East",
-          },
-          {
-            value: "butsotso-south",
-            label: "Butsotso South",
-          },
-          {
-            value: "butsotso-central",
-            label: "Butsotso Central",
-          },
-          {
-            value: "mahiakalo",
-            label: "Mahiakalo",
-          },
-          {
-            value: "shirere",
-            label: "Shirere",
-          },
-        ],
-      },
-      {
-        value: "malava",
-        label: "Malava",
-        children: [
-          {
-            value: "west-kabras",
-            label: "West Kabras",
-          },
-          {
-            value: "chemuche-east",
-            label: "Chemuche East",
-          },
-          {
-            value: "kabras",
-            label: "Kabras",
-          },
-          {
-            value: "butali/chegulo",
-            label: "Butali/Chegulo",
-          },
-          {
-            value: "manda/shivanga",
-            label: "Manda/Shivanga",
-          },
-          {
-            value: "shirugu-mugai",
-            label: "Shirugu Mugai",
-          },
-          {
-            value: "south-kabras",
-            label: "South Kabras",
-          },
-        ],
-      },
-      {
-        value: "likuyani",
-        label: "Likuyani",
-        children: [
-          {
-            value: "likuyani",
-            label: "Likuyani",
-          },
-          {
-            value: "sango",
-            label: "Sango",
-          },
-          {
-            value: "kongoni",
-            label: "Kongoni",
-          },
-          {
-            value: "nzoia",
-            label: "Nzoia",
-          },
-          {
-            value: "sinoko",
-            label: "Sinoko",
-          },
-        ],
-      },
-      {
-        value: "lugari",
-        label: "Lugari",
-        children: [
-          {
-            value: "mautuma",
-            label: "Mautuma",
-          },
-          {
-            value: "lugari",
-            label: "Lugari",
-          },
-          {
-            value: "lumakanda",
-            label: "Lumakanda",
-          },
-          {
-            value: "chekalini",
-            label: "Chekalini",
-          },
-          {
-            value: "chevaywa",
-            label: "Chevaywa",
-          },
-          {
-            value: "lawandeti",
-            label: "Lawandeti",
-          },
-        ],
-      },
-    ],
+            "value": "chari",
+            "label": "Chari"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "035",
-    label: "Kericho",
-    children: [
+    "value": "034",
+    "label": "Kajiado",
+    "children": [
       {
-        value: "sigowet/soin",
-        label: "Sigowet/Soin",
-        children: [
+        "value": "loitoktok",
+        "label": "Loitoktok",
+        "children": [
           {
-            value: "soin",
-            label: "Soin",
+            "value": "kimana",
+            "label": "Kimana"
           },
           {
-            value: "soliat",
-            label: "Soliat",
+            "value": "rombo",
+            "label": "Rombo"
           },
           {
-            value: "kaplelartet",
-            label: "Kaplelartet",
+            "value": "kuku",
+            "label": "Kuku"
           },
           {
-            value: "sigowet",
-            label: "Sigowet",
+            "value": "mbirikani-eselenkei",
+            "label": "Mbirikani/Eselenkei"
           },
-        ],
+          {
+            "value": "entonet-lenkisim",
+            "label": "Entonet/Lenkisim"
+          }
+        ]
       },
       {
-        value: "belgut",
-        label: "Belgut",
-        children: [
+        "value": "kajiado-west",
+        "label": "Kajiado West",
+        "children": [
           {
-            value: "kapsuser",
-            label: "Kapsuser",
+            "value": "mosiro",
+            "label": "Mosiro"
           },
           {
-            value: "chaik",
-            label: "Chaik",
+            "value": "ewuaso-oonkidongi",
+            "label": "Ewuaso Oonkidongi"
           },
           {
-            value: "cheptororiet/seretut",
-            label: "Cheptororiet/Seretut",
+            "value": "magadi",
+            "label": "Magadi"
           },
           {
-            value: "kabianga",
-            label: "Kabianga",
+            "value": "iloodokilani",
+            "label": "Iloodokilani"
           },
           {
-            value: "waldai",
-            label: "Waldai",
-          },
-        ],
+            "value": "keekonyokie",
+            "label": "Keekonyokie"
+          }
+        ]
       },
       {
-        value: "bureti",
-        label: "Bureti",
-        children: [
+        "value": "kajiado-east",
+        "label": "Kajiado East",
+        "children": [
           {
-            value: "kapkatet",
-            label: "Kapkatet",
+            "value": "imaroro",
+            "label": "Imaroro"
           },
           {
-            value: "cheplanget",
-            label: "Cheplanget",
+            "value": "kenyawa-poka",
+            "label": "Kenyawa-Poka"
           },
           {
-            value: "litein",
-            label: "Litein",
+            "value": "oloosirkon-sholinke",
+            "label": "Oloosirkon/Sholinke"
           },
           {
-            value: "cheboin",
-            label: "Cheboin",
+            "value": "kitengela",
+            "label": "Kitengela"
           },
           {
-            value: "tebesonik",
-            label: "Tebesonik",
-          },
-          {
-            value: "kisiara",
-            label: "Kisiara",
-          },
-        ],
+            "value": "kaputiei-north",
+            "label": "Kaputiei North"
+          }
+        ]
       },
       {
-        value: "ainamoi",
-        label: "Ainamoi",
-        children: [
+        "value": "kajiado-central",
+        "label": "Kajiado Central",
+        "children": [
           {
-            value: "kapsaos",
-            label: "Kapsaos",
+            "value": "matapato-south",
+            "label": "Matapato South"
           },
           {
-            value: "kipchimchim",
-            label: "Kipchimchim",
+            "value": "matapato-north",
+            "label": "Matapato North"
           },
           {
-            value: "kipchebor",
-            label: "Kipchebor",
+            "value": "dalalekutuk",
+            "label": "Dalalekutuk"
           },
           {
-            value: "kapkugerwet",
-            label: "Kapkugerwet",
+            "value": "ildamat",
+            "label": "Ildamat"
           },
           {
-            value: "ainamoi",
-            label: "Ainamoi",
-          },
-          {
-            value: "kapsoit",
-            label: "Kapsoit",
-          },
-        ],
+            "value": "purko",
+            "label": "Purko"
+          }
+        ]
       },
       {
-        value: "kipkelion-west",
-        label: "Kipkelion West",
-        children: [
+        "value": "kajiado-north",
+        "label": "Kajiado North",
+        "children": [
           {
-            value: "chilchila",
-            label: "Chilchila",
+            "value": "ngong",
+            "label": "Ngong"
           },
           {
-            value: "kipkelion",
-            label: "Kipkelion",
+            "value": "oloolua",
+            "label": "Oloolua"
           },
           {
-            value: "kamasian",
-            label: "Kamasian",
+            "value": "nkaimurunya",
+            "label": "Nkaimurunya"
           },
           {
-            value: "kunyak",
-            label: "Kunyak",
-          },
-        ],
-      },
-      {
-        value: "kipkelion-east",
-        label: "Kipkelion East",
-        children: [
-          {
-            value: "tendeno/sorget",
-            label: "Tendeno/Sorget",
+            "value": "ongata-rongai",
+            "label": "Ongata Rongai"
           },
           {
-            value: "chepseon",
-            label: "Chepseon",
-          },
-          {
-            value: "kedowa/kimugul",
-            label: "Kedowa/Kimugul",
-          },
-          {
-            value: "londiani",
-            label: "Londiani",
-          },
-        ],
-      },
-    ],
+            "value": "olkeri",
+            "label": "Olkeri"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "022",
-    label: "Kiambu",
-    children: [
+    "value": "037",
+    "label": "Kakamega",
+    "children": [
       {
-        value: "lari",
-        label: "Lari",
-        children: [
+        "value": "ikolomani",
+        "label": "Ikolomani",
+        "children": [
           {
-            value: "lari/kirenga",
-            label: "Lari/Kirenga",
+            "value": "idakho-central",
+            "label": "Idakho Central"
           },
           {
-            value: "kamburu",
-            label: "Kamburu",
+            "value": "idakho-north",
+            "label": "Idakho North"
           },
           {
-            value: "nyanduma",
-            label: "Nyanduma",
+            "value": "idakho-east",
+            "label": "Idakho East"
           },
           {
-            value: "kijabe",
-            label: "Kijabe",
-          },
-          {
-            value: "kinale",
-            label: "Kinale",
-          },
-        ],
+            "value": "idakho-south",
+            "label": "Idakho South"
+          }
+        ]
       },
       {
-        value: "limuru",
-        label: "Limuru",
-        children: [
+        "value": "shinyalu",
+        "label": "Shinyalu",
+        "children": [
           {
-            value: "ngecha-tigoni",
-            label: "Ngecha Tigoni",
+            "value": "isukha-west",
+            "label": "Isukha West"
           },
           {
-            value: "limuru-east",
-            label: "Limuru East",
+            "value": "isukha-east",
+            "label": "Isukha East"
           },
           {
-            value: "ndeiya",
-            label: "Ndeiya",
+            "value": "isukha-south",
+            "label": "Isukha South"
           },
           {
-            value: "limuru-central",
-            label: "Limuru Central",
+            "value": "isukha-central",
+            "label": "Isukha Central"
           },
           {
-            value: "bibirioni",
-            label: "Bibirioni",
+            "value": "murhanda",
+            "label": "Murhanda"
           },
-        ],
+          {
+            "value": "isukha-north",
+            "label": "Isukha North"
+          }
+        ]
       },
       {
-        value: "kikuyu",
-        label: "Kikuyu",
-        children: [
+        "value": "khwisero",
+        "label": "Khwisero",
+        "children": [
           {
-            value: "kinoo",
-            label: "Kinoo",
+            "value": "kisa-west",
+            "label": "Kisa West"
           },
           {
-            value: "kikuyu",
-            label: "Kikuyu",
+            "value": "kisa-east",
+            "label": "Kisa East"
           },
           {
-            value: "sigona",
-            label: "Sigona",
+            "value": "kisa-central",
+            "label": "Kisa Central"
           },
           {
-            value: "nachu",
-            label: "Nachu",
-          },
-          {
-            value: "karai",
-            label: "Karai",
-          },
-        ],
+            "value": "kisa-north",
+            "label": "Kisa North"
+          }
+        ]
       },
       {
-        value: "kabete",
-        label: "Kabete",
-        children: [
+        "value": "butere",
+        "label": "Butere",
+        "children": [
           {
-            value: "uthiru",
-            label: "Uthiru",
+            "value": "marama-west",
+            "label": "Marama West"
           },
           {
-            value: "kabete",
-            label: "Kabete",
+            "value": "marama-south",
+            "label": "Marama South"
           },
           {
-            value: "nyadhuna",
-            label: "Nyadhuna",
+            "value": "marama-central",
+            "label": "Marama Central"
           },
           {
-            value: "muguga",
-            label: "Muguga",
+            "value": "marenyo-shianda",
+            "label": "Marenyo Shianda"
           },
           {
-            value: "gitaru",
-            label: "Gitaru",
-          },
-        ],
+            "value": "marama-north",
+            "label": "Marama North"
+          }
+        ]
       },
       {
-        value: "kiambaa",
-        label: "Kiambaa",
-        children: [
+        "value": "matungu",
+        "label": "Matungu",
+        "children": [
           {
-            value: "kihara",
-            label: "Kihara",
+            "value": "koyonzo",
+            "label": "Koyonzo"
           },
           {
-            value: "muchatha",
-            label: "Muchatha",
+            "value": "kholera",
+            "label": "Kholera"
           },
           {
-            value: "ndenderu",
-            label: "Ndenderu",
+            "value": "khalaba",
+            "label": "Khalaba"
           },
           {
-            value: "ndenderu",
-            label: "Ndenderu",
+            "value": "mayoni",
+            "label": "Mayoni"
           },
           {
-            value: "cianda",
-            label: "Cianda",
-          },
-        ],
+            "value": "namamali",
+            "label": "Namamali"
+          }
+        ]
       },
       {
-        value: "kiambu-town",
-        label: "Kiambu Town",
-        children: [
+        "value": "mumias-east",
+        "label": "Mumias East",
+        "children": [
           {
-            value: "township",
-            label: "Township",
+            "value": "east-wanga",
+            "label": "East Wanga"
           },
           {
-            value: "riabai",
-            label: "Riabai",
+            "value": "malaha-isongo-makunga",
+            "label": "Malaha/Isongo/Makunga"
           },
           {
-            value: "ndumberi",
-            label: "Ndumberi",
-          },
-          {
-            value: "tinganga",
-            label: "Tinganga",
-          },
-        ],
+            "value": "lusheya-lubinu",
+            "label": "Lusheya/Lubinu"
+          }
+        ]
       },
       {
-        value: "githunguri",
-        label: "Githunguri",
-        children: [
+        "value": "mumias-west",
+        "label": "Mumias West",
+        "children": [
           {
-            value: "komothai",
-            label: "Komothai",
+            "value": "musanda",
+            "label": "Musanda"
           },
           {
-            value: "ngewa",
-            label: "Ngewa",
+            "value": "mumias-central",
+            "label": "Mumias Central"
           },
           {
-            value: "ikinu",
-            label: "Ikinu",
+            "value": "enteje",
+            "label": "Entenje"
           },
           {
-            value: "githiga",
-            label: "Githiga",
-          },
-          {
-            value: "githunguri",
-            label: "Githunguri",
-          },
-        ],
+            "value": "mumias-north",
+            "label": "Mumias North"
+          }
+        ]
       },
       {
-        value: "ruiru",
-        label: "Ruiru",
-        children: [
+        "value": "navakholo",
+        "label": "Navakholo",
+        "children": [
           {
-            value: "mwihoko",
-            label: "Mwihoko",
+            "value": "ingostse-mathia",
+            "label": "Ingoste Mathia"
           },
           {
-            value: "mwiki",
-            label: "Mwiki",
+            "value": "shinoyi-shikomari",
+            "label": "Shinoyi Shikomari"
           },
           {
-            value: "kiuu",
-            label: "Kiuu",
+            "value": "esumeyia",
+            "label": "Esumeyia"
           },
           {
-            value: "kahawa-wendani",
-            label: "Kahawa Wendani",
+            "value": "bunyala-central",
+            "label": "Bunyala Central"
           },
           {
-            value: "kahawa/sukari",
-            label: "Kahawa/Sukari",
+            "value": "bunyala-east",
+            "label": "Bunyala East"
           },
           {
-            value: "gatongora",
-            label: "Gatongora",
-          },
-          {
-            value: "biashara",
-            label: "Biashara",
-          },
-          {
-            value: "gitothua",
-            label: "Gitothua",
-          },
-        ],
+            "value": "bunyala-west",
+            "label": "Bunyala West"
+          }
+        ]
       },
       {
-        value: "thika-town",
-        label: "Thika Town",
-        children: [
+        "value": "lurambi",
+        "label": "Lurambi",
+        "children": [
           {
-            value: "ngoliba",
-            label: "Ngoliba",
+            "value": "sheywe",
+            "label": "Sheywe"
           },
           {
-            value: "gatuanyaga",
-            label: "Gatuanyaga",
+            "value": "butsotso-east",
+            "label": "Butsotso East"
           },
           {
-            value: "hospital",
-            label: "Hospital",
+            "value": "butsotso-south",
+            "label": "Butsotso South"
           },
           {
-            value: "kamenu",
-            label: "Kamenu",
+            "value": "butsotso-central",
+            "label": "Butsotso Central"
           },
           {
-            value: "township",
-            label: "Township",
+            "value": "mahiakalo",
+            "label": "Mahiakalo"
           },
-        ],
+          {
+            "value": "shirere",
+            "label": "Shirere"
+          }
+        ]
       },
       {
-        value: "juja",
-        label: "Juja",
-        children: [
+        "value": "malava",
+        "label": "Malava",
+        "children": [
           {
-            value: "kalimoni",
-            label: "Kalimoni",
+            "value": "west-kabras",
+            "label": "West Kabras"
           },
           {
-            value: "witeithie",
-            label: "Witeithie",
+            "value": "chemuche-east",
+            "label": "Chemuche East"
           },
           {
-            value: "juja",
-            label: "Juja",
+            "value": "kabras",
+            "label": "Kabras"
           },
           {
-            value: "theta",
-            label: "Theta",
+            "value": "butali-chegulo",
+            "label": "Butali/Chegulo"
           },
           {
-            value: "murera",
-            label: "Murera",
+            "value": "manda-shivanga",
+            "label": "Manda/Shivanga"
           },
-        ],
+          {
+            "value": "shirugu-mugai",
+            "label": "Shirugu Mugai"
+          },
+          {
+            "value": "south-kabras",
+            "label": "South Kabras"
+          }
+        ]
       },
       {
-        value: "gatundu-north",
-        label: "Gatundu North",
-        children: [
+        "value": "likuyani",
+        "label": "Likuyani",
+        "children": [
           {
-            value: "mangu",
-            label: "Mangu",
+            "value": "likuyani",
+            "label": "Likuyani"
           },
           {
-            value: "chania",
-            label: "Chania",
+            "value": "sango",
+            "label": "Sango"
           },
           {
-            value: "githobokoni",
-            label: "Githobokoni",
+            "value": "kongoni",
+            "label": "Kongoni"
           },
           {
-            value: "gituamba",
-            label: "Gituamba",
+            "value": "nzoia",
+            "label": "Nzoia"
           },
-        ],
+          {
+            "value": "sinoko",
+            "label": "Sinoko"
+          }
+        ]
       },
       {
-        value: "gatundu-south",
-        label: "Gatundu South",
-        children: [
+        "value": "lugari",
+        "label": "Lugari",
+        "children": [
           {
-            value: "ngenda",
-            label: "Ngenda",
+            "value": "mautuma",
+            "label": "Mautuma"
           },
           {
-            value: "ndarugu",
-            label: "Ndarugu",
+            "value": "lugari",
+            "label": "Lugari"
           },
           {
-            value: "kiganjo",
-            label: "Kiganjo",
+            "value": "lumakanda",
+            "label": "Lumakanda"
           },
           {
-            value: "kiamwangi",
-            label: "Kiamwangi",
+            "value": "chekalini",
+            "label": "Chekalini"
           },
-        ],
-      },
-    ],
+          {
+            "value": "chevaywa",
+            "label": "Chevaywa"
+          },
+          {
+            "value": "lawandeti",
+            "label": "Lawandeti"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "003",
-    label: "Kilifi",
-    children: [
+    "value": "035",
+    "label": "Kericho",
+    "children": [
       {
-        value: "magarini",
-        label: "Magarini",
-        children: [
+        "value": "sigowet-soin",
+        "label": "Sigowet/Soin",
+        "children": [
           {
-            value: "sabaki",
-            label: "Sabaki",
+            "value": "soin",
+            "label": "Soin"
           },
           {
-            value: "garashi",
-            label: "Garashi",
+            "value": "soliat",
+            "label": "Soliat"
           },
           {
-            value: "adu",
-            label: "Adu",
+            "value": "kaplelartet",
+            "label": "Kaplelartet"
           },
           {
-            value: "gongoni",
-            label: "Gongoni",
-          },
-          {
-            value: "magarini",
-            label: "Magarini",
-          },
-          {
-            value: "marafa",
-            label: "Marafa",
-          },
-        ],
+            "value": "sigowet",
+            "label": "Sigowet"
+          }
+        ]
       },
       {
-        value: "malindi",
-        label: "Malindi",
-        children: [
+        "value": "belgut",
+        "label": "Belgut",
+        "children": [
           {
-            value: "shella",
-            label: "Shella",
+            "value": "kapsuser",
+            "label": "Kapsuser"
           },
           {
-            value: "malindi-town",
-            label: "Malindi Town",
+            "value": "chaik",
+            "label": "Chaik"
           },
           {
-            value: "ganda",
-            label: "Ganda",
+            "value": "cheptororiet-seretut",
+            "label": "Cheptororiet/Seretut"
           },
           {
-            value: "kakuyuni",
-            label: "Kakuyuni",
+            "value": "kabianga",
+            "label": "Kabianga"
           },
           {
-            value: "jilore",
-            label: "Jilore",
-          },
-        ],
+            "value": "waldai",
+            "label": "Waldai"
+          }
+        ]
       },
       {
-        value: "ganze",
-        label: "Ganze",
-        children: [
+        "value": "bureti",
+        "label": "Bureti",
+        "children": [
           {
-            value: "sokoke",
-            label: "Sokoke",
+            "value": "kapkatet",
+            "label": "Kapkatet"
           },
           {
-            value: "jaribuni",
-            label: "Jaribuni",
+            "value": "cheplanget",
+            "label": "Cheplanget"
           },
           {
-            value: "bambaganze",
-            label: "BambaGanze",
+            "value": "litein",
+            "label": "Litein"
           },
           {
-            value: "ganze",
-            label: "Ganze",
+            "value": "cheboin",
+            "label": "Cheboin"
           },
-        ],
+          {
+            "value": "tebesonik",
+            "label": "Tebesonik"
+          },
+          {
+            "value": "kisiara",
+            "label": "Kisiara"
+          }
+        ]
       },
       {
-        value: "riabai",
-        label: "Riabai",
-        children: [
+        "value": "ainamoi",
+        "label": "Ainamoi",
+        "children": [
           {
-            value: "rabai/kisurutini",
-            label: "Rabai/Kisurutini",
+            "value": "kapsaos",
+            "label": "Kapsaos"
           },
           {
-            value: "kambe/ribe",
-            label: "Kambe/Ribe",
+            "value": "kipchimchim",
+            "label": "Kipchimchim"
           },
           {
-            value: "ruruma",
-            label: "Ruruma",
+            "value": "kipchebor",
+            "label": "Kipchebor"
           },
           {
-            value: "mwawesa",
-            label: "Mwawesa",
+            "value": "kapkugerwet",
+            "label": "Kapkugerwet"
           },
-        ],
+          {
+            "value": "ainamoi",
+            "label": "Ainamoi"
+          },
+          {
+            "value": "kapsoit",
+            "label": "Kapsoit"
+          }
+        ]
       },
       {
-        value: "kaloleni",
-        label: "Kaloleni",
-        children: [
+        "value": "kipkelion-west",
+        "label": "Kipkelion West",
+        "children": [
           {
-            value: "mwanamwinga",
-            label: "Mwanamwinga",
+            "value": "chilchila",
+            "label": "Chilchila"
           },
           {
-            value: "kaloleni",
-            label: "Kaloleni",
+            "value": "kipkelion",
+            "label": "Kipkelion"
           },
           {
-            value: "kayafungo",
-            label: "Kayafungo",
+            "value": "kamasian",
+            "label": "Kamasian"
           },
           {
-            value: "mariakani",
-            label: "Mariakani",
-          },
-        ],
+            "value": "kunyak",
+            "label": "Kunyak"
+          }
+        ]
       },
       {
-        value: "kilifi-south",
-        label: "Kilifi South",
-        children: [
+        "value": "kipkelion-east",
+        "label": "Kipkelion East",
+        "children": [
           {
-            value: "mtepeni",
-            label: "Mtepeni",
+            "value": "tendeno-sorget",
+            "label": "Tendeno/Sorget"
           },
           {
-            value: "chasimba",
-            label: "Chasimba",
+            "value": "chepseon",
+            "label": "Chepseon"
           },
           {
-            value: "shimo-la-tewa",
-            label: "Shimo La Tewa",
+            "value": "kedowa-kimugul",
+            "label": "Kedowa/Kimugul"
           },
           {
-            value: "mwarakaya",
-            label: "Mwarakaya",
-          },
-          {
-            value: "junju",
-            label: "Junju",
-          },
-        ],
-      },
-      {
-        value: "kilifi-north",
-        label: "Kilifi North",
-        children: [
-          {
-            value: "mnarani",
-            label: "Mnarani",
-          },
-          {
-            value: "watamu",
-            label: "Watamu",
-          },
-          {
-            value: "matsangoni",
-            label: "Matsangoni",
-          },
-          {
-            value: "dabaso",
-            label: "Dabaso",
-          },
-          {
-            value: "kibarani",
-            label: "Kibarani",
-          },
-          {
-            value: "sokoni",
-            label: "Sokoni",
-          },
-          {
-            value: "tezo",
-            label: "Tezo",
-          },
-        ],
-      },
-    ],
+            "value": "londiani",
+            "label": "Londiani"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "020",
-    label: "Kirinyaga",
-    children: [
+    "value": "022",
+    "label": "Kiambu",
+    "children": [
       {
-        value: "kirinyaga-central",
-        label: "Kirinyaga Central",
-        children: [
+        "value": "lari",
+        "label": "Lari",
+        "children": [
           {
-            value: "inoi",
-            label: "Inoi",
+            "value": "lari-kirenga",
+            "label": "Lari/Kirenga"
           },
           {
-            value: "kerugoya",
-            label: "Kerugoya",
+            "value": "kamburu",
+            "label": "Kamburu"
           },
           {
-            value: "kanyekini",
-            label: "Kanyekini",
+            "value": "nyanduma",
+            "label": "Nyanduma"
           },
           {
-            value: "mutira",
-            label: "Mutira",
+            "value": "kijabe",
+            "label": "Kijabe"
           },
-        ],
+          {
+            "value": "kinale",
+            "label": "Kinale"
+          }
+        ]
       },
       {
-        value: "ndia",
-        label: "Ndia",
-        children: [
+        "value": "limuru",
+        "label": "Limuru",
+        "children": [
           {
-            value: "kariti",
-            label: "Kariti",
+            "value": "ngecha-tigoni",
+            "label": "Ngecha Tigoni"
           },
           {
-            value: "kiine",
-            label: "Kiine",
+            "value": "limuru-east",
+            "label": "Limuru East"
           },
           {
-            value: "mukure",
-            label: "Mukure",
+            "value": "ndeiya",
+            "label": "Ndeiya"
           },
-        ],
+          {
+            "value": "limuru-central",
+            "label": "Limuru Central"
+          },
+          {
+            "value": "bibirioni",
+            "label": "Bibirioni"
+          }
+        ]
       },
       {
-        value: "gichugu",
-        label: "Gichugu",
-        children: [
+        "value": "kikuyu",
+        "label": "Kikuyu",
+        "children": [
           {
-            value: "karumandi",
-            label: "Karumandi",
+            "value": "kinoo",
+            "label": "Kinoo"
           },
           {
-            value: "ngariama",
-            label: "Ngariama",
+            "value": "kikuyu",
+            "label": "Kikuyu"
           },
           {
-            value: "njukiini",
-            label: "Njukiini",
+            "value": "sigona",
+            "label": "Sigona"
           },
           {
-            value: "baragwi",
-            label: "Baragwi",
+            "value": "nachu",
+            "label": "Nachu"
           },
-        ],
+          {
+            "value": "karai",
+            "label": "Karai"
+          }
+        ]
       },
       {
-        value: "mwea",
-        label: "Mwea",
-        children: [
+        "value": "kabete",
+        "label": "Kabete",
+        "children": [
           {
-            value: "tebere",
-            label: "Tebere",
+            "value": "uthiru",
+            "label": "Uthiru"
           },
           {
-            value: "gathigiriri",
-            label: "Gathigiriri",
+            "value": "kabete",
+            "label": "Kabete"
           },
           {
-            value: "murinduko",
-            label: "Murinduko",
+            "value": "nyadhuna",
+            "label": "Nyadhuna"
           },
           {
-            value: "nyangati",
-            label: "Nyangati",
+            "value": "muguga",
+            "label": "Muguga"
           },
           {
-            value: "wamumu",
-            label: "Wamumu",
-          },
-          {
-            value: "thiba",
-            label: "Thiba",
-          },
-          {
-            value: "kangai",
-            label: "Kangai",
-          },
-          {
-            value: "mutithi",
-            label: "Mutithi",
-          },
-        ],
+            "value": "gitaru",
+            "label": "Gitaru"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kiambaa",
+        "label": "Kiambaa",
+        "children": [
+          {
+            "value": "kihara",
+            "label": "Kihara"
+          },
+          {
+            "value": "muchatha",
+            "label": "Muchatha"
+          },
+          {
+            "value": "ndenderu",
+            "label": "Ndenderu"
+          },
+          {
+            "value": "ndenderu",
+            "label": "Ndenderu"
+          },
+          {
+            "value": "cianda",
+            "label": "Cianda"
+          }
+        ]
+      },
+      {
+        "value": "kiambu-town",
+        "label": "Kiambu Town",
+        "children": [
+          {
+            "value": "township",
+            "label": "Township"
+          },
+          {
+            "value": "riabai",
+            "label": "Riabai"
+          },
+          {
+            "value": "ndumberi",
+            "label": "Ndumberi"
+          },
+          {
+            "value": "tinganga",
+            "label": "Tinganga"
+          }
+        ]
+      },
+      {
+        "value": "githunguri",
+        "label": "Githunguri",
+        "children": [
+          {
+            "value": "komothai",
+            "label": "Komothai"
+          },
+          {
+            "value": "ngewa",
+            "label": "Ngewa"
+          },
+          {
+            "value": "ikinu",
+            "label": "Ikinu"
+          },
+          {
+            "value": "githiga",
+            "label": "Githiga"
+          },
+          {
+            "value": "githunguri",
+            "label": "Githunguri"
+          }
+        ]
+      },
+      {
+        "value": "ruiru",
+        "label": "Ruiru",
+        "children": [
+          {
+            "value": "mwihoko",
+            "label": "Mwihoko"
+          },
+          {
+            "value": "mwiki",
+            "label": "Mwiki"
+          },
+          {
+            "value": "kiuu",
+            "label": "Kiuu"
+          },
+          {
+            "value": "kahawa-wendani",
+            "label": "Kahawa Wendani"
+          },
+          {
+            "value": "kahawa-sukari",
+            "label": "Kahawa/Sukari"
+          },
+          {
+            "value": "gatongora",
+            "label": "Gatongora"
+          },
+          {
+            "value": "biashara",
+            "label": "Biashara"
+          },
+          {
+            "value": "gitothua",
+            "label": "Gitothua"
+          }
+        ]
+      },
+      {
+        "value": "thika-town",
+        "label": "Thika Town",
+        "children": [
+          {
+            "value": "ngoliba",
+            "label": "Ngoliba"
+          },
+          {
+            "value": "gatuanyaga",
+            "label": "Gatuanyaga"
+          },
+          {
+            "value": "hospital",
+            "label": "Hospital"
+          },
+          {
+            "value": "kamenu",
+            "label": "Kamenu"
+          },
+          {
+            "value": "township",
+            "label": "Township"
+          }
+        ]
+      },
+      {
+        "value": "juja",
+        "label": "Juja",
+        "children": [
+          {
+            "value": "kalimoni",
+            "label": "Kalimoni"
+          },
+          {
+            "value": "witeithie",
+            "label": "Witeithie"
+          },
+          {
+            "value": "juja",
+            "label": "Juja"
+          },
+          {
+            "value": "theta",
+            "label": "Theta"
+          },
+          {
+            "value": "murera",
+            "label": "Murera"
+          }
+        ]
+      },
+      {
+        "value": "gatundu-north",
+        "label": "Gatundu North",
+        "children": [
+          {
+            "value": "mangu",
+            "label": "Mangu"
+          },
+          {
+            "value": "chania",
+            "label": "Chania"
+          },
+          {
+            "value": "githobokoni",
+            "label": "Githobokoni"
+          },
+          {
+            "value": "gituamba",
+            "label": "Gituamba"
+          }
+        ]
+      },
+      {
+        "value": "gatundu-south",
+        "label": "Gatundu South",
+        "children": [
+          {
+            "value": "ngenda",
+            "label": "Ngenda"
+          },
+          {
+            "value": "ndarugu",
+            "label": "Ndarugu"
+          },
+          {
+            "value": "kiganjo",
+            "label": "Kiganjo"
+          },
+          {
+            "value": "kiamwangi",
+            "label": "Kiamwangi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "045",
-    label: "Kisii",
-    children: [
+    "value": "003",
+    "label": "Kilifi",
+    "children": [
       {
-        value: "kitutu-chache-south",
-        label: "Kitutu Chache South",
-        children: [
+        "value": "magarini",
+        "label": "Magarini",
+        "children": [
           {
-            value: "nyatieko",
-            label: "Nyatieko",
+            "value": "sabaki",
+            "label": "Sabaki"
           },
           {
-            value: "kitutu-central",
-            label: "Kitutu Central",
+            "value": "garashi",
+            "label": "Garashi"
           },
           {
-            value: "nyakoe",
-            label: "Nyakoe",
+            "value": "adu",
+            "label": "Adu"
           },
           {
-            value: "bogeka",
-            label: "Bogeka",
+            "value": "gongoni",
+            "label": "Gongoni"
           },
           {
-            value: "bogusero",
-            label: "Bogusero",
+            "value": "magarini",
+            "label": "Magarini"
           },
-        ],
+          {
+            "value": "marafa",
+            "label": "Marafa"
+          }
+        ]
       },
       {
-        value: "kitutu-chache-north",
-        label: "Kitutu Chache North",
-        children: [
+        "value": "malindi",
+        "label": "Malindi",
+        "children": [
           {
-            value: "kegogi",
-            label: "Kegogi",
+            "value": "shella",
+            "label": "Shella"
           },
           {
-            value: "marani",
-            label: "Marani",
+            "value": "malindi-town",
+            "label": "Malindi Town"
           },
           {
-            value: "sensi",
-            label: "Sensi",
+            "value": "ganda",
+            "label": "Ganda"
           },
           {
-            value: "monyerero",
-            label: "Monyerero",
+            "value": "kakuyuni",
+            "label": "Kakuyuni"
           },
-        ],
+          {
+            "value": "jilore",
+            "label": "Jilore"
+          }
+        ]
       },
       {
-        value: "nyaribari-chache",
-        label: "Nyaribari Chache",
-        children: [
+        "value": "ganze",
+        "label": "Ganze",
+        "children": [
           {
-            value: "ibeno",
-            label: "Ibeno",
+            "value": "sokoke",
+            "label": "Sokoke"
           },
           {
-            value: "birongo",
-            label: "Birongo",
+            "value": "jaribuni",
+            "label": "Jaribuni"
           },
           {
-            value: "kiogoro",
-            label: "Kiogoro",
+            "value": "bambaganze",
+            "label": "BambaGanze"
           },
           {
-            value: "keumbu",
-            label: "Keumbu",
-          },
-          {
-            value: "kisii-central",
-            label: "Kisii Central",
-          },
-          {
-            value: "bobaracho",
-            label: "Bobaracho",
-          },
-        ],
+            "value": "ganze",
+            "label": "Ganze"
+          }
+        ]
       },
       {
-        value: "nyaribari-masaba",
-        label: "Nyaribari Masaba",
-        children: [
+        "value": "riabai",
+        "label": "Riabai",
+        "children": [
           {
-            value: "kiamokama",
-            label: "Kiamokama",
+            "value": "rabai-kisurutini",
+            "label": "Rabai/Kisurutini"
           },
           {
-            value: "gesusu",
-            label: "Gesusu",
+            "value": "kambe-ribe",
+            "label": "Kambe/Ribe"
           },
           {
-            value: "masimba",
-            label: "Masimba",
+            "value": "ruruma",
+            "label": "Ruruma"
           },
           {
-            value: "nyamasibi",
-            label: "Nyamasibi",
-          },
-          {
-            value: "ichuni",
-            label: "Ichuni",
-          },
-        ],
+            "value": "mwawesa",
+            "label": "Mwawesa"
+          }
+        ]
       },
       {
-        value: "bomachoge-chache",
-        label: "Bomachoge Chache",
-        children: [
+        "value": "kaloleni",
+        "label": "Kaloleni",
+        "children": [
           {
-            value: "bosoti/sengera",
-            label: "Bosoti/Sengera",
+            "value": "mwanamwinga",
+            "label": "Mwanamwinga"
           },
           {
-            value: "boochi/tendere",
-            label: "Boochi/Tendere",
+            "value": "kaloleni",
+            "label": "Kaloleni"
           },
           {
-            value: "majoge-basi",
-            label: "Majoge Basi",
+            "value": "kayafungo",
+            "label": "Kayafungo"
           },
-        ],
+          {
+            "value": "mariakani",
+            "label": "Mariakani"
+          }
+        ]
       },
       {
-        value: "bobasi",
-        label: "Bobasi",
-        children: [
+        "value": "kilifi-south",
+        "label": "Kilifi South",
+        "children": [
           {
-            value: "bobasi-boitangare",
-            label: "Bobasi Boitangare",
+            "value": "mtepeni",
+            "label": "Mtepeni"
           },
           {
-            value: "sameta/mokwerero",
-            label: "Sameta/Mokwerero",
+            "value": "chasimba",
+            "label": "Chasimba"
           },
           {
-            value: "bobasi-chache",
-            label: "Bobasi Chache",
+            "value": "shimo-la-tewa",
+            "label": "Shimo La Tewa"
           },
           {
-            value: "basi-bogetaorio",
-            label: "Basi Bogetaorio",
+            "value": "mwarakaya",
+            "label": "Mwarakaya"
           },
           {
-            value: "nyacheki",
-            label: "Nyacheki",
-          },
-          {
-            value: "basi-central",
-            label: "Basi Central",
-          },
-          {
-            value: "masige-east",
-            label: "Masige East",
-          },
-          {
-            value: "masige-west",
-            label: "Masige West",
-          },
-        ],
+            "value": "junju",
+            "label": "Junju"
+          }
+        ]
       },
       {
-        value: "bomachoge-borabu",
-        label: "Bomachoge Borabu",
-        children: [
+        "value": "kilifi-north",
+        "label": "Kilifi North",
+        "children": [
           {
-            value: "magenche",
-            label: "Magenche",
+            "value": "mnarani",
+            "label": "Mnarani"
           },
           {
-            value: "bokimonge",
-            label: "Bokimonge",
+            "value": "watamu",
+            "label": "Watamu"
           },
           {
-            value: "boochi-borabu",
-            label: "Boochi Borabu",
+            "value": "matsangoni",
+            "label": "Matsangoni"
           },
           {
-            value: "bombaba-borabu",
-            label: "Bombaba Borabu",
-          },
-        ],
-      },
-      {
-        value: "south-mugirango",
-        label: "South Mugirango",
-        children: [
-          {
-            value: "getenga",
-            label: "Getenga",
+            "value": "dabaso",
+            "label": "Dabaso"
           },
           {
-            value: "moticho",
-            label: "Moticho",
+            "value": "kibarani",
+            "label": "Kibarani"
           },
           {
-            value: "borabu-/-chitago",
-            label: "Borabu / Chitago",
+            "value": "sokoni",
+            "label": "Sokoni"
           },
           {
-            value: "bogetenga",
-            label: "Bogetenga",
-          },
-          {
-            value: "boikanga",
-            label: "Boikanga",
-          },
-        ],
-      },
-      {
-        value: "bonchari",
-        label: "Bonchari",
-        children: [
-          {
-            value: "tabaka",
-            label: "Tabaka",
-          },
-          {
-            value: "riana",
-            label: "Riana",
-          },
-          {
-            value: "bomorenda",
-            label: "Bomorenda",
-          },
-          {
-            value: "bogiakumu",
-            label: "Bogiakumu",
-          },
-          {
-            value: "bomariba",
-            label: "Bomariba",
-          },
-        ],
-      },
-    ],
+            "value": "tezo",
+            "label": "Tezo"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "042",
-    label: "Kisumu",
-    children: [
+    "value": "020",
+    "label": "Kirinyaga",
+    "children": [
       {
-        value: "nyakach",
-        label: "Nyakach",
-        children: [
+        "value": "kirinyaga-central",
+        "label": "Kirinyaga Central",
+        "children": [
           {
-            value: "south-east-nyakach",
-            label: "South East Nyakach",
+            "value": "inoi",
+            "label": "Inoi"
           },
           {
-            value: "west-nyakach",
-            label: "West Nyakach",
+            "value": "kerugoya",
+            "label": "Kerugoya"
           },
           {
-            value: "central-nyakach",
-            label: "Central Nyakach",
+            "value": "kanyekini",
+            "label": "Kanyekini"
           },
           {
-            value: "north-nyakach",
-            label: "North Nyakach",
-          },
-          {
-            value: "south-west-nyakach",
-            label: "South West Nyakach",
-          },
-        ],
+            "value": "mutira",
+            "label": "Mutira"
+          }
+        ]
       },
       {
-        value: "muhoroni",
-        label: "Muhoroni",
-        children: [
+        "value": "ndia",
+        "label": "Ndia",
+        "children": [
           {
-            value: "muhoroni/koru",
-            label: "Muhoroni/Koru",
+            "value": "kariti",
+            "label": "Kariti"
           },
           {
-            value: "chemelil",
-            label: "Chemelil",
+            "value": "kiine",
+            "label": "Kiine"
           },
           {
-            value: "masogo/nyangoma",
-            label: "Masogo/Nyangoma",
-          },
-          {
-            value: "ombeyi",
-            label: "Ombeyi",
-          },
-          {
-            value: "miwani",
-            label: "Miwani",
-          },
-        ],
+            "value": "mukure",
+            "label": "Mukure"
+          }
+        ]
       },
       {
-        value: "nyando",
-        label: "Nyando",
-        children: [
+        "value": "gichugu",
+        "label": "Gichugu",
+        "children": [
           {
-            value: "kobura",
-            label: "Kobura",
+            "value": "karumandi",
+            "label": "Karumandi"
           },
           {
-            value: "kabonyo/kanyagwal",
-            label: "Kabonyo/Kanyagwal",
+            "value": "ngariama",
+            "label": "Ngariama"
           },
           {
-            value: "ahero",
-            label: "Ahero",
+            "value": "njukiini",
+            "label": "Njukiini"
           },
           {
-            value: "awasi/onjiko",
-            label: "Awasi/Onjiko",
-          },
-          {
-            value: "east-kano/wawidhi",
-            label: "East Kano/Wawidhi",
-          },
-        ],
+            "value": "baragwi",
+            "label": "Baragwi"
+          }
+        ]
       },
       {
-        value: "seme",
-        label: "Seme",
-        children: [
+        "value": "mwea",
+        "label": "Mwea",
+        "children": [
           {
-            value: "north-seme",
-            label: "North Seme",
+            "value": "tebere",
+            "label": "Tebere"
           },
           {
-            value: "east-seme",
-            label: "East Seme",
+            "value": "gathigiriri",
+            "label": "Gathigiriri"
           },
           {
-            value: "central-seme",
-            label: "Central Seme",
+            "value": "murinduko",
+            "label": "Murinduko"
           },
           {
-            value: "west-seme",
-            label: "West Seme",
-          },
-        ],
-      },
-      {
-        value: "kisumu-central",
-        label: "Kisumu Central",
-        children: [
-          {
-            value: "nyalenda-b",
-            label: "Nyalenda B",
+            "value": "nyangati",
+            "label": "Nyangati"
           },
           {
-            value: "kondele",
-            label: "Kondele",
+            "value": "wamumu",
+            "label": "Wamumu"
           },
           {
-            value: "market-milimani",
-            label: "Market Milimani",
+            "value": "thiba",
+            "label": "Thiba"
           },
           {
-            value: "shaurimoyo-kaloleni",
-            label: "Shaurimoyo Kaloleni",
+            "value": "kangai",
+            "label": "Kangai"
           },
           {
-            value: "migosi",
-            label: "Migosi",
-          },
-          {
-            value: "railways",
-            label: "Railways",
-          },
-        ],
-      },
-      {
-        value: "kisumu-west",
-        label: "Kisumu West",
-        children: [
-          {
-            value: "north-west-kisumu",
-            label: "North West Kisumu",
-          },
-          {
-            value: "west-kisumu",
-            label: "West Kisumu",
-          },
-          {
-            value: "kisumu-north",
-            label: "Kisumu North",
-          },
-          {
-            value: "central-kisumu",
-            label: "Central Kisumu",
-          },
-          {
-            value: "south-west-kisumu",
-            label: "South West Kisumu",
-          },
-        ],
-      },
-      {
-        value: "kisumu-east",
-        label: "Kisumu East",
-        children: [
-          {
-            value: "kolwa-central",
-            label: "Kolwa Central",
-          },
-          {
-            value: "nyalenda-a",
-            label: "Nyalenda A",
-          },
-          {
-            value: "manyatta-b",
-            label: "Manyatta B",
-          },
-          {
-            value: "kolwa-east",
-            label: "Kolwa East",
-          },
-          {
-            value: "kajulu",
-            label: "Kajulu",
-          },
-        ],
-      },
-    ],
+            "value": "mutithi",
+            "label": "Mutithi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "015",
-    label: "Kitui",
-    children: [
+    "value": "045",
+    "label": "Kisii",
+    "children": [
       {
-        value: "kitui-south",
-        label: "Kitui South",
-        children: [
+        "value": "kitutu-chache-south",
+        "label": "Kitutu Chache South",
+        "children": [
           {
-            value: "athi",
-            label: "Athi",
+            "value": "nyatieko",
+            "label": "Nyatieko"
           },
           {
-            value: "kanziko",
-            label: "Kanziko",
+            "value": "kitutu-central",
+            "label": "Kitutu Central"
           },
           {
-            value: "ikutha",
-            label: "Ikutha",
+            "value": "nyakoe",
+            "label": "Nyakoe"
           },
           {
-            value: "mutha",
-            label: "Mutha",
+            "value": "bogeka",
+            "label": "Bogeka"
           },
           {
-            value: "mutomo",
-            label: "Mutomo",
-          },
-          {
-            value: "ikanga/kyatune",
-            label: "Ikanga/Kyatune",
-          },
-        ],
+            "value": "bogusero",
+            "label": "Bogusero"
+          }
+        ]
       },
       {
-        value: "kitui-east",
-        label: "Kitui East",
-        children: [
+        "value": "kitutu-chache-north",
+        "label": "Kitutu Chache North",
+        "children": [
           {
-            value: "mutito/kaliku",
-            label: "Mutito/Kaliku",
+            "value": "kegogi",
+            "label": "Kegogi"
           },
           {
-            value: "endau/malalani",
-            label: "Endau/Malalani",
+            "value": "marani",
+            "label": "Marani"
           },
           {
-            value: "voo/kyamatu",
-            label: "Voo/Kyamatu",
+            "value": "sensi",
+            "label": "Sensi"
           },
           {
-            value: "chuluni",
-            label: "Chuluni",
-          },
-          {
-            value: "nzambani",
-            label: "Nzambani",
-          },
-          {
-            value: "zombe/mwitika",
-            label: "Zombe/Mwitika",
-          },
-        ],
+            "value": "monyerero",
+            "label": "Monyerero"
+          }
+        ]
       },
       {
-        value: "kitui-central",
-        label: "Kitui Central",
-        children: [
+        "value": "nyaribari-chache",
+        "label": "Nyaribari Chache",
+        "children": [
           {
-            value: "kyangwithya-east",
-            label: "Kyangwithya East",
+            "value": "ibeno",
+            "label": "Ibeno"
           },
           {
-            value: "mulango",
-            label: "Mulango",
+            "value": "birongo",
+            "label": "Birongo"
           },
           {
-            value: "kyangwithya-west",
-            label: "Kyangwithya West",
+            "value": "kiogoro",
+            "label": "Kiogoro"
           },
           {
-            value: "township",
-            label: "Township",
+            "value": "keumbu",
+            "label": "Keumbu"
           },
           {
-            value: "miambani",
-            label: "Miambani",
+            "value": "kisii-central",
+            "label": "Kisii Central"
           },
-        ],
+          {
+            "value": "bobaracho",
+            "label": "Bobaracho"
+          }
+        ]
       },
       {
-        value: "kitui-rural",
-        label: "Kitui Rural",
-        children: [
+        "value": "nyaribari-masaba",
+        "label": "Nyaribari Masaba",
+        "children": [
           {
-            value: "kanyangi",
-            label: "Kanyangi",
+            "value": "kiamokama",
+            "label": "Kiamokama"
           },
           {
-            value: "kwavonza/yatta",
-            label: "Kwavonza/Yatta",
+            "value": "gesusu",
+            "label": "Gesusu"
           },
           {
-            value: "mbitini",
-            label: "Mbitini",
+            "value": "masimba",
+            "label": "Masimba"
           },
           {
-            value: "kisasi",
-            label: "Kisasi",
+            "value": "nyamasibi",
+            "label": "Nyamasibi"
           },
-        ],
+          {
+            "value": "ichuni",
+            "label": "Ichuni"
+          }
+        ]
       },
       {
-        value: "kitui-west",
-        label: "Kitui West",
-        children: [
+        "value": "bomachoge-chache",
+        "label": "Bomachoge Chache",
+        "children": [
           {
-            value: "kwa-mutonga/kithumula",
-            label: "Kwa Mutonga/Kithumula",
+            "value": "bosoti-sengera",
+            "label": "Bosoti/Sengera"
           },
           {
-            value: "matinyani",
-            label: "Matinyani",
+            "value": "boochi-tendere",
+            "label": "Boochi/Tendere"
           },
           {
-            value: "kauwi",
-            label: "Kauwi",
-          },
-          {
-            value: "mutonguni",
-            label: "Mutonguni",
-          },
-        ],
+            "value": "majoge-basi",
+            "label": "Majoge Basi"
+          }
+        ]
       },
       {
-        value: "mwingi-central",
-        label: "Mwingi Central",
-        children: [
+        "value": "bobasi",
+        "label": "Bobasi",
+        "children": [
           {
-            value: "waita",
-            label: "Waita",
+            "value": "bobasi-boitangare",
+            "label": "Bobasi Boitangare"
           },
           {
-            value: "mui",
-            label: "Mui",
+            "value": "sameta-mokwerero",
+            "label": "Sameta/Mokwerero"
           },
           {
-            value: "nuu",
-            label: "Nuu",
+            "value": "bobasi-chache",
+            "label": "Bobasi Chache"
           },
           {
-            value: "nguni",
-            label: "Nguni",
+            "value": "basi-bogetaorio",
+            "label": "Basi Bogetaorio"
           },
           {
-            value: "kivou",
-            label: "Kivou",
+            "value": "nyacheki",
+            "label": "Nyacheki"
           },
           {
-            value: "central",
-            label: "Central",
+            "value": "basi-central",
+            "label": "Basi Central"
           },
-        ],
+          {
+            "value": "masige-east",
+            "label": "Masige East"
+          },
+          {
+            "value": "masige-west",
+            "label": "Masige West"
+          }
+        ]
       },
       {
-        value: "mwingi-west",
-        label: "Mwingi West",
-        children: [
+        "value": "bomachoge-borabu",
+        "label": "Bomachoge Borabu",
+        "children": [
           {
-            value: "kiomo/kyethani",
-            label: "Kiomo/Kyethani",
+            "value": "magenche",
+            "label": "Magenche"
           },
           {
-            value: "migwani",
-            label: "Migwani",
+            "value": "bokimonge",
+            "label": "Bokimonge"
           },
           {
-            value: "nguutani",
-            label: "Nguutani",
+            "value": "boochi-borabu",
+            "label": "Boochi Borabu"
           },
           {
-            value: "kyome/thaana",
-            label: "Kyome/Thaana",
-          },
-        ],
+            "value": "bombaba-borabu",
+            "label": "Bombaba Borabu"
+          }
+        ]
       },
       {
-        value: "mwingi-north",
-        label: "Mwingi North",
-        children: [
+        "value": "south-mugirango",
+        "label": "South Mugirango",
+        "children": [
           {
-            value: "tharaka",
-            label: "Tharaka",
+            "value": "getenga",
+            "label": "Getenga"
           },
           {
-            value: "tseikuru",
-            label: "Tseikuru",
+            "value": "moticho",
+            "label": "Moticho"
           },
           {
-            value: "mumoni",
-            label: "Mumoni",
+            "value": "borabu-chitago",
+            "label": "Borabu/Chitago"
           },
           {
-            value: "kyuso",
-            label: "Kyuso",
+            "value": "bogetenga",
+            "label": "Bogetenga"
           },
           {
-            value: "ngomeni",
-            label: "Ngomeni",
-          },
-        ],
+            "value": "boikanga",
+            "label": "Boikanga"
+          }
+        ]
       },
-    ],
+      {
+        "value": "bonchari",
+        "label": "Bonchari",
+        "children": [
+          {
+            "value": "tabaka",
+            "label": "Tabaka"
+          },
+          {
+            "value": "riana",
+            "label": "Riana"
+          },
+          {
+            "value": "bomorenda",
+            "label": "Bomorenda"
+          },
+          {
+            "value": "bogiakumu",
+            "label": "Bogiakumu"
+          },
+          {
+            "value": "bomariba",
+            "label": "Bomariba"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "002",
-    label: "Kwale",
-    children: [
+    "value": "042",
+    "label": "Kisumu",
+    "children": [
       {
-        value: "kinango",
-        label: "Kinango",
-        children: [
+        "value": "nyakach",
+        "label": "Nyakach",
+        "children": [
           {
-            value: "kasemeni",
-            label: "Kasemeni",
+            "value": "south-east-nyakach",
+            "label": "South East Nyakach"
           },
           {
-            value: "mwavumbo",
-            label: "Mwavumbo",
+            "value": "west-nyakach",
+            "label": "West Nyakach"
           },
           {
-            value: "chengoni/samburu",
-            label: "Chengoni/Samburu",
+            "value": "central-nyakach",
+            "label": "Central Nyakach"
           },
           {
-            value: "mackinnon-road",
-            label: "Mackinnon Road",
+            "value": "north-nyakach",
+            "label": "North Nyakach"
           },
           {
-            value: "kinango",
-            label: "Kinango",
-          },
-          {
-            value: "puma",
-            label: "Puma",
-          },
-          {
-            value: "ndavaya",
-            label: "Ndavaya",
-          },
-        ],
+            "value": "south-west-nyakach",
+            "label": "South West Nyakach"
+          }
+        ]
       },
       {
-        value: "matuga",
-        label: "Matuga",
-        children: [
+        "value": "muhoroni",
+        "label": "Muhoroni",
+        "children": [
           {
-            value: "mkongani",
-            label: "Mkongani",
+            "value": "muhoroni-koru",
+            "label": "Muhoroni/Koru"
           },
           {
-            value: "kubo-south",
-            label: "Kubo South",
+            "value": "chemelil",
+            "label": "Chemelil"
           },
           {
-            value: "tiwi",
-            label: "Tiwi",
+            "value": "masogo-nyangoma",
+            "label": "Masogo/Nyangoma"
           },
           {
-            value: "waa",
-            label: "Waa",
+            "value": "ombeyi",
+            "label": "Ombeyi"
           },
           {
-            value: "tsimba-golini",
-            label: "Tsimba Golini",
-          },
-        ],
+            "value": "miwani",
+            "label": "Miwani"
+          }
+        ]
       },
       {
-        value: "lunga-lunga",
-        label: "Lunga Lunga",
-        children: [
+        "value": "nyando",
+        "label": "Nyando",
+        "children": [
           {
-            value: "vanga",
-            label: "Vanga",
+            "value": "kobura",
+            "label": "Kobura"
           },
           {
-            value: "mwereni",
-            label: "Mwereni",
+            "value": "kabonyo-kanyagwal",
+            "label": "Kabonyo/Kanyagwal"
           },
           {
-            value: "dzombo",
-            label: "Dzombo",
+            "value": "ahero",
+            "label": "Ahero"
           },
           {
-            value: "pongwe/kikoneni",
-            label: "Pongwe/Kikoneni",
+            "value": "awasi-onjiko",
+            "label": "Awasi/Onjiko"
           },
-        ],
+          {
+            "value": "east-kano-wawidhi",
+            "label": "East Kano/Wawidhi"
+          }
+        ]
       },
       {
-        value: "msambweni",
-        label: "Msambweni",
-        children: [
+        "value": "seme",
+        "label": "Seme",
+        "children": [
           {
-            value: "ramisi",
-            label: "Ramisi",
+            "value": "north-seme",
+            "label": "North Seme"
           },
           {
-            value: "kinondo",
-            label: "Kinondo",
+            "value": "east-seme",
+            "label": "East Seme"
           },
           {
-            value: "ukunda",
-            label: "Ukunda",
+            "value": "central-seme",
+            "label": "Central Seme"
           },
           {
-            value: "gombato-bongwe",
-            label: "Gombato Bongwe",
-          },
-        ],
+            "value": "west-seme",
+            "label": "West Seme"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kisumu-central",
+        "label": "Kisumu Central",
+        "children": [
+          {
+            "value": "nyalenda-b",
+            "label": "Nyalenda B"
+          },
+          {
+            "value": "kondele",
+            "label": "Kondele"
+          },
+          {
+            "value": "market-milimani",
+            "label": "Market Milimani"
+          },
+          {
+            "value": "shaurimoyo-kaloleni",
+            "label": "Shaurimoyo Kaloleni"
+          },
+          {
+            "value": "migosi",
+            "label": "Migosi"
+          },
+          {
+            "value": "railways",
+            "label": "Railways"
+          }
+        ]
+      },
+      {
+        "value": "kisumu-west",
+        "label": "Kisumu West",
+        "children": [
+          {
+            "value": "north-west-kisumu",
+            "label": "North West Kisumu"
+          },
+          {
+            "value": "west-kisumu",
+            "label": "West Kisumu"
+          },
+          {
+            "value": "kisumu-north",
+            "label": "Kisumu North"
+          },
+          {
+            "value": "central-kisumu",
+            "label": "Central Kisumu"
+          },
+          {
+            "value": "south-west-kisumu",
+            "label": "South West Kisumu"
+          }
+        ]
+      },
+      {
+        "value": "kisumu-east",
+        "label": "Kisumu East",
+        "children": [
+          {
+            "value": "kolwa-central",
+            "label": "Kolwa Central"
+          },
+          {
+            "value": "nyalenda-a",
+            "label": "Nyalenda A"
+          },
+          {
+            "value": "manyatta-b",
+            "label": "Manyatta B"
+          },
+          {
+            "value": "kolwa-east",
+            "label": "Kolwa East"
+          },
+          {
+            "value": "kajulu",
+            "label": "Kajulu"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "031",
-    label: "Laikipia",
-    children: [
+    "value": "015",
+    "label": "Kitui",
+    "children": [
       {
-        value: "laikipia-north",
-        label: "Laikipia North",
-        children: [
+        "value": "kitui-south",
+        "label": "Kitui South",
+        "children": [
           {
-            value: "mukogondo-east",
-            label: "Mukogondo East",
+            "value": "athi",
+            "label": "Athi"
           },
           {
-            value: "mukogondo-west",
-            label: "Mukogondo West",
+            "value": "kanziko",
+            "label": "Kanziko"
           },
           {
-            value: "segera",
-            label: "Segera",
+            "value": "ikutha",
+            "label": "Ikutha"
           },
           {
-            value: "sosian",
-            label: "Sosian",
+            "value": "mutha",
+            "label": "Mutha"
           },
-        ],
+          {
+            "value": "mutomo",
+            "label": "Mutomo"
+          },
+          {
+            "value": "ikanga-kyatune",
+            "label": "Ikanga/Kyatune"
+          }
+        ]
       },
       {
-        value: "laikipia-east",
-        label: "Laikipia East",
-        children: [
+        "value": "kitui-east",
+        "label": "Kitui East",
+        "children": [
           {
-            value: "umande",
-            label: "Umande",
+            "value": "mutito-kaliku",
+            "label": "Mutito/Kaliku"
           },
           {
-            value: "nanyuki",
-            label: "Nanyuki",
+            "value": "endau-malalani",
+            "label": "Endau/Malalani"
           },
           {
-            value: "thingithu",
-            label: "Thingithu",
+            "value": "voo-kyamatu",
+            "label": "Voo/Kyamatu"
           },
           {
-            value: "tigithi",
-            label: "Tigithi",
+            "value": "chuluni",
+            "label": "Chuluni"
           },
           {
-            value: "ngobit",
-            label: "Ngobit",
+            "value": "nzambani",
+            "label": "Nzambani"
           },
-        ],
+          {
+            "value": "zombe-mwitika",
+            "label": "Zombe/Mwitika"
+          }
+        ]
       },
       {
-        value: "laikipia-west",
-        label: "Laikipia West",
-        children: [
+        "value": "kitui-central",
+        "label": "Kitui Central",
+        "children": [
           {
-            value: "salama",
-            label: "Salama",
+            "value": "kyangwithya-east",
+            "label": "Kyangwithya East"
           },
           {
-            value: "igwamiti",
-            label: "Igwamiti",
+            "value": "mulango",
+            "label": "Mulango"
           },
           {
-            value: "marmanet",
-            label: "Marmanet",
+            "value": "kyangwithya-west",
+            "label": "Kyangwithya West"
           },
           {
-            value: "githiga",
-            label: "Githiga",
+            "value": "township",
+            "label": "Township"
           },
           {
-            value: "rumuruti-township",
-            label: "Rumuruti Township",
-          },
-          {
-            value: "ol-moran",
-            label: "Ol-Moran",
-          },
-        ],
+            "value": "miambani",
+            "label": "Miambani"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kitui-rural",
+        "label": "Kitui Rural",
+        "children": [
+          {
+            "value": "kanyangi",
+            "label": "Kanyangi"
+          },
+          {
+            "value": "kwavonza-yatta",
+            "label": "Kwavonza/Yatta"
+          },
+          {
+            "value": "mbitini",
+            "label": "Mbitini"
+          },
+          {
+            "value": "kisasi",
+            "label": "Kisasi"
+          }
+        ]
+      },
+      {
+        "value": "kitui-west",
+        "label": "Kitui West",
+        "children": [
+          {
+            "value": "kwa-mutonga-kithumula",
+            "label": "Kwa Mutonga/Kithumula"
+          },
+          {
+            "value": "matinyani",
+            "label": "Matinyani"
+          },
+          {
+            "value": "kauwi",
+            "label": "Kauwi"
+          },
+          {
+            "value": "mutonguni",
+            "label": "Mutonguni"
+          }
+        ]
+      },
+      {
+        "value": "mwingi-central",
+        "label": "Mwingi Central",
+        "children": [
+          {
+            "value": "waita",
+            "label": "Waita"
+          },
+          {
+            "value": "mui",
+            "label": "Mui"
+          },
+          {
+            "value": "nuu",
+            "label": "Nuu"
+          },
+          {
+            "value": "nguni",
+            "label": "Nguni"
+          },
+          {
+            "value": "kivou",
+            "label": "Kivou"
+          },
+          {
+            "value": "central",
+            "label": "Central"
+          }
+        ]
+      },
+      {
+        "value": "mwingi-west",
+        "label": "Mwingi West",
+        "children": [
+          {
+            "value": "kiomo-kyethani",
+            "label": "Kiomo/Kyethani"
+          },
+          {
+            "value": "migwani",
+            "label": "Migwani"
+          },
+          {
+            "value": "nguutani",
+            "label": "Nguutani"
+          },
+          {
+            "value": "kyome-thaana",
+            "label": "Kyome/Thaana"
+          }
+        ]
+      },
+      {
+        "value": "mwingi-north",
+        "label": "Mwingi North",
+        "children": [
+          {
+            "value": "tharaka",
+            "label": "Tharaka"
+          },
+          {
+            "value": "tseikuru",
+            "label": "Tseikuru"
+          },
+          {
+            "value": "mumoni",
+            "label": "Mumoni"
+          },
+          {
+            "value": "kyuso",
+            "label": "Kyuso"
+          },
+          {
+            "value": "ngomeni",
+            "label": "Ngomeni"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "005",
-    label: "Lamu",
-    children: [
+    "value": "002",
+    "label": "Kwale",
+    "children": [
       {
-        value: "lamu-west",
-        label: "Lamu West",
-        children: [
+        "value": "kinango",
+        "label": "Kinango",
+        "children": [
           {
-            value: "shella",
-            label: "Shella",
+            "value": "kasemeni",
+            "label": "Kasemeni"
           },
           {
-            value: "mkomani",
-            label: "Mkomani",
+            "value": "mwavumbo",
+            "label": "Mwavumbo"
           },
           {
-            value: "hindi",
-            label: "Hindi",
+            "value": "chengoni-samburu",
+            "label": "Chengoni/Samburu"
           },
           {
-            value: "hongwe",
-            label: "Hongwe",
+            "value": "mackinnon-road",
+            "label": "Mackinnon Road"
           },
           {
-            value: "bahari",
-            label: "Bahari",
+            "value": "kinango",
+            "label": "Kinango"
           },
           {
-            value: "mkunumbi",
-            label: "Mkunumbi",
+            "value": "puma",
+            "label": "Puma"
           },
           {
-            value: "witu",
-            label: "Witu",
-          },
-        ],
+            "value": "ndavaya",
+            "label": "Ndavaya"
+          }
+        ]
       },
       {
-        value: "lamu-east",
-        label: "Lamu East",
-        children: [
+        "value": "matuga",
+        "label": "Matuga",
+        "children": [
           {
-            value: "basuba",
-            label: "Basuba",
+            "value": "mkongani",
+            "label": "Mkongani"
           },
           {
-            value: "kiunga",
-            label: "Kiunga",
+            "value": "kubo-south",
+            "label": "Kubo South"
           },
           {
-            value: "faza",
-            label: "Faza",
+            "value": "tiwi",
+            "label": "Tiwi"
           },
-        ],
+          {
+            "value": "waa",
+            "label": "Waa"
+          },
+          {
+            "value": "tsimba-golini",
+            "label": "Tsimba Golini"
+          }
+        ]
       },
-    ],
+      {
+        "value": "lunga-lunga",
+        "label": "Lunga Lunga",
+        "children": [
+          {
+            "value": "vanga",
+            "label": "Vanga"
+          },
+          {
+            "value": "mwereni",
+            "label": "Mwereni"
+          },
+          {
+            "value": "dzombo",
+            "label": "Dzombo"
+          },
+          {
+            "value": "pongwe-kikoneni",
+            "label": "Pongwe/Kikoneni"
+          }
+        ]
+      },
+      {
+        "value": "msambweni",
+        "label": "Msambweni",
+        "children": [
+          {
+            "value": "ramisi",
+            "label": "Ramisi"
+          },
+          {
+            "value": "kinondo",
+            "label": "Kinondo"
+          },
+          {
+            "value": "ukunda",
+            "label": "Ukunda"
+          },
+          {
+            "value": "gombato-bongwe",
+            "label": "Gombato Bongwe"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "016",
-    label: "Machakos",
-    children: [
+    "value": "031",
+    "label": "Laikipia",
+    "children": [
       {
-        value: "mwala",
-        label: "Mwala",
-        children: [
+        "value": "laikipia-north",
+        "label": "Laikipia North",
+        "children": [
           {
-            value: "kibauni",
-            label: "Kibauni",
+            "value": "mukogondo-east",
+            "label": "Mukogondo East"
           },
           {
-            value: "wamunyu",
-            label: "Wamunyu",
+            "value": "mukogondo-west",
+            "label": "Mukogondo West"
           },
           {
-            value: "muthetheni",
-            label: "Muthetheni",
+            "value": "segera",
+            "label": "Segera"
           },
           {
-            value: "masii",
-            label: "Masii",
-          },
-          {
-            value: "makutano/mwala",
-            label: "Makutano/Mwala",
-          },
-          {
-            value: "mbiuni",
-            label: "Mbiuni",
-          },
-        ],
+            "value": "sosian",
+            "label": "Sosian"
+          }
+        ]
       },
       {
-        value: "machakoskola",
-        label: "MachakosKola",
-        children: [
+        "value": "laikipia-east",
+        "label": "Laikipia East",
+        "children": [
           {
-            value: "kola",
-            label: "Kola",
+            "value": "umande",
+            "label": "Umande"
           },
           {
-            value: "muvuti/kiima-kimwe",
-            label: "Muvuti/Kiima-Kimwe",
+            "value": "nanyuki",
+            "label": "Nanyuki"
           },
           {
-            value: "mumbuni-north",
-            label: "Mumbuni North",
+            "value": "thingithu",
+            "label": "Thingithu"
           },
           {
-            value: "machakos-central",
-            label: "Machakos Central",
+            "value": "tigithi",
+            "label": "Tigithi"
           },
           {
-            value: "mutituni",
-            label: "Mutituni",
-          },
-          {
-            value: "mua",
-            label: "Mua",
-          },
-          {
-            value: "kalama",
-            label: "Kalama",
-          },
-        ],
+            "value": "ngobit",
+            "label": "Ngobit"
+          }
+        ]
       },
       {
-        value: "athi-river",
-        label: "Athi River",
-        children: [
+        "value": "laikipia-west",
+        "label": "Laikipia West",
+        "children": [
           {
-            value: "syokimau/mulolongo",
-            label: "Syokimau/Mulolongo",
+            "value": "salama",
+            "label": "Salama"
           },
           {
-            value: "muthwani",
-            label: "Muthwani",
+            "value": "igwamiti",
+            "label": "Igwamiti"
           },
           {
-            value: "kinanie",
-            label: "Kinanie",
+            "value": "marmanet",
+            "label": "Marmanet"
           },
           {
-            value: "athi-river",
-            label: "Athi River",
-          },
-        ],
-      },
-      {
-        value: "kathiani",
-        label: "Kathiani",
-        children: [
-          {
-            value: "lower-kaewa/kaani",
-            label: "Lower Kaewa/Kaani",
+            "value": "githiga",
+            "label": "Githiga"
           },
           {
-            value: "upper-kaewa/iveti",
-            label: "Upper Kaewa/Iveti",
+            "value": "rumuruti-township",
+            "label": "Rumuruti Township"
           },
           {
-            value: "kathiani-central",
-            label: "Kathiani Central",
-          },
-          {
-            value: "mitaboni",
-            label: "Mitaboni",
-          },
-        ],
-      },
-      {
-        value: "matungulu",
-        label: "Matungulu",
-        children: [
-          {
-            value: "kyeleni",
-            label: "Kyeleni",
-          },
-          {
-            value: "matungulu-west",
-            label: "Matungulu West",
-          },
-          {
-            value: "matungulu-east",
-            label: "Matungulu East",
-          },
-          {
-            value: "matungulu-north",
-            label: "Matungulu North",
-          },
-          {
-            value: "tala",
-            label: "Tala",
-          },
-        ],
-      },
-      {
-        value: "kangundo",
-        label: "Kangundo",
-        children: [
-          {
-            value: "kangundo-west",
-            label: "Kangundo West",
-          },
-          {
-            value: "kangundo-east",
-            label: "Kangundo East",
-          },
-          {
-            value: "kangundo-central",
-            label: "Kangundo Central",
-          },
-          {
-            value: "kangundo-north",
-            label: "Kangundo North",
-          },
-        ],
-      },
-      {
-        value: "yatta",
-        label: "Yatta",
-        children: [
-          {
-            value: "katangi",
-            label: "Katangi",
-          },
-          {
-            value: "ikombe",
-            label: "Ikombe",
-          },
-          {
-            value: "kithimani",
-            label: "Kithimani",
-          },
-          {
-            value: "matuu",
-            label: "Matuu",
-          },
-          {
-            value: "ndalani",
-            label: "Ndalani",
-          },
-        ],
-      },
-      {
-        value: "masinga",
-        label: "Masinga",
-        children: [
-          {
-            value: "ndithini",
-            label: "Ndithini",
-          },
-          {
-            value: "muthesya",
-            label: "Muthesya",
-          },
-          {
-            value: "ekalakala",
-            label: "Ekalakala",
-          },
-          {
-            value: "masinga-central",
-            label: "Masinga Central",
-          },
-          {
-            value: "kivaa",
-            label: "Kivaa",
-          },
-        ],
-      },
-    ],
+            "value": "ol-moran",
+            "label": "Ol-Moran"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "017",
-    label: "Makueni",
-    children: [
+    "value": "005",
+    "label": "Lamu",
+    "children": [
       {
-        value: "kibwezi-east",
-        label: "Kibwezi East",
-        children: [
+        "value": "lamu-west",
+        "label": "Lamu West",
+        "children": [
           {
-            value: "ivingoni/nzambani",
-            label: "Ivingoni/Nzambani",
+            "value": "shella",
+            "label": "Shella"
           },
           {
-            value: "thange",
-            label: "Thange",
+            "value": "mkomani",
+            "label": "Mkomani"
           },
           {
-            value: "mtito-andei",
-            label: "Mtito Andei",
+            "value": "hindi",
+            "label": "Hindi"
           },
           {
-            value: "masongaleni",
-            label: "Masongaleni",
+            "value": "hongwe",
+            "label": "Hongwe"
           },
-        ],
+          {
+            "value": "bahari",
+            "label": "Bahari"
+          },
+          {
+            "value": "mkunumbi",
+            "label": "Mkunumbi"
+          },
+          {
+            "value": "witu",
+            "label": "Witu"
+          }
+        ]
       },
       {
-        value: "kibwezi-west",
-        label: "Kibwezi West",
-        children: [
+        "value": "lamu-east",
+        "label": "Lamu East",
+        "children": [
           {
-            value: "emali/mulala",
-            label: "Emali/Mulala",
+            "value": "basuba",
+            "label": "Basuba"
           },
           {
-            value: "nguu/masumba",
-            label: "Nguu/Masumba",
+            "value": "kiunga",
+            "label": "Kiunga"
           },
           {
-            value: "kikumbulyu-south",
-            label: "Kikumbulyu South",
-          },
-          {
-            value: "kikumbulyu-north",
-            label: "Kikumbulyu North",
-          },
-          {
-            value: "nguumo",
-            label: "Nguumo",
-          },
-          {
-            value: "makindu",
-            label: "Makindu",
-          },
-        ],
-      },
-      {
-        value: "makueni",
-        label: "Makueni",
-        children: [
-          {
-            value: "mbitini",
-            label: "Mbitini",
-          },
-          {
-            value: "nzaui/kilili/kalamba",
-            label: "Nzaui/Kilili/Kalamba",
-          },
-          {
-            value: "kathonzweni",
-            label: "Kathonzweni",
-          },
-          {
-            value: "kitise/kithuki",
-            label: "Kitise/Kithuki",
-          },
-          {
-            value: "mavindini",
-            label: "Mavindini",
-          },
-          {
-            value: "muvau/kikuumini",
-            label: "Muvau/Kikuumini",
-          },
-          {
-            value: "wote",
-            label: "Wote",
-          },
-        ],
-      },
-      {
-        value: "kilome",
-        label: "Kilome",
-        children: [
-          {
-            value: "ilima",
-            label: "Ilima",
-          },
-          {
-            value: "kilungu",
-            label: "Kilungu",
-          },
-          {
-            value: "kee",
-            label: "Kee",
-          },
-          {
-            value: "ukia",
-            label: "Ukia",
-          },
-          {
-            value: "kiima-kiu/kalanzoni",
-            label: "Kiima Kiu/Kalanzoni",
-          },
-          {
-            value: "mukaa",
-            label: "Mukaa",
-          },
-          {
-            value: "kasikeu",
-            label: "Kasikeu",
-          },
-        ],
-      },
-      {
-        value: "mbooni",
-        label: "Mbooni",
-        children: [
-          {
-            value: "kalawa",
-            label: "Kalawa",
-          },
-          {
-            value: "waia/kako",
-            label: "Waia/Kako",
-          },
-          {
-            value: "kisau-kiteta",
-            label: "Kisau-Kiteta",
-          },
-          {
-            value: "kithungo/kitundu",
-            label: "Kithungo/Kitundu",
-          },
-          {
-            value: "mbooni",
-            label: "Mbooni",
-          },
-          {
-            value: "tulimani",
-            label: "Tulimani",
-          },
-        ],
-      },
-    ],
+            "value": "faza",
+            "label": "Faza"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "009",
-    label: "Mandera",
-    children: [
+    "value": "016",
+    "label": "Machakos",
+    "children": [
       {
-        value: "lafey",
-        label: "Lafey",
-        children: [
+        "value": "mwala",
+        "label": "Mwala",
+        "children": [
           {
-            value: "alango-gof",
-            label: "Alango Gof",
+            "value": "kibauni",
+            "label": "Kibauni"
           },
           {
-            value: "warankara",
-            label: "Warankara",
+            "value": "wamunyu",
+            "label": "Wamunyu"
           },
           {
-            value: "lafey",
-            label: "Lafey",
+            "value": "muthetheni",
+            "label": "Muthetheni"
           },
           {
-            value: "libehia",
-            label: "Libehia",
+            "value": "masii",
+            "label": "Masii"
           },
-        ],
+          {
+            "value": "makutano-mwala",
+            "label": "Makutano/Mwala"
+          },
+          {
+            "value": "mbiuni",
+            "label": "Mbiuni"
+          }
+        ]
       },
       {
-        value: "mandera-east",
-        label: "Mandera East",
-        children: [
+        "value": "machakoskola",
+        "label": "MachakosKola",
+        "children": [
           {
-            value: "fino",
-            label: "Fino",
+            "value": "kola",
+            "label": "Kola"
           },
           {
-            value: "township",
-            label: "Township",
+            "value": "muvuti-kiima-kimwe",
+            "label": "Muvuti/Kiima-Kimwe"
           },
           {
-            value: "neboi",
-            label: "Neboi",
+            "value": "mumbuni-north",
+            "label": "Mumbuni North"
           },
           {
-            value: "khalalio",
-            label: "Khalalio",
+            "value": "machakos-central",
+            "label": "Machakos Central"
           },
           {
-            value: "bulla-mpya",
-            label: "Bulla Mpya",
+            "value": "mutituni",
+            "label": "Mutituni"
           },
           {
-            value: "arabia",
-            label: "Arabia",
+            "value": "mua",
+            "label": "Mua"
           },
-        ],
+          {
+            "value": "kalama",
+            "label": "Kalama"
+          }
+        ]
       },
       {
-        value: "mandera-south",
-        label: "Mandera South",
-        children: [
+        "value": "athi-river",
+        "label": "Athi River",
+        "children": [
           {
-            value: "shimbir-fatuma",
-            label: "Shimbir Fatuma",
+            "value": "syokimau-mulolongo",
+            "label": "Syokimau/Mulolongo"
           },
           {
-            value: "elwak-north",
-            label: "Elwak North",
+            "value": "muthwani",
+            "label": "Muthwani"
           },
           {
-            value: "elwak-south",
-            label: "Elwak South",
+            "value": "kinanie",
+            "label": "Kinanie"
           },
           {
-            value: "kutulo",
-            label: "Kutulo",
-          },
-          {
-            value: "wargudud",
-            label: "Wargudud",
-          },
-        ],
+            "value": "athi-river",
+            "label": "Athi River"
+          }
+        ]
       },
       {
-        value: "mandera-north",
-        label: "Mandera North",
-        children: [
+        "value": "kathiani",
+        "label": "Kathiani",
+        "children": [
           {
-            value: "rhamu-dimtu",
-            label: "Rhamu Dimtu",
+            "value": "lower-kaewa-kaani",
+            "label": "Lower Kaewa/Kaani"
           },
           {
-            value: "rhamu",
-            label: "Rhamu",
+            "value": "upper-kaewa-iveti",
+            "label": "Upper Kaewa/Iveti"
           },
           {
-            value: "morothile",
-            label: "Morothile",
+            "value": "kathiani-central",
+            "label": "Kathiani Central"
           },
           {
-            value: "guticha",
-            label: "Guticha",
-          },
-          {
-            value: "ashabito",
-            label: "Ashabito",
-          },
-        ],
+            "value": "mitaboni",
+            "label": "Mitaboni"
+          }
+        ]
       },
       {
-        value: "banissa",
-        label: "Banissa",
-        children: [
+        "value": "matungulu",
+        "label": "Matungulu",
+        "children": [
           {
-            value: "kiliwehiri",
-            label: "Kiliwehiri",
+            "value": "kyeleni",
+            "label": "Kyeleni"
           },
           {
-            value: "malkamari",
-            label: "Malkamari",
+            "value": "matungulu-west",
+            "label": "Matungulu West"
           },
           {
-            value: "guba",
-            label: "Guba",
+            "value": "matungulu-east",
+            "label": "Matungulu East"
           },
           {
-            value: "derkhale",
-            label: "Derkhale",
+            "value": "matungulu-north",
+            "label": "Matungulu North"
           },
           {
-            value: "banissa",
-            label: "Banissa",
-          },
-        ],
+            "value": "tala",
+            "label": "Tala"
+          }
+        ]
       },
       {
-        value: "mandera-west",
-        label: "Mandera West",
-        children: [
+        "value": "kangundo",
+        "label": "Kangundo",
+        "children": [
           {
-            value: "gither",
-            label: "Gither",
+            "value": "kangundo-west",
+            "label": "Kangundo West"
           },
           {
-            value: "dandu",
-            label: "Dandu",
+            "value": "kangundo-east",
+            "label": "Kangundo East"
           },
           {
-            value: "lagsure",
-            label: "Lagsure",
+            "value": "kangundo-central",
+            "label": "Kangundo Central"
           },
           {
-            value: "takaba",
-            label: "Takaba",
-          },
-          {
-            value: "takaba-south",
-            label: "Takaba South",
-          },
-        ],
+            "value": "kangundo-north",
+            "label": "Kangundo North"
+          }
+        ]
       },
-    ],
+      {
+        "value": "yatta",
+        "label": "Yatta",
+        "children": [
+          {
+            "value": "katangi",
+            "label": "Katangi"
+          },
+          {
+            "value": "ikombe",
+            "label": "Ikombe"
+          },
+          {
+            "value": "kithimani",
+            "label": "Kithimani"
+          },
+          {
+            "value": "matuu",
+            "label": "Matuu"
+          },
+          {
+            "value": "ndalani",
+            "label": "Ndalani"
+          }
+        ]
+      },
+      {
+        "value": "masinga",
+        "label": "Masinga",
+        "children": [
+          {
+            "value": "ndithini",
+            "label": "Ndithini"
+          },
+          {
+            "value": "muthesya",
+            "label": "Muthesya"
+          },
+          {
+            "value": "ekalakala",
+            "label": "Ekalakala"
+          },
+          {
+            "value": "masinga-central",
+            "label": "Masinga Central"
+          },
+          {
+            "value": "kivaa",
+            "label": "Kivaa"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "010",
-    label: "Marsabit",
-    children: [
+    "value": "017",
+    "label": "Makueni",
+    "children": [
       {
-        value: "laisamis",
-        label: "Laisamis",
-        children: [
+        "value": "kibwezi-east",
+        "label": "Kibwezi East",
+        "children": [
           {
-            value: "laisamis",
-            label: "Laisamis",
+            "value": "ivingoni-nzambani",
+            "label": "Ivingoni/Nzambani"
           },
           {
-            value: "logologo",
-            label: "Logologo",
+            "value": "thange",
+            "label": "Thange"
           },
           {
-            value: "korr/ngurunit",
-            label: "Korr/Ngurunit",
+            "value": "mtito-andei",
+            "label": "Mtito Andei"
           },
           {
-            value: "kargi/south-horr",
-            label: "Kargi/South Horr",
-          },
-          {
-            value: "loiyangalani",
-            label: "Loiyangalani",
-          },
-        ],
+            "value": "masongaleni",
+            "label": "Masongaleni"
+          }
+        ]
       },
       {
-        value: "saku",
-        label: "Saku",
-        children: [
+        "value": "kibwezi-west",
+        "label": "Kibwezi West",
+        "children": [
           {
-            value: "marsabit-central",
-            label: "Marsabit Central",
+            "value": "emali-mulala",
+            "label": "Emali/Mulala"
           },
           {
-            value: "karare",
-            label: "Karare",
+            "value": "nguu-masumba",
+            "label": "Nguu/Masumba"
           },
           {
-            value: "sagante/jaldesa",
-            label: "Sagante/Jaldesa",
+            "value": "kikumbulyu-south",
+            "label": "Kikumbulyu South"
           },
-        ],
+          {
+            "value": "kikumbulyu-north",
+            "label": "Kikumbulyu North"
+          },
+          {
+            "value": "nguumo",
+            "label": "Nguumo"
+          },
+          {
+            "value": "makindu",
+            "label": "Makindu"
+          }
+        ]
       },
       {
-        value: "north-horr",
-        label: "North Horr",
-        children: [
+        "value": "makueni",
+        "label": "Makueni",
+        "children": [
           {
-            value: "illeret",
-            label: "Illeret",
+            "value": "mbitini",
+            "label": "Mbitini"
           },
           {
-            value: "north-horr",
-            label: "North Horr",
+            "value": "nzaui-kilili-kalamba",
+            "label": "Nzaui/Kilili/Kalamba"
           },
           {
-            value: "turbi",
-            label: "Turbi",
+            "value": "kathonzweni",
+            "label": "Kathonzweni"
           },
           {
-            value: "maikona",
-            label: "Maikona",
+            "value": "kitise-kithuki",
+            "label": "Kitise/Kithuki"
           },
           {
-            value: "dukana",
-            label: "Dukana",
+            "value": "mavindini",
+            "label": "Mavindini"
           },
-        ],
+          {
+            "value": "muvau-kikuumini",
+            "label": "Muvau/Kikuumini"
+          },
+          {
+            "value": "wote",
+            "label": "Wote"
+          }
+        ]
       },
       {
-        value: "moyale",
-        label: "Moyale",
-        children: [
+        "value": "kilome",
+        "label": "Kilome",
+        "children": [
           {
-            value: "obbu",
-            label: "Obbu",
+            "value": "ilima",
+            "label": "Ilima"
           },
           {
-            value: "uran",
-            label: "Uran",
+            "value": "kilungu",
+            "label": "Kilungu"
           },
           {
-            value: "moyale-township",
-            label: "Moyale Township",
+            "value": "kee",
+            "label": "Kee"
           },
           {
-            value: "golbo",
-            label: "Golbo",
+            "value": "ukia",
+            "label": "Ukia"
           },
           {
-            value: "heilu/manyatta",
-            label: "Heilu/Manyatta",
+            "value": "kiima-kiu-kalanzoni",
+            "label": "Kiima Kiu/Kalanzoni"
           },
           {
-            value: "sololo",
-            label: "Sololo",
+            "value": "mukaa",
+            "label": "Mukaa"
           },
           {
-            value: "butiye",
-            label: "Butiye",
-          },
-        ],
+            "value": "kasikeu",
+            "label": "Kasikeu"
+          }
+        ]
       },
-    ],
+      {
+        "value": "mbooni",
+        "label": "Mbooni",
+        "children": [
+          {
+            "value": "kalawa",
+            "label": "Kalawa"
+          },
+          {
+            "value": "waia-kako",
+            "label": "Waia/Kako"
+          },
+          {
+            "value": "kisau-kiteta",
+            "label": "Kisau-Kiteta"
+          },
+          {
+            "value": "kithungo-kitundu",
+            "label": "Kithungo/Kitundu"
+          },
+          {
+            "value": "mbooni",
+            "label": "Mbooni"
+          },
+          {
+            "value": "tulimani",
+            "label": "Tulimani"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "012",
-    label: "Meru",
-    children: [
+    "value": "009",
+    "label": "Mandera",
+    "children": [
       {
-        value: "imenti-south",
-        label: "Imenti South",
-        children: [
+        "value": "lafey",
+        "label": "Lafey",
+        "children": [
           {
-            value: "nkuene",
-            label: "Nkuene",
+            "value": "alango-gof",
+            "label": "Alango Gof"
           },
           {
-            value: "abogeta-west",
-            label: "Abogeta West",
+            "value": "warankara",
+            "label": "Warankara"
           },
           {
-            value: "abogeta-east",
-            label: "Abogeta East",
+            "value": "lafey",
+            "label": "Lafey"
           },
           {
-            value: "igoji-west",
-            label: "Igoji West",
-          },
-          {
-            value: "igoji-east",
-            label: "Igoji East",
-          },
-          {
-            value: "mitunguu",
-            label: "Mitunguu",
-          },
-        ],
+            "value": "libehia",
+            "label": "Libehia"
+          }
+        ]
       },
       {
-        value: "imenti-central",
-        label: "Imenti Central",
-        children: [
+        "value": "mandera-east",
+        "label": "Mandera East",
+        "children": [
           {
-            value: "kiagu",
-            label: "Kiagu",
+            "value": "fino",
+            "label": "Fino"
           },
           {
-            value: "abothuguchi-west",
-            label: "Abothuguchi West",
+            "value": "township",
+            "label": "Township"
           },
           {
-            value: "abothuguchi-central",
-            label: "Abothuguchi Central",
+            "value": "neboi",
+            "label": "Neboi"
           },
           {
-            value: "mwanganthia",
-            label: "Mwanganthia",
+            "value": "khalalio",
+            "label": "Khalalio"
           },
-        ],
+          {
+            "value": "bulla-mpya",
+            "label": "Bulla Mpya"
+          },
+          {
+            "value": "arabia",
+            "label": "Arabia"
+          }
+        ]
       },
       {
-        value: "buuri",
-        label: "Buuri",
-        children: [
+        "value": "mandera-south",
+        "label": "Mandera South",
+        "children": [
           {
-            value: "kibirichia",
-            label: "Kibirichia",
+            "value": "shimbir-fatuma",
+            "label": "Shimbir Fatuma"
           },
           {
-            value: "ruiri/rwarera",
-            label: "Ruiri/Rwarera",
+            "value": "elwak-north",
+            "label": "Elwak North"
           },
           {
-            value: "kiirua/naari",
-            label: "Kiirua/Naari",
+            "value": "elwak-south",
+            "label": "Elwak South"
           },
           {
-            value: "kisima",
-            label: "Kisima",
+            "value": "kutulo",
+            "label": "Kutulo"
           },
           {
-            value: "timau",
-            label: "Timau",
-          },
-        ],
+            "value": "wargudud",
+            "label": "Wargudud"
+          }
+        ]
       },
       {
-        value: "imenti-north",
-        label: "Imenti North",
-        children: [
+        "value": "mandera-north",
+        "label": "Mandera North",
+        "children": [
           {
-            value: "nyaki-east",
-            label: "Nyaki East",
+            "value": "rhamu-dimtu",
+            "label": "Rhamu Dimtu"
           },
           {
-            value: "nyaki-west",
-            label: "Nyaki West",
+            "value": "rhamu",
+            "label": "Rhamu"
           },
           {
-            value: "municipality",
-            label: "Municipality",
+            "value": "morothile",
+            "label": "Morothile"
           },
-        ],
+          {
+            "value": "guticha",
+            "label": "Guticha"
+          },
+          {
+            "value": "ashabito",
+            "label": "Ashabito"
+          }
+        ]
       },
       {
-        value: "tigania-east",
-        label: "Tigania East",
-        children: [
+        "value": "banissa",
+        "label": "Banissa",
+        "children": [
           {
-            value: "karama",
-            label: "Karama",
+            "value": "kiliwehiri",
+            "label": "Kiliwehiri"
           },
           {
-            value: "muthara",
-            label: "Muthara",
+            "value": "malkamari",
+            "label": "Malkamari"
           },
           {
-            value: "kiguchwa",
-            label: "Kiguchwa",
+            "value": "guba",
+            "label": "Guba"
           },
           {
-            value: "mikinduri",
-            label: "Mikinduri",
+            "value": "derkhale",
+            "label": "Derkhale"
           },
           {
-            value: "thangatha",
-            label: "Thangatha",
-          },
-        ],
+            "value": "banissa",
+            "label": "Banissa"
+          }
+        ]
       },
       {
-        value: "tigania-west",
-        label: "Tigania West",
-        children: [
+        "value": "mandera-west",
+        "label": "Mandera West",
+        "children": [
           {
-            value: "mbeu",
-            label: "Mbeu",
+            "value": "gither",
+            "label": "Gither"
           },
           {
-            value: "nkomo",
-            label: "Nkomo",
+            "value": "dandu",
+            "label": "Dandu"
           },
           {
-            value: "kianjai",
-            label: "Kianjai",
+            "value": "lagsure",
+            "label": "Lagsure"
           },
           {
-            value: "akithii",
-            label: "Akithii",
+            "value": "takaba",
+            "label": "Takaba"
           },
           {
-            value: "athwana",
-            label: "Athwana",
-          },
-        ],
-      },
-      {
-        value: "igembe-north",
-        label: "Igembe North",
-        children: [
-          {
-            value: "amwathi",
-            label: "Amwathi",
-          },
-          {
-            value: "naathu",
-            label: "Naathu",
-          },
-          {
-            value: "antubetwe-kiongo",
-            label: "Antubetwe Kiongo",
-          },
-          {
-            value: "ntunene",
-            label: "Ntunene",
-          },
-          {
-            value: "antuambui",
-            label: "Antuambui",
-          },
-        ],
-      },
-      {
-        value: "igembe-central",
-        label: "Igembe Central",
-        children: [
-          {
-            value: "kangeta",
-            label: "Kangeta",
-          },
-          {
-            value: "njia",
-            label: "Njia",
-          },
-          {
-            value: "igembe-east",
-            label: "Igembe East",
-          },
-          {
-            value: "athiru-ruujine",
-            label: "Athiru Ruujine",
-          },
-          {
-            value: "akirangondu",
-            label: "Akirangondu",
-          },
-        ],
-      },
-      {
-        value: "igembe-south",
-        label: "Igembe South",
-        children: [
-          {
-            value: "kanuni",
-            label: "Kanuni",
-          },
-          {
-            value: "akachiu",
-            label: "Akachiu",
-          },
-          {
-            value: "athiru-gaiti",
-            label: "Athiru Gaiti",
-          },
-          {
-            value: "kiegoi/antubochiu",
-            label: "Kiegoi/Antubochiu",
-          },
-          {
-            value: "maua",
-            label: "Maua",
-          },
-        ],
-      },
-    ],
+            "value": "takaba-south",
+            "label": "Takaba South"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "044",
-    label: "Migori",
-    children: [
+    "value": "010",
+    "label": "Marsabit",
+    "children": [
       {
-        value: "kuria-east-sub-county",
-        label: "Kuria East Sub County",
-        children: [
+        "value": "laisamis",
+        "label": "Laisamis",
+        "children": [
           {
-            value: "nyabasi-west",
-            label: "Nyabasi West",
+            "value": "laisamis",
+            "label": "Laisamis"
           },
           {
-            value: "nyabasi-east",
-            label: "Nyabasi East",
+            "value": "logologo",
+            "label": "Logologo"
           },
           {
-            value: "ntimaru-east",
-            label: "Ntimaru East",
+            "value": "korr-ngurunit",
+            "label": "Korr/Ngurunit"
           },
           {
-            value: "ntimaru-west",
-            label: "Ntimaru West",
+            "value": "kargi-south-horr",
+            "label": "Kargi/South Horr"
           },
           {
-            value: "gokeharaka/getambwega",
-            label: "Gokeharaka/Getambwega",
-          },
-        ],
+            "value": "loiyangalani",
+            "label": "Loiyangalani"
+          }
+        ]
       },
       {
-        value: "kuria-west-sub-county",
-        label: "Kuria West Sub County",
-        children: [
+        "value": "saku",
+        "label": "Saku",
+        "children": [
           {
-            value: "nyamosense/komosoko",
-            label: "Nyamosense/Komosoko",
+            "value": "marsabit-central",
+            "label": "Marsabit Central"
           },
           {
-            value: "tagare",
-            label: "Tagare",
+            "value": "karare",
+            "label": "Karare"
           },
           {
-            value: "masaba",
-            label: "Masaba",
-          },
-          {
-            value: "makerero",
-            label: "Makerero",
-          },
-          {
-            value: "isibania",
-            label: "Isibania",
-          },
-          {
-            value: "bukira-centrl/ikerege",
-            label: "Bukira Centrl/Ikerege",
-          },
-          {
-            value: "bukira-east",
-            label: "Bukira East",
-          },
-        ],
+            "value": "sagante-jaldesa",
+            "label": "Sagante/Jaldesa"
+          }
+        ]
       },
       {
-        value: "nyatike-sub-county",
-        label: "Nyatike Sub County",
-        children: [
+        "value": "north-horr",
+        "label": "North Horr",
+        "children": [
           {
-            value: "muhuru",
-            label: "Muhuru",
+            "value": "illeret",
+            "label": "Illeret"
           },
           {
-            value: "got-kachola",
-            label: "Got Kachola",
+            "value": "north-horr",
+            "label": "North Horr"
           },
           {
-            value: "kaler",
-            label: "Kaler",
+            "value": "turbi",
+            "label": "Turbi"
           },
           {
-            value: "macalder/kanyarwanda",
-            label: "Macalder/Kanyarwanda",
+            "value": "maikona",
+            "label": "Maikona"
           },
           {
-            value: "north-kadem",
-            label: "North Kadem",
-          },
-          {
-            value: "kachieng",
-            label: "Kachieng",
-          },
-        ],
+            "value": "dukana",
+            "label": "Dukana"
+          }
+        ]
       },
       {
-        value: "urir-sub-county",
-        label: "Urir Sub County",
-        children: [
+        "value": "moyale",
+        "label": "Moyale",
+        "children": [
           {
-            value: "east-kanyamkago",
-            label: "East Kanyamkago",
+            "value": "obbu",
+            "label": "Obbu"
           },
           {
-            value: "south-kanyamkago",
-            label: "South Kanyamkago",
+            "value": "uran",
+            "label": "Uran"
           },
           {
-            value: "central-kanyamkago",
-            label: "Central Kanyamkago",
+            "value": "moyale-township",
+            "label": "Moyale Township"
           },
           {
-            value: "north-kanyamkago",
-            label: "North Kanyamkago",
+            "value": "golbo",
+            "label": "Golbo"
           },
           {
-            value: "west-kanyamkago",
-            label: "West Kanyamkago",
-          },
-        ],
-      },
-      {
-        value: "suna-west-sub-county",
-        label: "Suna West Sub County",
-        children: [
-          {
-            value: "wasimbete",
-            label: "Wasimbete",
+            "value": "heilu-manyatta",
+            "label": "Heilu/Manyatta"
           },
           {
-            value: "ragana-oruba",
-            label: "Ragana Oruba",
+            "value": "sololo",
+            "label": "Sololo"
           },
           {
-            value: "wasweta-ii",
-            label: "Wasweta Ii",
-          },
-          {
-            value: "wiga",
-            label: "Wiga",
-          },
-        ],
-      },
-      {
-        value: "suna-east-sub-county",
-        label: "Suna East Sub County",
-        children: [
-          {
-            value: "kwa",
-            label: "Kwa",
-          },
-          {
-            value: "kakrao",
-            label: "Kakrao",
-          },
-          {
-            value: "suna-central",
-            label: "Suna Central",
-          },
-          {
-            value: "god-jope",
-            label: "God Jope",
-          },
-        ],
-      },
-      {
-        value: "awendo-sub-county",
-        label: "Awendo Sub County",
-        children: [
-          {
-            value: "central-sakwa",
-            label: "Central Sakwa",
-          },
-          {
-            value: "west-sakwa",
-            label: "West Sakwa",
-          },
-          {
-            value: "south-sakwa",
-            label: "South Sakwa",
-          },
-          {
-            value: "north-sakwa",
-            label: "North Sakwa",
-          },
-        ],
-      },
-      {
-        value: "rongo-sub-county",
-        label: "Rongo Sub County",
-        children: [
-          {
-            value: "south-kamagambo",
-            label: "South Kamagambo",
-          },
-          {
-            value: "east-kamagambo",
-            label: "East Kamagambo",
-          },
-          {
-            value: "central-kamagambo",
-            label: "Central Kamagambo",
-          },
-          {
-            value: "north-kamagambo",
-            label: "North Kamagambo",
-          },
-        ],
-      },
-    ],
+            "value": "butiye",
+            "label": "Butiye"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "001",
-    label: "Mombasa",
-    children: [
+    "value": "012",
+    "label": "Meru",
+    "children": [
       {
-        value: "mvita",
-        label: "Mvita",
-        children: [
+        "value": "imenti-south",
+        "label": "Imenti South",
+        "children": [
           {
-            value: "majengo/mwembe-tayari",
-            label: "Majengo/Mwembe Tayari",
+            "value": "nkuene",
+            "label": "Nkuene"
           },
           {
-            value: "shimanzi/ganjoni",
-            label: "Shimanzi/Ganjoni",
+            "value": "abogeta-west",
+            "label": "Abogeta West"
           },
           {
-            value: "tononoka",
-            label: "Tononoka",
+            "value": "abogeta-east",
+            "label": "Abogeta East"
           },
           {
-            value: "tudor",
-            label: "Tudor",
+            "value": "igoji-west",
+            "label": "Igoji West"
           },
           {
-            value: "mji-wa-kale/makadara",
-            label: "Mji Wa Kale/Makadara",
+            "value": "igoji-east",
+            "label": "Igoji East"
           },
-        ],
+          {
+            "value": "mitunguu",
+            "label": "Mitunguu"
+          }
+        ]
       },
       {
-        value: "likoni",
-        label: "Likoni",
-        children: [
+        "value": "imenti-central",
+        "label": "Imenti Central",
+        "children": [
           {
-            value: "timbwani",
-            label: "Timbwani",
+            "value": "kiagu",
+            "label": "Kiagu"
           },
           {
-            value: "likoni",
-            label: "Likoni",
+            "value": "abothuguchi-west",
+            "label": "Abothuguchi West"
           },
           {
-            value: "bofu",
-            label: "Bofu",
+            "value": "abothuguchi-central",
+            "label": "Abothuguchi Central"
           },
           {
-            value: "shika-adabu",
-            label: "Shika Adabu",
-          },
-          {
-            value: "mtongwe",
-            label: "Mtongwe",
-          },
-        ],
+            "value": "mwanganthia",
+            "label": "Mwanganthia"
+          }
+        ]
       },
       {
-        value: "nyali",
-        label: "Nyali",
-        children: [
+        "value": "buuri",
+        "label": "Buuri",
+        "children": [
           {
-            value: "kadzandani",
-            label: "Kadzandani",
+            "value": "kibirichia",
+            "label": "Kibirichia"
           },
           {
-            value: "kongowea",
-            label: "Kongowea",
+            "value": "ruiri-rwarera",
+            "label": "Ruiri/Rwarera"
           },
           {
-            value: "mkomani",
-            label: "Mkomani",
+            "value": "kiirua-naari",
+            "label": "Kiirua/Naari"
           },
           {
-            value: "ziwa-la-ngombe",
-            label: "Ziwa La Ngombe",
+            "value": "kisima",
+            "label": "Kisima"
           },
           {
-            value: "frere-town",
-            label: "Frere Town",
-          },
-        ],
+            "value": "timau",
+            "label": "Timau"
+          }
+        ]
       },
       {
-        value: "kisauni",
-        label: "Kisauni",
-        children: [
+        "value": "imenti-north",
+        "label": "Imenti North",
+        "children": [
           {
-            value: "shanzu",
-            label: "Shanzu",
+            "value": "nyaki-east",
+            "label": "Nyaki East"
           },
           {
-            value: "magogoni",
-            label: "Magogoni",
+            "value": "nyaki-west",
+            "label": "Nyaki West"
           },
           {
-            value: "mtopanga",
-            label: "Mtopanga",
-          },
-          {
-            value: "mwakirunge",
-            label: "Mwakirunge",
-          },
-          {
-            value: "bamburi",
-            label: "Bamburi",
-          },
-          {
-            value: "junda",
-            label: "Junda",
-          },
-          {
-            value: "mjambere",
-            label: "Mjambere",
-          },
-        ],
+            "value": "municipality",
+            "label": "Municipality"
+          }
+        ]
       },
       {
-        value: "jomvu",
-        label: "Jomvu",
-        children: [
+        "value": "tigania-east",
+        "label": "Tigania East",
+        "children": [
           {
-            value: "mikindani",
-            label: "Mikindani",
+            "value": "karama",
+            "label": "Karama"
           },
           {
-            value: "miritini",
-            label: "Miritini",
+            "value": "muthara",
+            "label": "Muthara"
           },
           {
-            value: "jomvu-kuu",
-            label: "Jomvu Kuu",
+            "value": "kiguchwa",
+            "label": "Kiguchwa"
           },
-        ],
+          {
+            "value": "mikinduri",
+            "label": "Mikinduri"
+          },
+          {
+            "value": "thangatha",
+            "label": "Thangatha"
+          }
+        ]
       },
       {
-        value: "changamwe",
-        label: "Changamwe",
-        children: [
+        "value": "tigania-west",
+        "label": "Tigania West",
+        "children": [
           {
-            value: "chaani",
-            label: "Chaani",
+            "value": "mbeu",
+            "label": "Mbeu"
           },
           {
-            value: "changamwe",
-            label: "Changamwe",
+            "value": "nkomo",
+            "label": "Nkomo"
           },
           {
-            value: "airport",
-            label: "Airport",
+            "value": "kianjai",
+            "label": "Kianjai"
           },
           {
-            value: "kipevu",
-            label: "Kipevu",
+            "value": "akithii",
+            "label": "Akithii"
           },
           {
-            value: "port-reitz",
-            label: "Port Reitz",
-          },
-        ],
+            "value": "athwana",
+            "label": "Athwana"
+          }
+        ]
       },
-    ],
+      {
+        "value": "igembe-north",
+        "label": "Igembe North",
+        "children": [
+          {
+            "value": "amwathi",
+            "label": "Amwathi"
+          },
+          {
+            "value": "naathu",
+            "label": "Naathu"
+          },
+          {
+            "value": "antubetwe-kiongo",
+            "label": "Antubetwe Kiongo"
+          },
+          {
+            "value": "ntunene",
+            "label": "Ntunene"
+          },
+          {
+            "value": "antuambui",
+            "label": "Antuambui"
+          }
+        ]
+      },
+      {
+        "value": "igembe-central",
+        "label": "Igembe Central",
+        "children": [
+          {
+            "value": "kangeta",
+            "label": "Kangeta"
+          },
+          {
+            "value": "njia",
+            "label": "Njia"
+          },
+          {
+            "value": "igembe-east",
+            "label": "Igembe East"
+          },
+          {
+            "value": "athiru-ruujine",
+            "label": "Athiru Ruujine"
+          },
+          {
+            "value": "akirangondu",
+            "label": "Akirangondu"
+          }
+        ]
+      },
+      {
+        "value": "igembe-south",
+        "label": "Igembe South",
+        "children": [
+          {
+            "value": "kanuni",
+            "label": "Kanuni"
+          },
+          {
+            "value": "akachiu",
+            "label": "Akachiu"
+          },
+          {
+            "value": "athiru-gaiti",
+            "label": "Athiru Gaiti"
+          },
+          {
+            "value": "kiegoi-antubochiu",
+            "label": "Kiegoi/Antubochiu"
+          },
+          {
+            "value": "maua",
+            "label": "Maua"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "021",
-    label: "Muranga",
-    children: [
+    "value": "044",
+    "label": "Migori",
+    "children": [
       {
-        value: "gatanga",
-        label: "Gatanga",
-        children: [
+        "value": "kuria-east-sub-county",
+        "label": "Kuria East Sub County",
+        "children": [
           {
-            value: "kariara",
-            label: "Kariara",
+            "value": "nyabasi-west",
+            "label": "Nyabasi West"
           },
           {
-            value: "gatanga",
-            label: "Gatanga",
+            "value": "nyabasi-east",
+            "label": "Nyabasi East"
           },
           {
-            value: "kihumbu-ini",
-            label: "Kihumbu Ini",
+            "value": "ntimaru-east",
+            "label": "Ntimaru East"
           },
           {
-            value: "mugumo-ini",
-            label: "Mugumo Ini",
+            "value": "ntimaru-west",
+            "label": "Ntimaru West"
           },
           {
-            value: "kakuzi/mitubiri",
-            label: "Kakuzi/Mitubiri",
-          },
-          {
-            value: "ithanga",
-            label: "Ithanga",
-          },
-        ],
+            "value": "gokeharaka-getambwega",
+            "label": "Gokeharaka/Getambwega"
+          }
+        ]
       },
       {
-        value: "kandara",
-        label: "Kandara",
-        children: [
+        "value": "kuria-west-sub-county",
+        "label": "Kuria West Sub County",
+        "children": [
           {
-            value: "ruchu",
-            label: "Ruchu",
+            "value": "nyamosense-komosoko",
+            "label": "Nyamosense/Komosoko"
           },
           {
-            value: "ithiru",
-            label: "Ithiru",
+            "value": "tagare",
+            "label": "Tagare"
           },
           {
-            value: "gaichanjiru",
-            label: "Gaichanjiru",
+            "value": "masaba",
+            "label": "Masaba"
           },
           {
-            value: "kagundu-ini",
-            label: "Kagundu Ini",
+            "value": "makerero",
+            "label": "Makerero"
           },
           {
-            value: "muruka",
-            label: "Muruka",
+            "value": "isibania",
+            "label": "Isibania"
           },
           {
-            value: "ngararia",
-            label: "Ngararia",
+            "value": "bukira-centrl-ikerege",
+            "label": "Bukira Centrl/Ikerege"
           },
-        ],
+          {
+            "value": "bukira-east",
+            "label": "Bukira East"
+          }
+        ]
       },
       {
-        value: "maragwa",
-        label: "Maragwa",
-        children: [
+        "value": "nyatike-sub-county",
+        "label": "Nyatike Sub County",
+        "children": [
           {
-            value: "nginda",
-            label: "Nginda",
+            "value": "muhuru",
+            "label": "Muhuru"
           },
           {
-            value: "ichagaki",
-            label: "Ichagaki",
+            "value": "got-kachola",
+            "label": "Got Kachola"
           },
           {
-            value: "kamahuha",
-            label: "Kamahuha",
+            "value": "kaler",
+            "label": "Kaler"
           },
           {
-            value: "kambiti",
-            label: "Kambiti",
+            "value": "kanyasa",
+            "label": "Kanyasa"
           },
           {
-            value: "makuyu",
-            label: "Makuyu",
+            "value": "macalder-kanyarwanda",
+            "label": "Macalder/Kanyarwanda"
           },
           {
-            value: "kimorori/wempa",
-            label: "Kimorori/Wempa",
+            "value": "north-kadem",
+            "label": "North Kadem"
           },
-        ],
+          {
+            "value": "kachieng",
+            "label": "Kachieng"
+          }
+        ]
       },
       {
-        value: "kigumo",
-        label: "Kigumo",
-        children: [
+        "value": "uriri-sub-county",
+        "label": "Uriri Sub County",
+        "children": [
           {
-            value: "kinyona",
-            label: "Kinyona",
+            "value": "east-kanyamkago",
+            "label": "East Kanyamkago"
           },
           {
-            value: "kangari",
-            label: "Kangari",
+            "value": "south-kanyamkago",
+            "label": "South Kanyamkago"
           },
           {
-            value: "kigumo",
-            label: "Kigumo",
+            "value": "central-kanyamkago",
+            "label": "Central Kanyamkago"
           },
           {
-            value: "muthithi",
-            label: "Muthithi",
+            "value": "north-kanyamkago",
+            "label": "North Kanyamkago"
           },
           {
-            value: "kahumbu",
-            label: "Kahumbu",
-          },
-        ],
+            "value": "west-kanyamkago",
+            "label": "West Kanyamkago"
+          }
+        ]
       },
       {
-        value: "kiharu",
-        label: "Kiharu",
-        children: [
+        "value": "suna-west-sub-county",
+        "label": "Suna West Sub County",
+        "children": [
           {
-            value: "gaturi",
-            label: "Gaturi",
+            "value": "wasimbete",
+            "label": "Wasimbete"
           },
           {
-            value: "murarandia",
-            label: "Murarandia",
+            "value": "ragana-oruba",
+            "label": "Ragana Oruba"
           },
           {
-            value: "township",
-            label: "Township",
+            "value": "wasweta-ii",
+            "label": "Wasweta Ii"
           },
           {
-            value: "mbiri",
-            label: "Mbiri",
-          },
-          {
-            value: "mugoiri",
-            label: "Mugoiri",
-          },
-          {
-            value: "wangu",
-            label: "Wangu",
-          },
-        ],
+            "value": "wiga",
+            "label": "Wiga"
+          }
+        ]
       },
       {
-        value: "mathioya",
-        label: "Mathioya",
-        children: [
+        "value": "suna-east-sub-county",
+        "label": "Suna East Sub County",
+        "children": [
           {
-            value: "kamacharia",
-            label: "Kamacharia",
+            "value": "kwa",
+            "label": "Kwa"
           },
           {
-            value: "kiru",
-            label: "Kiru",
+            "value": "kakrao",
+            "label": "Kakrao"
           },
           {
-            value: "gitugi",
-            label: "Gitugi",
+            "value": "suna-central",
+            "label": "Suna Central"
           },
           {
-            value: "rwathia",
-            label: "Rwathia",
-          },
-          {
-            value: "muguru",
-            label: "Muguru",
-          },
-          {
-            value: "kanyenyaini",
-            label: "KanyenyaIni",
-          },
-        ],
+            "value": "god-jope",
+            "label": "God Jope"
+          }
+        ]
       },
-    ],
+      {
+        "value": "awendo-sub-county",
+        "label": "Awendo Sub County",
+        "children": [
+          {
+            "value": "central-sakwa",
+            "label": "Central Sakwa"
+          },
+          {
+            "value": "west-sakwa",
+            "label": "West Sakwa"
+          },
+          {
+            "value": "south-sakwa",
+            "label": "South Sakwa"
+          },
+          {
+            "value": "north-sakwa",
+            "label": "North Sakwa"
+          }
+        ]
+      },
+      {
+        "value": "rongo-sub-county",
+        "label": "Rongo Sub County",
+        "children": [
+          {
+            "value": "south-kamagambo",
+            "label": "South Kamagambo"
+          },
+          {
+            "value": "east-kamagambo",
+            "label": "East Kamagambo"
+          },
+          {
+            "value": "central-kamagambo",
+            "label": "Central Kamagambo"
+          },
+          {
+            "value": "north-kamagambo",
+            "label": "North Kamagambo"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "047",
-    label: "Nairobi",
-    children: [
+    "value": "001",
+    "label": "Mombasa",
+    "children": [
       {
-        value: "mathare",
-        label: "Mathare",
-        children: [
+        "value": "mvita",
+        "label": "Mvita",
+        "children": [
           {
-            value: "kiamaiko",
-            label: "Kiamaiko",
+            "value": "majengo-mwembe-tayari",
+            "label": "Majengo/Mwembe Tayari"
           },
           {
-            value: "mlango-kubwa",
-            label: "Mlango Kubwa",
+            "value": "shimanzi-ganjoni",
+            "label": "Shimanzi/Ganjoni"
           },
           {
-            value: "ngei",
-            label: "Ngei",
+            "value": "tononoka",
+            "label": "Tononoka"
           },
           {
-            value: "huruma",
-            label: "Huruma",
+            "value": "tudor",
+            "label": "Tudor"
           },
           {
-            value: "mabatini",
-            label: "Mabatini",
-          },
-          {
-            value: "hospital",
-            label: "Hospital",
-          },
-        ],
+            "value": "mji-wa-kale-makadara",
+            "label": "Mji Wa Kale/Makadara"
+          }
+        ]
       },
       {
-        value: "starehe",
-        label: "Starehe",
-        children: [
+        "value": "likoni",
+        "label": "Likoni",
+        "children": [
           {
-            value: "nairobi-south",
-            label: "Nairobi South",
+            "value": "timbwani",
+            "label": "Timbwani"
           },
           {
-            value: "landimawe",
-            label: "Landimawe",
+            "value": "likoni",
+            "label": "Likoni"
           },
           {
-            value: "ziwani/kariokor",
-            label: "Ziwani/Kariokor",
+            "value": "bofu",
+            "label": "Bofu"
           },
           {
-            value: "pangani",
-            label: "Pangani",
+            "value": "shika-adabu",
+            "label": "Shika Adabu"
           },
           {
-            value: "ngara",
-            label: "Ngara",
-          },
-          {
-            value: "nairobi-central",
-            label: "Nairobi Central",
-          },
-        ],
+            "value": "mtongwe",
+            "label": "Mtongwe"
+          }
+        ]
       },
       {
-        value: "kamukunji",
-        label: "Kamukunji",
-        children: [
+        "value": "nyali",
+        "label": "Nyali",
+        "children": [
           {
-            value: "california",
-            label: "California",
+            "value": "kadzandani",
+            "label": "Kadzandani"
           },
           {
-            value: "airbase",
-            label: "Airbase",
+            "value": "kongowea",
+            "label": "Kongowea"
           },
           {
-            value: "eastleigh-south",
-            label: "Eastleigh South",
+            "value": "mkomani",
+            "label": "Mkomani"
           },
           {
-            value: "eastleigh-north",
-            label: "Eastleigh North",
+            "value": "ziwa-la-ngombe",
+            "label": "Ziwa La Ngombe"
           },
           {
-            value: "pumwani",
-            label: "Pumwani",
-          },
-        ],
+            "value": "frere-town",
+            "label": "Frere Town"
+          }
+        ]
       },
       {
-        value: "makadara",
-        label: "Makadara",
-        children: [
+        "value": "kisauni",
+        "label": "Kisauni",
+        "children": [
           {
-            value: "makongeni",
-            label: "Makongeni",
+            "value": "shanzu",
+            "label": "Shanzu"
           },
           {
-            value: "harambee",
-            label: "Harambee",
+            "value": "magogoni",
+            "label": "Magogoni"
           },
           {
-            value: "viwandani",
-            label: "Viwandani",
+            "value": "mtopanga",
+            "label": "Mtopanga"
           },
           {
-            value: "maringo/hamza",
-            label: "Maringo/Hamza",
+            "value": "mwakirunge",
+            "label": "Mwakirunge"
           },
-        ],
+          {
+            "value": "bamburi",
+            "label": "Bamburi"
+          },
+          {
+            "value": "junda",
+            "label": "Junda"
+          },
+          {
+            "value": "mjambere",
+            "label": "Mjambere"
+          }
+        ]
       },
       {
-        value: "embakasi-west",
-        label: "Embakasi West",
-        children: [
+        "value": "jomvu",
+        "label": "Jomvu",
+        "children": [
           {
-            value: "kariobangi-south",
-            label: "Kariobangi South",
+            "value": "mikindani",
+            "label": "Mikindani"
           },
           {
-            value: "mowlem",
-            label: "Mowlem",
+            "value": "miritini",
+            "label": "Miritini"
           },
           {
-            value: "umoja-ii",
-            label: "Umoja Ii",
-          },
-          {
-            value: "umoja-i",
-            label: "Umoja I",
-          },
-        ],
+            "value": "jomvu-kuu",
+            "label": "Jomvu Kuu"
+          }
+        ]
       },
       {
-        value: "embakasi-east",
-        label: "Embakasi East",
-        children: [
+        "value": "changamwe",
+        "label": "Changamwe",
+        "children": [
           {
-            value: "mihango",
-            label: "Mihango",
+            "value": "chaani",
+            "label": "Chaani"
           },
           {
-            value: "utawala",
-            label: "Utawala",
+            "value": "changamwe",
+            "label": "Changamwe"
           },
           {
-            value: "embakasi",
-            label: "Embakasi",
+            "value": "airport",
+            "label": "Airport"
           },
           {
-            value: "lower-savannah",
-            label: "Lower Savannah",
+            "value": "kipevu",
+            "label": "Kipevu"
           },
           {
-            value: "upper-savannah",
-            label: "Upper Savannah",
-          },
-        ],
-      },
-      {
-        value: "embakasi-central",
-        label: "Embakasi Central",
-        children: [
-          {
-            value: "matopeni/spring-valley",
-            label: "Matopeni/Spring Valley",
-          },
-          {
-            value: "komarock",
-            label: "Komarock",
-          },
-          {
-            value: "kayole-south",
-            label: "Kayole South",
-          },
-          {
-            value: "kayole-central",
-            label: "Kayole Central",
-          },
-          {
-            value: "kayole-north",
-            label: "Kayole North",
-          },
-        ],
-      },
-      {
-        value: "embakasi-north",
-        label: "Embakasi North",
-        children: [
-          {
-            value: "dandora-area-iv",
-            label: "Dandora Area Iv",
-          },
-          {
-            value: "dandora-area-iii",
-            label: "Dandora Area Iii",
-          },
-          {
-            value: "dandora-area-ii",
-            label: "Dandora Area Ii",
-          },
-          {
-            value: "dandora-area-i",
-            label: "Dandora Area I",
-          },
-          {
-            value: "kariobangi-north",
-            label: "Kariobangi North",
-          },
-        ],
-      },
-      {
-        value: "embakasi-south",
-        label: "Embakasi South",
-        children: [
-          {
-            value: "kware",
-            label: "Kware",
-          },
-          {
-            value: "pipeline",
-            label: "Pipeline",
-          },
-          {
-            value: "kwa-reuben",
-            label: "Kwa Reuben",
-          },
-          {
-            value: "kwa-njenga",
-            label: "Kwa Njenga",
-          },
-          {
-            value: "imara-daima",
-            label: "Imara Daima",
-          },
-        ],
-      },
-      {
-        value: "ruaraka",
-        label: "Ruaraka",
-        children: [
-          {
-            value: "korogocho",
-            label: "Korogocho",
-          },
-          {
-            value: "lucky-summer",
-            label: "Lucky Summer",
-          },
-          {
-            value: "mathare-north",
-            label: "Mathare North",
-          },
-          {
-            value: "utalii",
-            label: "Utalii",
-          },
-          {
-            value: "baba-dogo",
-            label: "Baba Dogo",
-          },
-        ],
-      },
-      {
-        value: "kasarani",
-        label: "Kasarani",
-        children: [
-          {
-            value: "ruai",
-            label: "Ruai",
-          },
-          {
-            value: "njiru",
-            label: "Njiru",
-          },
-          {
-            value: "kasarani",
-            label: "Kasarani",
-          },
-          {
-            value: "mwiki",
-            label: "Mwiki",
-          },
-          {
-            value: "claycity",
-            label: "Claycity",
-          },
-        ],
-      },
-      {
-        value: "roysambu",
-        label: "Roysambu",
-        children: [
-          {
-            value: "kahawa",
-            label: "Kahawa",
-          },
-          {
-            value: "roysambu",
-            label: "Roysambu",
-          },
-          {
-            value: "zimmerman",
-            label: "Zimmerman",
-          },
-          {
-            value: "kahawa-west",
-            label: "Kahawa West",
-          },
-          {
-            value: "githurai",
-            label: "Githurai",
-          },
-        ],
-      },
-      {
-        value: "kibera",
-        label: "Kibera",
-        children: [
-          {
-            value: "sarangombe",
-            label: "Sarangombe",
-          },
-          {
-            value: "woodley/kenyatta-golf-course",
-            label: "Woodley/Kenyatta Golf Course",
-          },
-          {
-            value: "makina",
-            label: "Makina",
-          },
-          {
-            value: "lindi",
-            label: "Lindi",
-          },
-          {
-            value: "laini-saba",
-            label: "Laini Saba",
-          },
-        ],
-      },
-      {
-        value: "langata",
-        label: "Langata",
-        children: [
-          {
-            value: "nyayo-highrise",
-            label: "Nyayo Highrise",
-          },
-          {
-            value: "south-c",
-            label: "South C",
-          },
-          {
-            value: "mugumo-ini",
-            label: "Mugumo Ini",
-          },
-          {
-            value: "nairobi-west",
-            label: "Nairobi West",
-          },
-          {
-            value: "karen",
-            label: "Karen",
-          },
-        ],
-      },
-      {
-        value: "dagoretti-south",
-        label: "Dagoretti South",
-        children: [
-          {
-            value: "waithaka",
-            label: "Waithaka",
-          },
-          {
-            value: "uthiru/ruthimitu",
-            label: "Uthiru/Ruthimitu",
-          },
-          {
-            value: "riruta",
-            label: "Riruta",
-          },
-          {
-            value: "ngando",
-            label: "Ngando",
-          },
-          {
-            value: "mutuini",
-            label: "Mutuini",
-          },
-          {
-            value: "kawangware",
-            label: "Kawangware",
-          },
-        ],
-      },
-      {
-        value: "dagoretti-north",
-        label: "Dagoretti North",
-        children: [
-          {
-            value: "kabiro",
-            label: "Kabiro",
-          },
-          {
-            value: "kileleshwa",
-            label: "Kileleshwa",
-          },
-          {
-            value: "gatina",
-            label: "Gatina",
-          },
-          {
-            value: "kilimani",
-            label: "Kilimani",
-          },
-        ],
-      },
-      {
-        value: "westlands",
-        label: "Westlands",
-        children: [
-          {
-            value: "mountain-view",
-            label: "Mountain View",
-          },
-          {
-            value: "kangemi",
-            label: "Kangemi",
-          },
-          {
-            value: "karura",
-            label: "Karura",
-          },
-          {
-            value: "parklands/highridge",
-            label: "Parklands/Highridge",
-          },
-          {
-            value: "kitisuru",
-            label: "Kitisuru",
-          },
-        ],
-      },
-    ],
+            "value": "port-reitz",
+            "label": "Port Reitz"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "032",
-    label: "Nakuru",
-    children: [
+    "value": "021",
+    "label": "Muranga",
+    "children": [
       {
-        value: "nakuru-east",
-        label: "Nakuru East",
-        children: [
+        "value": "gatanga",
+        "label": "Gatanga",
+        "children": [
           {
-            value: "nakuru-east",
-            label: "Nakuru East",
+            "value": "kariara",
+            "label": "Kariara"
           },
           {
-            value: "menengai",
-            label: "Menengai",
+            "value": "gatanga",
+            "label": "Gatanga"
           },
           {
-            value: "flamingo",
-            label: "Flamingo",
+            "value": "kihumbu-ini",
+            "label": "Kihumbu Ini"
           },
           {
-            value: "kivumbini",
-            label: "Kivumbini",
+            "value": "mugumo-ini",
+            "label": "Mugumo Ini"
           },
           {
-            value: "biashara",
-            label: "Biashara",
+            "value": "kakuzi-mitubiri",
+            "label": "Kakuzi/Mitubiri"
           },
           {
-            value: "shaabab",
-            label: "Shaabab",
-          },
-        ],
+            "value": "ithanga",
+            "label": "Ithanga"
+          }
+        ]
       },
       {
-        value: "nakuru-west",
-        label: "Nakuru West",
-        children: [
+        "value": "kandara",
+        "label": "Kandara",
+        "children": [
           {
-            value: "rhoda",
-            label: "Rhoda",
+            "value": "ruchu",
+            "label": "Ruchu"
           },
           {
-            value: "kapkures",
-            label: "Kapkures",
+            "value": "ithiru",
+            "label": "Ithiru"
           },
           {
-            value: "kaptembwo",
-            label: "Kaptembwo",
+            "value": "gaichanjiru",
+            "label": "Gaichanjiru"
           },
           {
-            value: "london",
-            label: "London",
+            "value": "kagundu-ini",
+            "label": "Kagundu Ini"
           },
           {
-            value: "barut",
-            label: "Barut",
+            "value": "muruka",
+            "label": "Muruka"
           },
-        ],
+          {
+            "value": "ngararia",
+            "label": "Ngararia"
+          }
+        ]
       },
       {
-        value: "nakuru-north",
-        label: "Nakuru North",
-        children: [
+        "value": "maragwa",
+        "label": "Maragwa",
+        "children": [
           {
-            value: "bahati",
-            label: "Bahati",
+            "value": "nginda",
+            "label": "Nginda"
           },
           {
-            value: "lanet/umoja",
-            label: "Lanet/Umoja",
+            "value": "ichagaki",
+            "label": "Ichagaki"
           },
           {
-            value: "kiamaina",
-            label: "Kiamaina",
+            "value": "kamahuha",
+            "label": "Kamahuha"
           },
           {
-            value: "kabatini",
-            label: "Kabatini",
+            "value": "kambiti",
+            "label": "Kambiti"
           },
           {
-            value: "dundori",
-            label: "Dundori",
+            "value": "makuyu",
+            "label": "Makuyu"
           },
-        ],
+          {
+            "value": "kimorori-wempa",
+            "label": "Kimorori/Wempa"
+          }
+        ]
       },
       {
-        value: "rongai",
-        label: "Rongai",
-        children: [
+        "value": "kigumo",
+        "label": "Kigumo",
+        "children": [
           {
-            value: "solai",
-            label: "Solai",
+            "value": "kinyona",
+            "label": "Kinyona"
           },
           {
-            value: "mosop",
-            label: "Mosop",
+            "value": "kangari",
+            "label": "Kangari"
           },
           {
-            value: "visoi",
-            label: "Visoi",
+            "value": "kigumo",
+            "label": "Kigumo"
           },
           {
-            value: "soin",
-            label: "Soin",
+            "value": "muthithi",
+            "label": "Muthithi"
           },
           {
-            value: "menengai-west",
-            label: "Menengai West",
-          },
-        ],
+            "value": "kahumbu",
+            "label": "Kahumbu"
+          }
+        ]
       },
       {
-        value: "subukia",
-        label: "Subukia",
-        children: [
+        "value": "kiharu",
+        "label": "Kiharu",
+        "children": [
           {
-            value: "kabazi",
-            label: "Kabazi",
+            "value": "gaturi",
+            "label": "Gaturi"
           },
           {
-            value: "waseges",
-            label: "Waseges",
+            "value": "murarandia",
+            "label": "Murarandia"
           },
           {
-            value: "subukia",
-            label: "Subukia",
+            "value": "township",
+            "label": "Township"
           },
-        ],
+          {
+            "value": "mbiri",
+            "label": "Mbiri"
+          },
+          {
+            "value": "mugoiri",
+            "label": "Mugoiri"
+          },
+          {
+            "value": "wangu",
+            "label": "Wangu"
+          }
+        ]
       },
       {
-        value: "kuresoi-north",
-        label: "Kuresoi North",
-        children: [
+        "value": "mathioya",
+        "label": "Mathioya",
+        "children": [
           {
-            value: "kamara",
-            label: "Kamara",
+            "value": "kamacharia",
+            "label": "Kamacharia"
           },
           {
-            value: "sirikwa",
-            label: "Sirikwa",
+            "value": "kiru",
+            "label": "Kiru"
           },
           {
-            value: "nyota",
-            label: "Nyota",
+            "value": "gitugi",
+            "label": "Gitugi"
           },
           {
-            value: "kiptororo",
-            label: "Kiptororo",
-          },
-        ],
-      },
-      {
-        value: "kuresoi-south",
-        label: "Kuresoi South",
-        children: [
-          {
-            value: "tinet",
-            label: "Tinet",
+            "value": "rwathia",
+            "label": "Rwathia"
           },
           {
-            value: "kiptagich",
-            label: "Kiptagich",
+            "value": "muguru",
+            "label": "Muguru"
           },
           {
-            value: "keringet",
-            label: "Keringet",
-          },
-          {
-            value: "amalo",
-            label: "Amalo",
-          },
-        ],
-      },
-      {
-        value: "gilgil",
-        label: "Gilgil",
-        children: [
-          {
-            value: "murindati",
-            label: "Murindati",
-          },
-          {
-            value: "malewa-west",
-            label: "Malewa West",
-          },
-          {
-            value: "mbaruk/eburu",
-            label: "Mbaruk/Eburu",
-          },
-          {
-            value: "elementaita",
-            label: "Elementaita",
-          },
-          {
-            value: "gilgil",
-            label: "Gilgil",
-          },
-        ],
-      },
-      {
-        value: "naivasha",
-        label: "Naivasha",
-        children: [
-          {
-            value: "viwandani",
-            label: "Viwandani",
-          },
-          {
-            value: "naivasha-east",
-            label: "Naivasha East",
-          },
-          {
-            value: "olkaria",
-            label: "Olkaria",
-          },
-          {
-            value: "maiella",
-            label: "Maiella",
-          },
-          {
-            value: "mai-mahiu",
-            label: "Mai Mahiu",
-          },
-          {
-            value: "lake-view",
-            label: "Lake View",
-          },
-          {
-            value: "hells-gate",
-            label: "Hells Gate",
-          },
-          {
-            value: "biashara",
-            label: "Biashara",
-          },
-        ],
-      },
-      {
-        value: "njoro",
-        label: "Njoro",
-        children: [
-          {
-            value: "njoro",
-            label: "Njoro",
-          },
-          {
-            value: "lare",
-            label: "Lare",
-          },
-          {
-            value: "nessuit",
-            label: "Nessuit",
-          },
-          {
-            value: "kihingo",
-            label: "Kihingo",
-          },
-          {
-            value: "mauche",
-            label: "Mauche",
-          },
-          {
-            value: "mau-narok",
-            label: "Mau Narok",
-          },
-        ],
-      },
-      {
-        value: "molo",
-        label: "Molo",
-        children: [
-          {
-            value: "molo",
-            label: "Molo",
-          },
-          {
-            value: "turi",
-            label: "Turi",
-          },
-          {
-            value: "elburgon",
-            label: "Elburgon",
-          },
-          {
-            value: "mariashoni",
-            label: "Mariashoni",
-          },
-        ],
-      },
-    ],
+            "value": "kanyenyaini",
+            "label": "KanyenyaIni"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "029",
-    label: "Nandi",
-    children: [
+    "value": "047",
+    "label": "Nairobi",
+    "children": [
       {
-        value: "mosop",
-        label: "Mosop",
-        children: [
+        "value": "mathare",
+        "label": "Mathare",
+        "children": [
           {
-            value: "sangalo/kebulonik",
-            label: "Sangalo/Kebulonik",
+            "value": "kiamaiko",
+            "label": "Kiamaiko"
           },
           {
-            value: "kabisaga",
-            label: "Kabisaga",
+            "value": "mlango-kubwa",
+            "label": "Mlango Kubwa"
           },
           {
-            value: "ndalat",
-            label: "Ndalat",
+            "value": "ngei",
+            "label": "Ngei"
           },
           {
-            value: "kabiyet",
-            label: "Kabiyet",
+            "value": "huruma",
+            "label": "Huruma"
           },
           {
-            value: "kurgung/surungai",
-            label: "Kurgung/Surungai",
+            "value": "mabatini",
+            "label": "Mabatini"
           },
           {
-            value: "kipkarenchepterwai",
-            label: "KipkarenChepterwai",
-          },
-        ],
+            "value": "hospital",
+            "label": "Hospital"
+          }
+        ]
       },
       {
-        value: "emgwen",
-        label: "Emgwen",
-        children: [
+        "value": "starehe",
+        "label": "Starehe",
+        "children": [
           {
-            value: "kilibwoni",
-            label: "Kilibwoni",
+            "value": "nairobi-south",
+            "label": "Nairobi South"
           },
           {
-            value: "kapsabet",
-            label: "Kapsabet",
+            "value": "landimawe",
+            "label": "Landimawe"
           },
           {
-            value: "kapkangani",
-            label: "Kapkangani",
+            "value": "ziwani-kariokor",
+            "label": "Ziwani/Kariokor"
           },
           {
-            value: "chepkumia",
-            label: "Chepkumia",
+            "value": "pangani",
+            "label": "Pangani"
           },
-        ],
+          {
+            "value": "ngara",
+            "label": "Ngara"
+          },
+          {
+            "value": "nairobi-central",
+            "label": "Nairobi Central"
+          }
+        ]
       },
       {
-        value: "chesumei",
-        label: "Chesumei",
-        children: [
+        "value": "kamukunji",
+        "label": "Kamukunji",
+        "children": [
           {
-            value: "kiptuya",
-            label: "Kiptuya",
+            "value": "california",
+            "label": "California"
           },
           {
-            value: "kaptel/kamoiywo",
-            label: "Kaptel/Kamoiywo",
+            "value": "airbase",
+            "label": "Airbase"
           },
           {
-            value: "lelmokwo/ngechek",
-            label: "Lelmokwo/Ngechek",
+            "value": "eastleigh-south",
+            "label": "Eastleigh South"
           },
           {
-            value: "kosirai",
-            label: "Kosirai",
+            "value": "eastleigh-north",
+            "label": "Eastleigh North"
           },
           {
-            value: "chemundu/kapngetuny",
-            label: "Chemundu/Kapngetuny",
-          },
-        ],
+            "value": "pumwani",
+            "label": "Pumwani"
+          }
+        ]
       },
       {
-        value: "nandi-east",
-        label: "Nandi East",
-        children: [
+        "value": "makadara",
+        "label": "Makadara",
+        "children": [
           {
-            value: "kapchorua",
-            label: "Kapchorua",
+            "value": "makongeni",
+            "label": "Makongeni"
           },
           {
-            value: "ollessos",
-            label: "Ollessos",
+            "value": "harambee",
+            "label": "Harambee"
           },
           {
-            value: "chepkunyuk",
-            label: "Chepkunyuk",
+            "value": "viwandani",
+            "label": "Viwandani"
           },
           {
-            value: "nandi-hills",
-            label: "Nandi Hills",
-          },
-        ],
+            "value": "maringo-hamza",
+            "label": "Maringo/Hamza"
+          }
+        ]
       },
       {
-        value: "aldai",
-        label: "Aldai",
-        children: [
+        "value": "embakasi-west",
+        "label": "Embakasi West",
+        "children": [
           {
-            value: "koyo-ndurio",
-            label: "Koyo-Ndurio",
+            "value": "kariobangi-south",
+            "label": "Kariobangi South"
           },
           {
-            value: "kaptumo-kaboi",
-            label: "Kaptumo Kaboi",
+            "value": "mowlem",
+            "label": "Mowlem"
           },
           {
-            value: "kobujoi",
-            label: "Kobujoi",
+            "value": "umoja-ii",
+            "label": "Umoja Ii"
           },
           {
-            value: "kemeloi-maraba",
-            label: "Kemeloi Maraba",
-          },
-          {
-            value: "terik",
-            label: "Terik",
-          },
-          {
-            value: "kabwareng",
-            label: "Kabwareng",
-          },
-        ],
+            "value": "umoja-i",
+            "label": "Umoja I"
+          }
+        ]
       },
       {
-        value: "tinderet",
-        label: "Tinderet",
-        children: [
+        "value": "embakasi-east",
+        "label": "Embakasi East",
+        "children": [
           {
-            value: "kapsimotwo",
-            label: "Kapsimotwo",
+            "value": "mihango",
+            "label": "Mihango"
           },
           {
-            value: "chemelil/chemase",
-            label: "Chemelil/Chemase",
+            "value": "utawala",
+            "label": "Utawala"
           },
           {
-            value: "tindiret",
-            label: "Tindiret",
+            "value": "embakasi",
+            "label": "Embakasi"
           },
           {
-            value: "songhor/soba",
-            label: "Songhor/Soba",
+            "value": "lower-savannah",
+            "label": "Lower Savannah"
           },
-        ],
+          {
+            "value": "upper-savannah",
+            "label": "Upper Savannah"
+          }
+        ]
       },
-    ],
+      {
+        "value": "embakasi-central",
+        "label": "Embakasi Central",
+        "children": [
+          {
+            "value": "matopeni-spring-valley",
+            "label": "Matopeni/Spring Valley"
+          },
+          {
+            "value": "komarock",
+            "label": "Komarock"
+          },
+          {
+            "value": "kayole-south",
+            "label": "Kayole South"
+          },
+          {
+            "value": "kayole-central",
+            "label": "Kayole Central"
+          },
+          {
+            "value": "kayole-north",
+            "label": "Kayole North"
+          }
+        ]
+      },
+      {
+        "value": "embakasi-north",
+        "label": "Embakasi North",
+        "children": [
+          {
+            "value": "dandora-area-iv",
+            "label": "Dandora Area Iv"
+          },
+          {
+            "value": "dandora-area-iii",
+            "label": "Dandora Area Iii"
+          },
+          {
+            "value": "dandora-area-ii",
+            "label": "Dandora Area Ii"
+          },
+          {
+            "value": "dandora-area-i",
+            "label": "Dandora Area I"
+          },
+          {
+            "value": "kariobangi-north",
+            "label": "Kariobangi North"
+          }
+        ]
+      },
+      {
+        "value": "embakasi-south",
+        "label": "Embakasi South",
+        "children": [
+          {
+            "value": "kware",
+            "label": "Kware"
+          },
+          {
+            "value": "pipeline",
+            "label": "Pipeline"
+          },
+          {
+            "value": "kwa-reuben",
+            "label": "Kwa Reuben"
+          },
+          {
+            "value": "kwa-njenga",
+            "label": "Kwa Njenga"
+          },
+          {
+            "value": "imara-daima",
+            "label": "Imara Daima"
+          }
+        ]
+      },
+      {
+        "value": "ruaraka",
+        "label": "Ruaraka",
+        "children": [
+          {
+            "value": "korogocho",
+            "label": "Korogocho"
+          },
+          {
+            "value": "lucky-summer",
+            "label": "Lucky Summer"
+          },
+          {
+            "value": "mathare-north",
+            "label": "Mathare North"
+          },
+          {
+            "value": "utalii",
+            "label": "Utalii"
+          },
+          {
+            "value": "baba-dogo",
+            "label": "Baba Dogo"
+          }
+        ]
+      },
+      {
+        "value": "kasarani",
+        "label": "Kasarani",
+        "children": [
+          {
+            "value": "ruai",
+            "label": "Ruai"
+          },
+          {
+            "value": "njiru",
+            "label": "Njiru"
+          },
+          {
+            "value": "kasarani",
+            "label": "Kasarani"
+          },
+          {
+            "value": "mwiki",
+            "label": "Mwiki"
+          },
+          {
+            "value": "claycity",
+            "label": "Claycity"
+          }
+        ]
+      },
+      {
+        "value": "roysambu",
+        "label": "Roysambu",
+        "children": [
+          {
+            "value": "kahawa",
+            "label": "Kahawa"
+          },
+          {
+            "value": "roysambu",
+            "label": "Roysambu"
+          },
+          {
+            "value": "zimmerman",
+            "label": "Zimmerman"
+          },
+          {
+            "value": "kahawa-west",
+            "label": "Kahawa West"
+          },
+          {
+            "value": "githurai",
+            "label": "Githurai"
+          }
+        ]
+      },
+      {
+        "value": "kibera",
+        "label": "Kibera",
+        "children": [
+          {
+            "value": "sarangombe",
+            "label": "Sarangombe"
+          },
+          {
+            "value": "woodley-kenyatta-golf-course",
+            "label": "Woodley/Kenyatta Golf Course"
+          },
+          {
+            "value": "makina",
+            "label": "Makina"
+          },
+          {
+            "value": "lindi",
+            "label": "Lindi"
+          },
+          {
+            "value": "laini-saba",
+            "label": "Laini Saba"
+          }
+        ]
+      },
+      {
+        "value": "langata",
+        "label": "Langata",
+        "children": [
+          {
+            "value": "nyayo-highrise",
+            "label": "Nyayo Highrise"
+          },
+          {
+            "value": "south-c",
+            "label": "South C"
+          },
+          {
+            "value": "mugumo-ini",
+            "label": "Mugumo Ini"
+          },
+          {
+            "value": "nairobi-west",
+            "label": "Nairobi West"
+          },
+          {
+            "value": "karen",
+            "label": "Karen"
+          }
+        ]
+      },
+      {
+        "value": "dagoretti-south",
+        "label": "Dagoretti South",
+        "children": [
+          {
+            "value": "waithaka",
+            "label": "Waithaka"
+          },
+          {
+            "value": "uthiru-ruthimitu",
+            "label": "Uthiru/Ruthimitu"
+          },
+          {
+            "value": "riruta",
+            "label": "Riruta"
+          },
+          {
+            "value": "ngando",
+            "label": "Ngando"
+          },
+          {
+            "value": "mutuini",
+            "label": "Mutuini"
+          },
+          {
+            "value": "kawangware",
+            "label": "Kawangware"
+          }
+        ]
+      },
+      {
+        "value": "dagoretti-north",
+        "label": "Dagoretti North",
+        "children": [
+          {
+            "value": "kabiro",
+            "label": "Kabiro"
+          },
+          {
+            "value": "kileleshwa",
+            "label": "Kileleshwa"
+          },
+          {
+            "value": "gatina",
+            "label": "Gatina"
+          },
+          {
+            "value": "kilimani",
+            "label": "Kilimani"
+          }
+        ]
+      },
+      {
+        "value": "westlands",
+        "label": "Westlands",
+        "children": [
+          {
+            "value": "mountain-view",
+            "label": "Mountain View"
+          },
+          {
+            "value": "kangemi",
+            "label": "Kangemi"
+          },
+          {
+            "value": "karura",
+            "label": "Karura"
+          },
+          {
+            "value": "parklands-highridge",
+            "label": "Parklands/Highridge"
+          },
+          {
+            "value": "kitisuru",
+            "label": "Kitisuru"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "033",
-    label: "Narok",
-    children: [
+    "value": "032",
+    "label": "Nakuru",
+    "children": [
       {
-        value: "narok-west",
-        label: "Narok West",
-        children: [
+        "value": "nakuru-east",
+        "label": "Nakuru East",
+        "children": [
           {
-            value: "naikarra",
-            label: "Naikarra",
+            "value": "nakuru-east",
+            "label": "Nakuru East"
           },
           {
-            value: "siana",
-            label: "Siana",
+            "value": "menengai",
+            "label": "Menengai"
           },
           {
-            value: "mara",
-            label: "Mara",
+            "value": "flamingo",
+            "label": "Flamingo"
           },
           {
-            value: "ilmotiok",
-            label: "Ilmotiok",
+            "value": "kivumbini",
+            "label": "Kivumbini"
           },
-        ],
+          {
+            "value": "biashara",
+            "label": "Biashara"
+          },
+          {
+            "value": "shaabab",
+            "label": "Shaabab"
+          }
+        ]
       },
       {
-        value: "narok-south",
-        label: "Narok South",
-        children: [
+        "value": "nakuru-west",
+        "label": "Nakuru West",
+        "children": [
           {
-            value: "sagamian",
-            label: "Sagamian",
+            "value": "rhoda",
+            "label": "Rhoda"
           },
           {
-            value: "sogoo",
-            label: "Sogoo",
+            "value": "kapkures",
+            "label": "Kapkures"
           },
           {
-            value: "loita",
-            label: "Loita",
+            "value": "kaptembwo",
+            "label": "Kaptembwo"
           },
           {
-            value: "melelo",
-            label: "Melelo",
+            "value": "london",
+            "label": "London"
           },
           {
-            value: "ololulunga",
-            label: "Ololulunga",
-          },
-          {
-            value: "majimoto/naroosura",
-            label: "Majimoto/Naroosura",
-          },
-        ],
+            "value": "barut",
+            "label": "Barut"
+          }
+        ]
       },
       {
-        value: "narok-east",
-        label: "Narok East",
-        children: [
+        "value": "nakuru-north",
+        "label": "Nakuru North",
+        "children": [
           {
-            value: "suswa",
-            label: "Suswa",
+            "value": "bahati",
+            "label": "Bahati"
           },
           {
-            value: "keekonyokie",
-            label: "Keekonyokie",
+            "value": "lanet-umoja",
+            "label": "Lanet/Umoja"
           },
           {
-            value: "ildamat",
-            label: "Ildamat",
+            "value": "kiamaina",
+            "label": "Kiamaina"
           },
           {
-            value: "mosiro",
-            label: "Mosiro",
+            "value": "kabatini",
+            "label": "Kabatini"
           },
-        ],
+          {
+            "value": "dundori",
+            "label": "Dundori"
+          }
+        ]
       },
       {
-        value: "narok-north",
-        label: "Narok North",
-        children: [
+        "value": "rongai",
+        "label": "Rongai",
+        "children": [
           {
-            value: "melili",
-            label: "Melili",
+            "value": "solai",
+            "label": "Solai"
           },
           {
-            value: "olorropil",
-            label: "Olorropil",
+            "value": "mosop",
+            "label": "Mosop"
           },
           {
-            value: "nkareta",
-            label: "Nkareta",
+            "value": "visoi",
+            "label": "Visoi"
           },
           {
-            value: "narok-town",
-            label: "Narok Town",
+            "value": "soin",
+            "label": "Soin"
           },
           {
-            value: "olokurto",
-            label: "Olokurto",
-          },
-          {
-            value: "olpusimoru",
-            label: "Olpusimoru",
-          },
-        ],
+            "value": "menengai-west",
+            "label": "Menengai West"
+          }
+        ]
       },
       {
-        value: "transmara-east",
-        label: "Transmara East",
-        children: [
+        "value": "subukia",
+        "label": "Subukia",
+        "children": [
           {
-            value: "kapsasian",
-            label: "Kapsasian",
+            "value": "kabazi",
+            "label": "Kabazi"
           },
           {
-            value: "mogondo",
-            label: "Mogondo",
+            "value": "waseges",
+            "label": "Waseges"
           },
           {
-            value: "ololmasani",
-            label: "Ololmasani",
-          },
-          {
-            value: "ilkerin",
-            label: "Ilkerin",
-          },
-        ],
+            "value": "subukia",
+            "label": "Subukia"
+          }
+        ]
       },
       {
-        value: "transmara-west",
-        label: "Transmara West",
-        children: [
+        "value": "kuresoi-north",
+        "label": "Kuresoi North",
+        "children": [
           {
-            value: "lolgorian",
-            label: "Lolgorian",
+            "value": "kamara",
+            "label": "Kamara"
           },
           {
-            value: "kimintet",
-            label: "Kimintet",
+            "value": "sirikwa",
+            "label": "Sirikwa"
           },
           {
-            value: "shankoe",
-            label: "Shankoe",
+            "value": "nyota",
+            "label": "Nyota"
           },
           {
-            value: "angata-barikoi",
-            label: "Angata Barikoi",
-          },
-          {
-            value: "keyian",
-            label: "Keyian",
-          },
-          {
-            value: "kilgoris-central",
-            label: "Kilgoris Central",
-          },
-        ],
+            "value": "kiptororo",
+            "label": "Kiptororo"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kuresoi-south",
+        "label": "Kuresoi South",
+        "children": [
+          {
+            "value": "tinet",
+            "label": "Tinet"
+          },
+          {
+            "value": "kiptagich",
+            "label": "Kiptagich"
+          },
+          {
+            "value": "keringet",
+            "label": "Keringet"
+          },
+          {
+            "value": "amalo",
+            "label": "Amalo"
+          }
+        ]
+      },
+      {
+        "value": "gilgil",
+        "label": "Gilgil",
+        "children": [
+          {
+            "value": "murindati",
+            "label": "Murindati"
+          },
+          {
+            "value": "malewa-west",
+            "label": "Malewa West"
+          },
+          {
+            "value": "mbaruk-eburu",
+            "label": "Mbaruk/Eburu"
+          },
+          {
+            "value": "elementaita",
+            "label": "Elementaita"
+          },
+          {
+            "value": "gilgil",
+            "label": "Gilgil"
+          }
+        ]
+      },
+      {
+        "value": "naivasha",
+        "label": "Naivasha",
+        "children": [
+          {
+            "value": "viwandani",
+            "label": "Viwandani"
+          },
+          {
+            "value": "naivasha-east",
+            "label": "Naivasha East"
+          },
+          {
+            "value": "olkaria",
+            "label": "Olkaria"
+          },
+          {
+            "value": "maiella",
+            "label": "Maiella"
+          },
+          {
+            "value": "mai-mahiu",
+            "label": "Mai Mahiu"
+          },
+          {
+            "value": "lake-view",
+            "label": "Lake View"
+          },
+          {
+            "value": "hells-gate",
+            "label": "Hells Gate"
+          },
+          {
+            "value": "biashara",
+            "label": "Biashara"
+          }
+        ]
+      },
+      {
+        "value": "njoro",
+        "label": "Njoro",
+        "children": [
+          {
+            "value": "njoro",
+            "label": "Njoro"
+          },
+          {
+            "value": "lare",
+            "label": "Lare"
+          },
+          {
+            "value": "nessuit",
+            "label": "Nessuit"
+          },
+          {
+            "value": "kihingo",
+            "label": "Kihingo"
+          },
+          {
+            "value": "mauche",
+            "label": "Mauche"
+          },
+          {
+            "value": "mau-narok",
+            "label": "Mau Narok"
+          }
+        ]
+      },
+      {
+        "value": "molo",
+        "label": "Molo",
+        "children": [
+          {
+            "value": "molo",
+            "label": "Molo"
+          },
+          {
+            "value": "turi",
+            "label": "Turi"
+          },
+          {
+            "value": "elburgon",
+            "label": "Elburgon"
+          },
+          {
+            "value": "mariashoni",
+            "label": "Mariashoni"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "046",
-    label: "Nyamira",
-    children: [
+    "value": "029",
+    "label": "Nandi",
+    "children": [
       {
-        value: "borabu",
-        label: "Borabu",
-        children: [
+        "value": "mosop",
+        "label": "Mosop",
+        "children": [
           {
-            value: "esise",
-            label: "Esise",
+            "value": "sangalo-kebulonik",
+            "label": "Sangalo/Kebulonik"
           },
           {
-            value: "nyansiongo",
-            label: "Nyansiongo",
+            "value": "kabisaga",
+            "label": "Kabisaga"
           },
           {
-            value: "kiabonyoru",
-            label: "Kiabonyoru",
+            "value": "ndalat",
+            "label": "Ndalat"
           },
           {
-            value: "mekenene",
-            label: "Mekenene",
+            "value": "kabiyet",
+            "label": "Kabiyet"
           },
-        ],
+          {
+            "value": "kurgung-surungai",
+            "label": "Kurgung/Surungai"
+          },
+          {
+            "value": "kipkarenchepterwai",
+            "label": "KipkarenChepterwai"
+          }
+        ]
       },
       {
-        value: "nyamira-north",
-        label: "Nyamira North",
-        children: [
+        "value": "emgwen",
+        "label": "Emgwen",
+        "children": [
           {
-            value: "ekerenyo",
-            label: "Ekerenyo",
+            "value": "kilibwoni",
+            "label": "Kilibwoni"
           },
           {
-            value: "magwagwa",
-            label: "Magwagwa",
+            "value": "kapsabet",
+            "label": "Kapsabet"
           },
           {
-            value: "bokeira",
-            label: "Bokeira",
+            "value": "kapkangani",
+            "label": "Kapkangani"
           },
           {
-            value: "bomwagamo",
-            label: "Bomwagamo",
-          },
-          {
-            value: "itibo",
-            label: "Itibo",
-          },
-        ],
+            "value": "chepkumia",
+            "label": "Chepkumia"
+          }
+        ]
       },
       {
-        value: "nyamira",
-        label: "Nyamira",
-        children: [
+        "value": "chesumei",
+        "label": "Chesumei",
+        "children": [
           {
-            value: "township",
-            label: "Township",
+            "value": "kiptuya",
+            "label": "Kiptuya"
           },
           {
-            value: "bonyamatuta",
-            label: "Bonyamatuta",
+            "value": "kaptel-kamoiywo",
+            "label": "Kaptel/Kamoiywo"
           },
           {
-            value: "bosamaro",
-            label: "Bosamaro",
+            "value": "lelmokwo-ngechek",
+            "label": "Lelmokwo/Ngechek"
           },
           {
-            value: "bogichora",
-            label: "Bogichora",
+            "value": "kosirai",
+            "label": "Kosirai"
           },
           {
-            value: "nyamaiya",
-            label: "Nyamaiya",
-          },
-        ],
+            "value": "chemundu-kapngetuny",
+            "label": "Chemundu/Kapngetuny"
+          }
+        ]
       },
       {
-        value: "manga",
-        label: "Manga",
-        children: [
+        "value": "nandi-east",
+        "label": "Nandi East",
+        "children": [
           {
-            value: "manga",
-            label: "Manga",
+            "value": "kapchorua",
+            "label": "Kapchorua"
           },
           {
-            value: "magombo",
-            label: "Magombo",
+            "value": "ollessos",
+            "label": "Ollessos"
           },
           {
-            value: "kemera",
-            label: "Kemera",
+            "value": "chepkunyuk",
+            "label": "Chepkunyuk"
           },
-        ],
+          {
+            "value": "nandi-hills",
+            "label": "Nandi Hills"
+          }
+        ]
       },
       {
-        value: "masaba-north",
-        label: "Masaba North",
-        children: [
+        "value": "aldai",
+        "label": "Aldai",
+        "children": [
           {
-            value: "gesima",
-            label: "Gesima",
+            "value": "koyo-ndurio",
+            "label": "Koyo-Ndurio"
           },
           {
-            value: "gachuba",
-            label: "Gachuba",
+            "value": "kaptumo-kaboi",
+            "label": "Kaptumo Kaboi"
           },
           {
-            value: "rigoma",
-            label: "Rigoma",
+            "value": "kobujoi",
+            "label": "Kobujoi"
           },
-        ],
+          {
+            "value": "kemeloi-maraba",
+            "label": "Kemeloi Maraba"
+          },
+          {
+            "value": "terik",
+            "label": "Terik"
+          },
+          {
+            "value": "kabwareng",
+            "label": "Kabwareng"
+          }
+        ]
       },
-    ],
+      {
+        "value": "tinderet",
+        "label": "Tinderet",
+        "children": [
+          {
+            "value": "kapsimotwo",
+            "label": "Kapsimotwo"
+          },
+          {
+            "value": "chemelil-chemase",
+            "label": "Chemelil/Chemase"
+          },
+          {
+            "value": "tindiret",
+            "label": "Tindiret"
+          },
+          {
+            "value": "songhor-soba",
+            "label": "Songhor/Soba"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "018",
-    label: "Nyandarua",
-    children: [
+    "value": "033",
+    "label": "Narok",
+    "children": [
       {
-        value: "ndaragwa",
-        label: "Ndaragwa",
-        children: [
+        "value": "narok-west",
+        "label": "Narok West",
+        "children": [
           {
-            value: "shamata",
-            label: "Shamata",
+            "value": "naikarra",
+            "label": "Naikarra"
           },
           {
-            value: "central",
-            label: "Central",
+            "value": "siana",
+            "label": "Siana"
           },
           {
-            value: "kiriita",
-            label: "Kiriita",
+            "value": "mara",
+            "label": "Mara"
           },
           {
-            value: "leshau-pondo",
-            label: "Leshau Pondo",
-          },
-        ],
+            "value": "ilmotiok",
+            "label": "Ilmotiok"
+          }
+        ]
       },
       {
-        value: "oljororok",
-        label: "Oljororok",
-        children: [
+        "value": "narok-south",
+        "label": "Narok South",
+        "children": [
           {
-            value: "charagita",
-            label: "Charagita",
+            "value": "sagamian",
+            "label": "Sagamian"
           },
           {
-            value: "weru",
-            label: "Weru",
+            "value": "sogoo",
+            "label": "Sogoo"
           },
           {
-            value: "gatimu",
-            label: "Gatimu",
+            "value": "loita",
+            "label": "Loita"
           },
           {
-            value: "gathanji",
-            label: "Gathanji",
+            "value": "melelo",
+            "label": "Melelo"
           },
           {
-            value: "rurii",
-            label: "Rurii",
+            "value": "ololulunga",
+            "label": "Ololulunga"
           },
-        ],
+          {
+            "value": "majimoto-naroosura",
+            "label": "Majimoto/Naroosura"
+          }
+        ]
       },
       {
-        value: "olkalou",
-        label: "Olkalou",
-        children: [
+        "value": "narok-east",
+        "label": "Narok East",
+        "children": [
           {
-            value: "kaimbaga",
-            label: "Kaimbaga",
+            "value": "suswa",
+            "label": "Suswa"
           },
           {
-            value: "mirangine",
-            label: "Mirangine",
+            "value": "keekonyokie",
+            "label": "Keekonyokie"
           },
           {
-            value: "kanjuiri-range",
-            label: "Kanjuiri Range",
+            "value": "ildamat",
+            "label": "Ildamat"
           },
           {
-            value: "karau",
-            label: "Karau",
-          },
-          {
-            value: "githioro",
-            label: "Githioro",
-          },
-        ],
+            "value": "mosiro",
+            "label": "Mosiro"
+          }
+        ]
       },
       {
-        value: "kipipiri",
-        label: "Kipipiri",
-        children: [
+        "value": "narok-north",
+        "label": "Narok North",
+        "children": [
           {
-            value: "geta",
-            label: "Geta",
+            "value": "melili",
+            "label": "Melili"
           },
           {
-            value: "kipipiri",
-            label: "Kipipiri",
+            "value": "olorropil",
+            "label": "Olorropil"
           },
           {
-            value: "wanjohi",
-            label: "Wanjohi",
+            "value": "nkareta",
+            "label": "Nkareta"
           },
           {
-            value: "magumu",
-            label: "Magumu",
+            "value": "narok-town",
+            "label": "Narok Town"
           },
           {
-            value: "",
-            label: "",
+            "value": "olokurto",
+            "label": "Olokurto"
           },
           {
-            value: "",
-            label: "",
-          },
-        ],
+            "value": "olpusimoru",
+            "label": "Olpusimoru"
+          }
+        ]
       },
       {
-        value: "kinangop",
-        label: "Kinangop",
-        children: [
+        "value": "transmara-east",
+        "label": "Transmara East",
+        "children": [
           {
-            value: "githabai",
-            label: "Githabai",
+            "value": "kapsasian",
+            "label": "Kapsasian"
           },
           {
-            value: "nyakio",
-            label: "Nyakio",
+            "value": "mogondo",
+            "label": "Mogondo"
           },
           {
-            value: "njabini\\kiburu",
-            label: "Njabini\\Kiburu",
+            "value": "ololmasani",
+            "label": "Ololmasani"
           },
           {
-            value: "murungaru",
-            label: "Murungaru",
-          },
-          {
-            value: "north-kinangop",
-            label: "North Kinangop",
-          },
-          {
-            value: "gathara",
-            label: "Gathara",
-          },
-          {
-            value: "engineer",
-            label: "Engineer",
-          },
-        ],
+            "value": "ilkerin",
+            "label": "Ilkerin"
+          }
+        ]
       },
-    ],
+      {
+        "value": "transmara-west",
+        "label": "Transmara West",
+        "children": [
+          {
+            "value": "lolgorian",
+            "label": "Lolgorian"
+          },
+          {
+            "value": "kimintet",
+            "label": "Kimintet"
+          },
+          {
+            "value": "shankoe",
+            "label": "Shankoe"
+          },
+          {
+            "value": "angata-barikoi",
+            "label": "Angata Barikoi"
+          },
+          {
+            "value": "keyian",
+            "label": "Keyian"
+          },
+          {
+            "value": "kilgoris-central",
+            "label": "Kilgoris Central"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "019",
-    label: "Nyeri",
-    children: [
+    "value": "046",
+    "label": "Nyamira",
+    "children": [
       {
-        value: "nyeri-central",
-        label: "Nyeri Central",
-        children: [
+        "value": "borabu",
+        "label": "Borabu",
+        "children": [
           {
-            value: "kamakwa/mukaro",
-            label: "Kamakwa/Mukaro",
+            "value": "esise",
+            "label": "Esise"
           },
           {
-            value: "ruringu",
-            label: "Ruringu",
+            "value": "nyansiongo",
+            "label": "Nyansiongo"
           },
           {
-            value: "gatitu/muruguru",
-            label: "Gatitu/Muruguru",
+            "value": "kiabonyoru",
+            "label": "Kiabonyoru"
           },
           {
-            value: "rware",
-            label: "Rware",
-          },
-          {
-            value: "kiganjo/mathari",
-            label: "Kiganjo/Mathari",
-          },
-        ],
+            "value": "mekenene",
+            "label": "Mekenene"
+          }
+        ]
       },
       {
-        value: "mukurweini",
-        label: "Mukurweini",
-        children: [
+        "value": "nyamira-north",
+        "label": "Nyamira North",
+        "children": [
           {
-            value: "mukurwe-ini-central",
-            label: "Mukurwe Ini Central",
+            "value": "ekerenyo",
+            "label": "Ekerenyo"
           },
           {
-            value: "mukurwe-ini-west",
-            label: "Mukurwe Ini West",
+            "value": "magwagwa",
+            "label": "Magwagwa"
           },
           {
-            value: "rugi",
-            label: "Rugi",
+            "value": "bokeira",
+            "label": "Bokeira"
           },
           {
-            value: "gikondi",
-            label: "Gikondi",
+            "value": "bomwagamo",
+            "label": "Bomwagamo"
           },
-        ],
+          {
+            "value": "itibo",
+            "label": "Itibo"
+          }
+        ]
       },
       {
-        value: "nyeri-south",
-        label: "Nyeri South",
-        children: [
+        "value": "nyamira",
+        "label": "Nyamira",
+        "children": [
           {
-            value: "karima",
-            label: "Karima",
+            "value": "township",
+            "label": "Township"
           },
           {
-            value: "chinga",
-            label: "Chinga",
+            "value": "bonyamatuta",
+            "label": "Bonyamatuta"
           },
           {
-            value: "iria-ini",
-            label: "Iria Ini",
+            "value": "bosamaro",
+            "label": "Bosamaro"
           },
           {
-            value: "mahiga",
-            label: "Mahiga",
+            "value": "bogichora",
+            "label": "Bogichora"
           },
-        ],
+          {
+            "value": "nyamaiya",
+            "label": "Nyamaiya"
+          }
+        ]
       },
       {
-        value: "mathira-east",
-        label: "Mathira East",
-        children: [
+        "value": "manga",
+        "label": "Manga",
+        "children": [
           {
-            value: "karatina-town",
-            label: "Karatina Town",
+            "value": "manga",
+            "label": "Manga"
           },
           {
-            value: "konyu",
-            label: "Konyu",
+            "value": "magombo",
+            "label": "Magombo"
           },
           {
-            value: "iriaini",
-            label: "Iriaini",
-          },
-          {
-            value: "magutu",
-            label: "Magutu",
-          },
-        ],
+            "value": "kemera",
+            "label": "Kemera"
+          }
+        ]
       },
       {
-        value: "mathira-west",
-        label: "Mathira West",
-        children: [
+        "value": "masaba-north",
+        "label": "Masaba North",
+        "children": [
           {
-            value: "kirimukuyu",
-            label: "Kirimukuyu",
+            "value": "gesima",
+            "label": "Gesima"
           },
           {
-            value: "ruguru",
-            label: "Ruguru",
-          },
-        ],
-      },
-      {
-        value: "kieni-east",
-        label: "Kieni East",
-        children: [
-          {
-            value: "kabaru",
-            label: "Kabaru",
+            "value": "gachuba",
+            "label": "Gachuba"
           },
           {
-            value: "gakawa",
-            label: "Gakawa",
-          },
-          {
-            value: "thegu-river",
-            label: "Thegu River",
-          },
-          {
-            value: "naromoru-kiamathaga",
-            label: "Naromoru Kiamathaga",
-          },
-        ],
-      },
-      {
-        value: "kieni-west",
-        label: "Kieni West",
-        children: [
-          {
-            value: "mweiga",
-            label: "Mweiga",
-          },
-          {
-            value: "mwiyogo/endarasha",
-            label: "Mwiyogo/Endarasha",
-          },
-          {
-            value: "mugunda",
-            label: "Mugunda",
-          },
-          {
-            value: "gatarakwa",
-            label: "Gatarakwa",
-          },
-        ],
-      },
-      {
-        value: "tetu",
-        label: "Tetu",
-        children: [
-          {
-            value: "aguthi-gaaki",
-            label: "Aguthi Gaaki",
-          },
-          {
-            value: "wamagana",
-            label: "Wamagana",
-          },
-          {
-            value: "dedan-kimanthi",
-            label: "Dedan Kimanthi",
-          },
-        ],
-      },
-    ],
+            "value": "rigoma",
+            "label": "Rigoma"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "025",
-    label: "Samburu",
-    children: [
+    "value": "018",
+    "label": "Nyandarua",
+    "children": [
       {
-        value: "samburu-east",
-        label: "Samburu East",
-        children: [
+        "value": "ndaragwa",
+        "label": "Ndaragwa",
+        "children": [
           {
-            value: "wamba-north",
-            label: "Wamba North",
+            "value": "shamata",
+            "label": "Shamata"
           },
           {
-            value: "wamba-east",
-            label: "Wamba East",
+            "value": "central",
+            "label": "Central"
           },
           {
-            value: "wamba-west",
-            label: "Wamba West",
+            "value": "kiriita",
+            "label": "Kiriita"
           },
           {
-            value: "waso",
-            label: "Waso",
-          },
-        ],
+            "value": "leshau-pondo",
+            "label": "Leshau Pondo"
+          }
+        ]
       },
       {
-        value: "samburu-north",
-        label: "Samburu North",
-        children: [
+        "value": "oljororok",
+        "label": "Oljororok",
+        "children": [
           {
-            value: "baawa",
-            label: "Baawa",
+            "value": "charagita",
+            "label": "Charagita"
           },
           {
-            value: "angata-nanyokie",
-            label: "Angata Nanyokie",
+            "value": "weru",
+            "label": "Weru"
           },
           {
-            value: "nyiro",
-            label: "Nyiro",
+            "value": "gatimu",
+            "label": "Gatimu"
           },
           {
-            value: "ndotonachola",
-            label: "NdotoNachola",
+            "value": "gathanji",
+            "label": "Gathanji"
           },
           {
-            value: "el-barta",
-            label: "El Barta",
-          },
-        ],
+            "value": "rurii",
+            "label": "Rurii"
+          }
+        ]
       },
       {
-        value: "samburu-central",
-        label: "Samburu Central",
-        children: [
+        "value": "olkalou",
+        "label": "Olkalou",
+        "children": [
           {
-            value: "porro",
-            label: "Porro",
+            "value": "kaimbaga",
+            "label": "Kaimbaga"
           },
           {
-            value: "loosuk",
-            label: "Loosuk",
+            "value": "mirangine",
+            "label": "Mirangine"
           },
           {
-            value: "maralal",
-            label: "Maralal",
+            "value": "kanjuiri-range",
+            "label": "Kanjuiri Range"
           },
           {
-            value: "suguta-marmar",
-            label: "Suguta Marmar",
+            "value": "karau",
+            "label": "Karau"
           },
           {
-            value: "lodokejek",
-            label: "Lodokejek",
-          },
-        ],
+            "value": "githioro",
+            "label": "Githioro"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kipipiri",
+        "label": "Kipipiri",
+        "children": [
+          {
+            "value": "geta",
+            "label": "Geta"
+          },
+          {
+            "value": "kipipiri",
+            "label": "Kipipiri"
+          },
+          {
+            "value": "wanjohi",
+            "label": "Wanjohi"
+          },
+          {
+            "value": "magumu",
+            "label": "Magumu"
+          },
+          {
+            "value": "",
+            "label": ""
+          },
+          {
+            "value": "",
+            "label": ""
+          }
+        ]
+      },
+      {
+        "value": "kinangop",
+        "label": "Kinangop",
+        "children": [
+          {
+            "value": "githabai",
+            "label": "Githabai"
+          },
+          {
+            "value": "nyakio",
+            "label": "Nyakio"
+          },
+          {
+            "value": "njabini\\kiburu",
+            "label": "Njabini\\Kiburu"
+          },
+          {
+            "value": "murungaru",
+            "label": "Murungaru"
+          },
+          {
+            "value": "north-kinangop",
+            "label": "North Kinangop"
+          },
+          {
+            "value": "gathara",
+            "label": "Gathara"
+          },
+          {
+            "value": "engineer",
+            "label": "Engineer"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "041",
-    label: "Siaya",
-    children: [
+    "value": "019",
+    "label": "Nyeri",
+    "children": [
       {
-        value: "rarieda",
-        label: "Rarieda",
-        children: [
+        "value": "nyeri-central",
+        "label": "Nyeri Central",
+        "children": [
           {
-            value: "west-uyoma",
-            label: "West Uyoma",
+            "value": "kamakwa-mukaro",
+            "label": "Kamakwa/Mukaro"
           },
           {
-            value: "south-uyoma",
-            label: "South Uyoma",
+            "value": "ruringu",
+            "label": "Ruringu"
           },
           {
-            value: "north-uyoma",
-            label: "North Uyoma",
+            "value": "gatitu-muruguru",
+            "label": "Gatitu/Muruguru"
           },
           {
-            value: "west-asembo",
-            label: "West Asembo",
+            "value": "rware",
+            "label": "Rware"
           },
           {
-            value: "east-asembo",
-            label: "East Asembo",
-          },
-        ],
+            "value": "kiganjo-mathari",
+            "label": "Kiganjo/Mathari"
+          }
+        ]
       },
       {
-        value: "bondo",
-        label: "Bondo",
-        children: [
+        "value": "mukurweini",
+        "label": "Mukurweini",
+        "children": [
           {
-            value: "north-sakwa",
-            label: "North Sakwa",
+            "value": "mukurwe-ini-central",
+            "label": "Mukurwe Ini Central"
           },
           {
-            value: "west-sakwa",
-            label: "West Sakwa",
+            "value": "mukurwe-ini-west",
+            "label": "Mukurwe Ini West"
           },
           {
-            value: "yimbo-east",
-            label: "Yimbo East",
+            "value": "rugi",
+            "label": "Rugi"
           },
           {
-            value: "south-sakwa",
-            label: "South Sakwa",
-          },
-          {
-            value: "central-sakwa",
-            label: "Central Sakwa",
-          },
-          {
-            value: "yimbo-west",
-            label: "Yimbo West",
-          },
-        ],
+            "value": "gikondi",
+            "label": "Gikondi"
+          }
+        ]
       },
       {
-        value: "gem",
-        label: "Gem",
-        children: [
+        "value": "nyeri-south",
+        "label": "Nyeri South",
+        "children": [
           {
-            value: "south-gem",
-            label: "South Gem",
+            "value": "karima",
+            "label": "Karima"
           },
           {
-            value: "east-gem",
-            label: "East Gem",
+            "value": "chinga",
+            "label": "Chinga"
           },
           {
-            value: "yala-township",
-            label: "Yala Township",
+            "value": "iria-ini",
+            "label": "Iria Ini"
           },
           {
-            value: "central-gem",
-            label: "Central Gem",
-          },
-          {
-            value: "west-gemnorth-gem",
-            label: "West GemNorth Gem",
-          },
-        ],
+            "value": "mahiga",
+            "label": "Mahiga"
+          }
+        ]
       },
       {
-        value: "alego-usonga",
-        label: "Alego Usonga",
-        children: [
+        "value": "mathira-east",
+        "label": "Mathira East",
+        "children": [
           {
-            value: "south-east-alego",
-            label: "South East Alego",
+            "value": "karatina-town",
+            "label": "Karatina Town"
           },
           {
-            value: "north-alego",
-            label: "North Alego",
+            "value": "konyu",
+            "label": "Konyu"
           },
           {
-            value: "siaya-township",
-            label: "Siaya Township",
+            "value": "iriaini",
+            "label": "Iriaini"
           },
           {
-            value: "central-alego",
-            label: "Central Alego",
-          },
-          {
-            value: "west-alego",
-            label: "West Alego",
-          },
-          {
-            value: "usonga",
-            label: "Usonga",
-          },
-        ],
+            "value": "magutu",
+            "label": "Magutu"
+          }
+        ]
       },
       {
-        value: "ugunja",
-        label: "Ugunja",
-        children: [
+        "value": "mathira-west",
+        "label": "Mathira West",
+        "children": [
           {
-            value: "ugunja",
-            label: "Ugunja",
+            "value": "kirimukuyu",
+            "label": "Kirimukuyu"
           },
           {
-            value: "sigomere",
-            label: "Sigomere",
-          },
-          {
-            value: "sidindi",
-            label: "Sidindi",
-          },
-        ],
+            "value": "ruguru",
+            "label": "Ruguru"
+          }
+        ]
       },
       {
-        value: "ugenya",
-        label: "Ugenya",
-        children: [
+        "value": "kieni-east",
+        "label": "Kieni East",
+        "children": [
           {
-            value: "east-ugenya",
-            label: "East Ugenya",
+            "value": "kabaru",
+            "label": "Kabaru"
           },
           {
-            value: "north-ugenya",
-            label: "North Ugenya",
+            "value": "gakawa",
+            "label": "Gakawa"
           },
           {
-            value: "ukwala",
-            label: "Ukwala",
+            "value": "thegu-river",
+            "label": "Thegu River"
           },
           {
-            value: "west-ugenya",
-            label: "West Ugenya",
-          },
-        ],
+            "value": "naromoru-kiamathaga",
+            "label": "Naromoru Kiamathaga"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kieni-west",
+        "label": "Kieni West",
+        "children": [
+          {
+            "value": "mweiga",
+            "label": "Mweiga"
+          },
+          {
+            "value": "mwiyogo-endarasha",
+            "label": "Mwiyogo/Endarasha"
+          },
+          {
+            "value": "mugunda",
+            "label": "Mugunda"
+          },
+          {
+            "value": "gatarakwa",
+            "label": "Gatarakwa"
+          }
+        ]
+      },
+      {
+        "value": "tetu",
+        "label": "Tetu",
+        "children": [
+          {
+            "value": "aguthi-gaaki",
+            "label": "Aguthi Gaaki"
+          },
+          {
+            "value": "wamagana",
+            "label": "Wamagana"
+          },
+          {
+            "value": "dedan-kimanthi",
+            "label": "Dedan Kimanthi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "006",
-    label: "Taita Taveta",
-    children: [
+    "value": "025",
+    "label": "Samburu",
+    "children": [
       {
-        value: "voi",
-        label: "Voi",
-        children: [
+        "value": "samburu-east",
+        "label": "Samburu East",
+        "children": [
           {
-            value: "ngolia",
-            label: "Ngolia",
+            "value": "wamba-north",
+            "label": "Wamba North"
           },
           {
-            value: "kasigau",
-            label: "Kasigau",
+            "value": "wamba-east",
+            "label": "Wamba East"
           },
           {
-            value: "marungu",
-            label: "Marungu",
+            "value": "wamba-west",
+            "label": "Wamba West"
           },
           {
-            value: "kaloleni",
-            label: "Kaloleni",
-          },
-          {
-            value: "sagala",
-            label: "Sagala",
-          },
-          {
-            value: "mbololo",
-            label: "Mbololo",
-          },
-        ],
+            "value": "waso",
+            "label": "Waso"
+          }
+        ]
       },
       {
-        value: "mwatate",
-        label: "Mwatate",
-        children: [
+        "value": "samburu-north",
+        "label": "Samburu North",
+        "children": [
           {
-            value: "wusi/kishamba",
-            label: "Wusi/Kishamba",
+            "value": "baawa",
+            "label": "Baawa"
           },
           {
-            value: "chawia",
-            label: "Chawia",
+            "value": "angata-nanyokie",
+            "label": "Angata Nanyokie"
           },
           {
-            value: "bura(mwatate)",
-            label: "Bura(Mwatate)",
+            "value": "nyiro",
+            "label": "Nyiro"
           },
           {
-            value: "mwatate",
-            label: "Mwatate",
+            "value": "ndotonachola",
+            "label": "NdotoNachola"
           },
           {
-            value: "ronge",
-            label: "Ronge",
-          },
-        ],
+            "value": "el-barta",
+            "label": "El Barta"
+          }
+        ]
       },
       {
-        value: "wundanyi",
-        label: "Wundanyi",
-        children: [
+        "value": "samburu-central",
+        "label": "Samburu Central",
+        "children": [
           {
-            value: "mwanda/mgange",
-            label: "Mwanda/Mgange",
+            "value": "porro",
+            "label": "Porro"
           },
           {
-            value: "wumingu/kishushe",
-            label: "Wumingu/Kishushe",
+            "value": "loosuk",
+            "label": "Loosuk"
           },
           {
-            value: "werugha",
-            label: "Werugha",
+            "value": "maralal",
+            "label": "Maralal"
           },
           {
-            value: "wundanyi/mbale",
-            label: "Wundanyi/Mbale",
-          },
-        ],
-      },
-      {
-        value: "taveta",
-        label: "Taveta",
-        children: [
-          {
-            value: "mata",
-            label: "Mata",
+            "value": "suguta-marmar",
+            "label": "Suguta Marmar"
           },
           {
-            value: "mboghoni",
-            label: "Mboghoni",
-          },
-          {
-            value: "bomani",
-            label: "Bomani",
-          },
-          {
-            value: "mahoo",
-            label: "Mahoo",
-          },
-          {
-            value: "chala",
-            label: "Chala",
-          },
-        ],
-      },
-    ],
+            "value": "lodokejek",
+            "label": "Lodokejek"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "004",
-    label: "Tana River",
-    children: [
+    "value": "041",
+    "label": "Siaya",
+    "children": [
       {
-        value: "bura",
-        label: "Bura",
-        children: [
+        "value": "rarieda",
+        "label": "Rarieda",
+        "children": [
           {
-            value: "madogo",
-            label: "Madogo",
+            "value": "west-uyoma",
+            "label": "West Uyoma"
           },
           {
-            value: "sala",
-            label: "Sala",
+            "value": "south-uyoma",
+            "label": "South Uyoma"
           },
           {
-            value: "bangale",
-            label: "Bangale",
+            "value": "north-uyoma",
+            "label": "North Uyoma"
           },
           {
-            value: "bura",
-            label: "Bura",
+            "value": "west-asembo",
+            "label": "West Asembo"
           },
           {
-            value: "chewele",
-            label: "Chewele",
-          },
-        ],
+            "value": "east-asembo",
+            "label": "East Asembo"
+          }
+        ]
       },
       {
-        value: "galole",
-        label: "Galole",
-        children: [
+        "value": "bondo",
+        "label": "Bondo",
+        "children": [
           {
-            value: "wayu",
-            label: "Wayu",
+            "value": "north-sakwa",
+            "label": "North Sakwa"
           },
           {
-            value: "chewani",
-            label: "Chewani",
+            "value": "west-sakwa",
+            "label": "West Sakwa"
           },
           {
-            value: "mikinduni",
-            label: "Mikinduni",
+            "value": "yimbo-east",
+            "label": "Yimbo East"
           },
           {
-            value: "kinakomba",
-            label: "Kinakomba",
+            "value": "south-sakwa",
+            "label": "South Sakwa"
           },
-        ],
+          {
+            "value": "central-sakwa",
+            "label": "Central Sakwa"
+          },
+          {
+            "value": "yimbo-west",
+            "label": "Yimbo West"
+          }
+        ]
       },
       {
-        value: "garsen",
-        label: "Garsen",
-        children: [
+        "value": "gem",
+        "label": "Gem",
+        "children": [
           {
-            value: "garsen-north",
-            label: "Garsen North",
+            "value": "south-gem",
+            "label": "South Gem"
           },
           {
-            value: "garsen-west",
-            label: "Garsen West",
+            "value": "east-gem",
+            "label": "East Gem"
           },
           {
-            value: "garsen-central",
-            label: "Garsen Central",
+            "value": "yala-township",
+            "label": "Yala Township"
           },
           {
-            value: "kipini-west",
-            label: "Kipini West",
+            "value": "central-gem",
+            "label": "Central Gem"
           },
           {
-            value: "garsen-south",
-            label: "Garsen South",
+            "value": "west-gem",
+            "label": "West Gem"
           },
           {
-            value: "kipini-east",
-            label: "Kipini East",
-          },
-        ],
+            "value": "north-gem",
+            "label": "North Gem"
+          }
+        ]
       },
-    ],
+      {
+        "value": "alego-usonga",
+        "label": "Alego Usonga",
+        "children": [
+          {
+            "value": "south-east-alego",
+            "label": "South East Alego"
+          },
+          {
+            "value": "north-alego",
+            "label": "North Alego"
+          },
+          {
+            "value": "siaya-township",
+            "label": "Siaya Township"
+          },
+          {
+            "value": "central-alego",
+            "label": "Central Alego"
+          },
+          {
+            "value": "west-alego",
+            "label": "West Alego"
+          },
+          {
+            "value": "usonga",
+            "label": "Usonga"
+          }
+        ]
+      },
+      {
+        "value": "ugunja",
+        "label": "Ugunja",
+        "children": [
+          {
+            "value": "ugunja",
+            "label": "Ugunja"
+          },
+          {
+            "value": "sigomere",
+            "label": "Sigomere"
+          },
+          {
+            "value": "sidindi",
+            "label": "Sidindi"
+          }
+        ]
+      },
+      {
+        "value": "ugenya",
+        "label": "Ugenya",
+        "children": [
+          {
+            "value": "east-ugenya",
+            "label": "East Ugenya"
+          },
+          {
+            "value": "north-ugenya",
+            "label": "North Ugenya"
+          },
+          {
+            "value": "ukwala",
+            "label": "Ukwala"
+          },
+          {
+            "value": "west-ugenya",
+            "label": "West Ugenya"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "013",
-    label: "Tharaka Nithi",
-    children: [
+    "value": "006",
+    "label": "Taita Taveta",
+    "children": [
       {
-        value: "tharaka-south",
-        label: "Tharaka South",
-        children: [
+        "value": "voi",
+        "label": "Voi",
+        "children": [
           {
-            value: "marimanti",
-            label: "Marimanti",
+            "value": "ngolia",
+            "label": "Ngolia"
           },
           {
-            value: "chiakariga",
-            label: "Chiakariga",
+            "value": "kasigau",
+            "label": "Kasigau"
           },
           {
-            value: "nkondi",
-            label: "Nkondi",
+            "value": "marungu",
+            "label": "Marungu"
           },
-        ],
+          {
+            "value": "kaloleni",
+            "label": "Kaloleni"
+          },
+          {
+            "value": "sagala",
+            "label": "Sagala"
+          },
+          {
+            "value": "mbololo",
+            "label": "Mbololo"
+          }
+        ]
       },
       {
-        value: "tharaka-north",
-        label: "Tharaka North",
-        children: [
+        "value": "mwatate",
+        "label": "Mwatate",
+        "children": [
           {
-            value: "mukothima",
-            label: "Mukothima",
+            "value": "wusi-kishamba",
+            "label": "Wusi/Kishamba"
           },
           {
-            value: "gatunga",
-            label: "Gatunga",
+            "value": "chawia",
+            "label": "Chawia"
           },
-        ],
+          {
+            "value": "bura(mwatate)",
+            "label": "Bura(Mwatate)"
+          },
+          {
+            "value": "mwatate",
+            "label": "Mwatate"
+          },
+          {
+            "value": "ronge",
+            "label": "Ronge"
+          }
+        ]
       },
       {
-        value: "chuka/igambangombe",
-        label: "Chuka/Igambangombe",
-        children: [
+        "value": "wundanyi",
+        "label": "Wundanyi",
+        "children": [
           {
-            value: "igambangombe",
-            label: "Igambangombe",
+            "value": "mwanda-mgange",
+            "label": "Mwanda/Mgange"
           },
           {
-            value: "mugwe",
-            label: "Mugwe",
+            "value": "wumingu-kishushe",
+            "label": "Wumingu/Kishushe"
           },
           {
-            value: "magumoni",
-            label: "Magumoni",
+            "value": "werugha",
+            "label": "Werugha"
           },
           {
-            value: "karingani",
-            label: "Karingani",
-          },
-          {
-            value: "mariani",
-            label: "Mariani",
-          },
-        ],
+            "value": "wundanyi-mbale",
+            "label": "Wundanyi/Mbale"
+          }
+        ]
       },
       {
-        value: "maara",
-        label: "Maara",
-        children: [
+        "value": "taveta",
+        "label": "Taveta",
+        "children": [
           {
-            value: "chogoria",
-            label: "Chogoria",
+            "value": "mata",
+            "label": "Mata"
           },
           {
-            value: "ganga",
-            label: "Ganga",
+            "value": "mboghoni",
+            "label": "Mboghoni"
           },
           {
-            value: "mwimbi",
-            label: "Mwimbi",
+            "value": "bomani",
+            "label": "Bomani"
           },
           {
-            value: "muthambi",
-            label: "Muthambi",
+            "value": "mahoo",
+            "label": "Mahoo"
           },
           {
-            value: "mitheru",
-            label: "Mitheru",
-          },
-        ],
-      },
-    ],
+            "value": "chala",
+            "label": "Chala"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "026",
-    label: "Trans Nzoia",
-    children: [
+    "value": "004",
+    "label": "Tana River",
+    "children": [
       {
-        value: "cherangany",
-        label: "Cherangany",
-        children: [
+        "value": "bura",
+        "label": "Bura",
+        "children": [
           {
-            value: "sitatunga",
-            label: "Sitatunga",
+            "value": "madogo",
+            "label": "Madogo"
           },
           {
-            value: "chepsiro/kiptoror",
-            label: "Chepsiro/Kiptoror",
+            "value": "sala",
+            "label": "Sala"
           },
           {
-            value: "cherangany/suwerwa",
-            label: "Cherangany/Suwerwa",
+            "value": "bangale",
+            "label": "Bangale"
           },
           {
-            value: "motosiet",
-            label: "Motosiet",
+            "value": "bura",
+            "label": "Bura"
           },
           {
-            value: "kaplamai",
-            label: "Kaplamai",
-          },
-          {
-            value: "makutano",
-            label: "Makutano",
-          },
-          {
-            value: "sinyerere",
-            label: "Sinyerere",
-          },
-        ],
+            "value": "chewele",
+            "label": "Chewele"
+          }
+        ]
       },
       {
-        value: "kiminini",
-        label: "Kiminini",
-        children: [
+        "value": "galole",
+        "label": "Galole",
+        "children": [
           {
-            value: "nabiswa",
-            label: "Nabiswa",
+            "value": "wayu",
+            "label": "Wayu"
           },
           {
-            value: "sikhendu",
-            label: "Sikhendu",
+            "value": "chewani",
+            "label": "Chewani"
           },
           {
-            value: "hospital",
-            label: "Hospital",
+            "value": "mikinduni",
+            "label": "Mikinduni"
           },
           {
-            value: "sirende",
-            label: "Sirende",
-          },
-          {
-            value: "waitaluk",
-            label: "Waitaluk",
-          },
-          {
-            value: "kiminini",
-            label: "Kiminini",
-          },
-        ],
+            "value": "kinakomba",
+            "label": "Kinakomba"
+          }
+        ]
       },
       {
-        value: "saboti",
-        label: "Saboti",
-        children: [
+        "value": "garsen",
+        "label": "Garsen",
+        "children": [
           {
-            value: "machewa",
-            label: "Machewa",
+            "value": "garsen-north",
+            "label": "Garsen North"
           },
           {
-            value: "saboti",
-            label: "Saboti",
+            "value": "garsen-west",
+            "label": "Garsen West"
           },
           {
-            value: "tuwani",
-            label: "Tuwani",
+            "value": "garsen-central",
+            "label": "Garsen Central"
           },
           {
-            value: "matisi",
-            label: "Matisi",
+            "value": "kipini-west",
+            "label": "Kipini West"
           },
           {
-            value: "kinyoro",
-            label: "Kinyoro",
-          },
-        ],
-      },
-      {
-        value: "endebess",
-        label: "Endebess",
-        children: [
-          {
-            value: "matumbei",
-            label: "Matumbei",
+            "value": "garsen-south",
+            "label": "Garsen South"
           },
           {
-            value: "endebess",
-            label: "Endebess",
-          },
-          {
-            value: "chepchoina",
-            label: "Chepchoina",
-          },
-        ],
-      },
-      {
-        value: "kwanza",
-        label: "Kwanza",
-        children: [
-          {
-            value: "bidii",
-            label: "Bidii",
-          },
-          {
-            value: "keiyo",
-            label: "Keiyo",
-          },
-          {
-            value: "kwanza",
-            label: "Kwanza",
-          },
-          {
-            value: "kapomboi",
-            label: "Kapomboi",
-          },
-        ],
-      },
-    ],
+            "value": "kipini-east",
+            "label": "Kipini East"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "023",
-    label: "Turkana",
-    children: [
+    "value": "013",
+    "label": "Tharaka Nithi",
+    "children": [
       {
-        value: "turkana-east",
-        label: "Turkana East",
-        children: [
+        "value": "tharaka-south",
+        "label": "Tharaka South",
+        "children": [
           {
-            value: "lokori/kochodinkatilia",
-            label: "Lokori/KochodinKatilia",
+            "value": "marimanti",
+            "label": "Marimanti"
           },
           {
-            value: "katilia",
-            label: "Katilia",
+            "value": "chiakariga",
+            "label": "Chiakariga"
           },
           {
-            value: "kapedo/napeitom",
-            label: "Kapedo/Napeitom",
-          },
-        ],
+            "value": "nkondi",
+            "label": "Nkondi"
+          }
+        ]
       },
       {
-        value: "turkana-south",
-        label: "Turkana South",
-        children: [
+        "value": "tharaka-north",
+        "label": "Tharaka North",
+        "children": [
           {
-            value: "lokichar",
-            label: "Lokichar",
+            "value": "mukothima",
+            "label": "Mukothima"
           },
           {
-            value: "kalapata",
-            label: "Kalapata",
-          },
-          {
-            value: "lobokat",
-            label: "Lobokat",
-          },
-          {
-            value: "katilu",
-            label: "Katilu",
-          },
-          {
-            value: "kaputir",
-            label: "Kaputir",
-          },
-        ],
+            "value": "gatunga",
+            "label": "Gatunga"
+          }
+        ]
       },
       {
-        value: "loima",
-        label: "Loima",
-        children: [
+        "value": "chuka-igambangombe",
+        "label": "Chuka/Igambangombe",
+        "children": [
           {
-            value: "lokiriama/lorengippi",
-            label: "Lokiriama/Lorengippi",
+            "value": "igambangombe",
+            "label": "Igambangombe"
           },
           {
-            value: "loima",
-            label: "Loima",
+            "value": "mugwe",
+            "label": "Mugwe"
           },
           {
-            value: "turkwel",
-            label: "Turkwel",
+            "value": "magumoni",
+            "label": "Magumoni"
           },
           {
-            value: "kotaruk/lobei",
-            label: "Kotaruk/Lobei",
+            "value": "karingani",
+            "label": "Karingani"
           },
-        ],
+          {
+            "value": "mariani",
+            "label": "Mariani"
+          }
+        ]
       },
       {
-        value: "turkana-central",
-        label: "Turkana Central",
-        children: [
+        "value": "maara",
+        "label": "Maara",
+        "children": [
           {
-            value: "kanamkemer",
-            label: "Kanamkemer",
+            "value": "chogoria",
+            "label": "Chogoria"
           },
           {
-            value: "lodwar-township",
-            label: "Lodwar Township",
+            "value": "ganga",
+            "label": "Ganga"
           },
           {
-            value: "kalokol",
-            label: "Kalokol",
+            "value": "mwimbi",
+            "label": "Mwimbi"
           },
           {
-            value: "kangatotha",
-            label: "Kangatotha",
+            "value": "muthambi",
+            "label": "Muthambi"
           },
           {
-            value: "kerio-delta",
-            label: "Kerio Delta",
-          },
-        ],
-      },
-      {
-        value: "turkana-west",
-        label: "Turkana West",
-        children: [
-          {
-            value: "nanaam",
-            label: "Nanaam",
-          },
-          {
-            value: "lokichoggio",
-            label: "Lokichoggio",
-          },
-          {
-            value: "kalobeyei",
-            label: "Kalobeyei",
-          },
-          {
-            value: "songot",
-            label: "Songot",
-          },
-          {
-            value: "letea",
-            label: "Letea",
-          },
-          {
-            value: "lopur",
-            label: "Lopur",
-          },
-          {
-            value: "kakuma",
-            label: "Kakuma",
-          },
-        ],
-      },
-      {
-        value: "kibish",
-        label: "Kibish",
-        children: [
-          {
-            value: "kibish",
-            label: "Kibish",
-          },
-          {
-            value: "lapur",
-            label: "Lapur",
-          },
-        ],
-      },
-      {
-        value: "turkana-north",
-        label: "Turkana North",
-        children: [
-          {
-            value: "nakalale",
-            label: "Nakalale",
-          },
-          {
-            value: "kaikor/kaaleng",
-            label: "Kaikor/Kaaleng",
-          },
-          {
-            value: "lake-zone",
-            label: "Lake Zone",
-          },
-          {
-            value: "kaeris",
-            label: "Kaeris",
-          },
-        ],
-      },
-    ],
+            "value": "mitheru",
+            "label": "Mitheru"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "027",
-    label: "Uasin Gishu",
-    children: [
+    "value": "026",
+    "label": "Trans Nzoia",
+    "children": [
       {
-        value: "kesses",
-        label: "Kesses",
-        children: [
+        "value": "cherangany",
+        "label": "Cherangany",
+        "children": [
           {
-            value: "tarakwa",
-            label: "Tarakwa",
+            "value": "sitatunga",
+            "label": "Sitatunga"
           },
           {
-            value: "tulwet/chuiyat",
-            label: "Tulwet/Chuiyat",
+            "value": "chepsiro-kiptoror",
+            "label": "Chepsiro/Kiptoror"
           },
           {
-            value: "cheptiret/kipchamo",
-            label: "Cheptiret/Kipchamo",
+            "value": "cherangany-suwerwa",
+            "label": "Cherangany/Suwerwa"
           },
           {
-            value: "racecourse",
-            label: "Racecourse",
+            "value": "motosiet",
+            "label": "Motosiet"
           },
-        ],
+          {
+            "value": "kaplamai",
+            "label": "Kaplamai"
+          },
+          {
+            "value": "makutano",
+            "label": "Makutano"
+          },
+          {
+            "value": "sinyerere",
+            "label": "Sinyerere"
+          }
+        ]
       },
       {
-        value: "kapseret",
-        label: "Kapseret",
-        children: [
+        "value": "kiminini",
+        "label": "Kiminini",
+        "children": [
           {
-            value: "langas",
-            label: "Langas",
+            "value": "nabiswa",
+            "label": "Nabiswa"
           },
           {
-            value: "megun",
-            label: "Megun",
+            "value": "sikhendu",
+            "label": "Sikhendu"
           },
           {
-            value: "ngeria",
-            label: "Ngeria",
+            "value": "hospital",
+            "label": "Hospital"
           },
           {
-            value: "kipkenyo",
-            label: "Kipkenyo",
+            "value": "sirende",
+            "label": "Sirende"
           },
           {
-            value: "simat/kapseret",
-            label: "Simat/Kapseret",
+            "value": "waitaluk",
+            "label": "Waitaluk"
           },
-        ],
+          {
+            "value": "kiminini",
+            "label": "Kiminini"
+          }
+        ]
       },
       {
-        value: "ainabkoi",
-        label: "Ainabkoi",
-        children: [
+        "value": "saboti",
+        "label": "Saboti",
+        "children": [
           {
-            value: "ainabkoi/olare",
-            label: "Ainabkoi/Olare",
+            "value": "machewa",
+            "label": "Machewa"
           },
           {
-            value: "kaptagat",
-            label: "Kaptagat",
+            "value": "saboti",
+            "label": "Saboti"
           },
           {
-            value: "kapsoya",
-            label: "Kapsoya",
+            "value": "tuwani",
+            "label": "Tuwani"
           },
-        ],
+          {
+            "value": "matisi",
+            "label": "Matisi"
+          },
+          {
+            "value": "kinyoro",
+            "label": "Kinyoro"
+          }
+        ]
       },
       {
-        value: "moiben",
-        label: "Moiben",
-        children: [
+        "value": "endebess",
+        "label": "Endebess",
+        "children": [
           {
-            value: "kimumu",
-            label: "Kimumu",
+            "value": "matumbei",
+            "label": "Matumbei"
           },
           {
-            value: "moiben",
-            label: "Moiben",
+            "value": "endebess",
+            "label": "Endebess"
           },
           {
-            value: "karuna/meibeki",
-            label: "Karuna/Meibeki",
-          },
-          {
-            value: "sergoit",
-            label: "Sergoit",
-          },
-          {
-            value: "tembelio",
-            label: "Tembelio",
-          },
-        ],
+            "value": "chepchoina",
+            "label": "Chepchoina"
+          }
+        ]
       },
       {
-        value: "turbo",
-        label: "Turbo",
-        children: [
+        "value": "kwanza",
+        "label": "Kwanza",
+        "children": [
           {
-            value: "huruma",
-            label: "Huruma",
+            "value": "bidii",
+            "label": "Bidii"
           },
           {
-            value: "kapsaos",
-            label: "Kapsaos",
+            "value": "keiyo",
+            "label": "Keiyo"
           },
           {
-            value: "kiplombe",
-            label: "Kiplombe",
+            "value": "kwanza",
+            "label": "Kwanza"
           },
           {
-            value: "kamagut",
-            label: "Kamagut",
-          },
-          {
-            value: "tapsagoi",
-            label: "Tapsagoi",
-          },
-          {
-            value: "ngenyilel",
-            label: "Ngenyilel",
-          },
-        ],
-      },
-      {
-        value: "soy",
-        label: "Soy",
-        children: [
-          {
-            value: "kuinet/kapsuswa",
-            label: "Kuinet/Kapsuswa",
-          },
-          {
-            value: "soy",
-            label: "Soy",
-          },
-          {
-            value: "kipsomba",
-            label: "Kipsomba",
-          },
-          {
-            value: "segero/barsombe",
-            label: "Segero/Barsombe",
-          },
-          {
-            value: "ziwa",
-            label: "Ziwa",
-          },
-          {
-            value: "kapkures",
-            label: "Kapkures",
-          },
-          {
-            value: "mois-bridge",
-            label: "Mois Bridge",
-          },
-        ],
-      },
-    ],
+            "value": "kapomboi",
+            "label": "Kapomboi"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "038",
-    label: "Vihiga",
-    children: [
+    "value": "023",
+    "label": "Turkana",
+    "children": [
       {
-        value: "emuhaya",
-        label: "Emuhaya",
-        children: [
+        "value": "turkana-east",
+        "label": "Turkana East",
+        "children": [
           {
-            value: "west-bunyore",
-            label: "West Bunyore",
+            "value": "lokori-kochodinkatilia",
+            "label": "Lokori/KochodinKatilia"
           },
           {
-            value: "central-bunyore",
-            label: "Central Bunyore",
+            "value": "katilia",
+            "label": "Katilia"
           },
           {
-            value: "north-east-bunyore",
-            label: "North East Bunyore",
-          },
-          {
-            value: "",
-            label: "",
-          },
-          {
-            value: "",
-            label: "",
-          },
-          {
-            value: "",
-            label: "",
-          },
-        ],
+            "value": "kapedo-napeitom",
+            "label": "Kapedo/Napeitom"
+          }
+        ]
       },
       {
-        value: "luanda",
-        label: "Luanda",
-        children: [
+        "value": "turkana-south",
+        "label": "Turkana South",
+        "children": [
           {
-            value: "emabungo",
-            label: "Emabungo",
+            "value": "lokichar",
+            "label": "Lokichar"
           },
           {
-            value: "luanda-south",
-            label: "Luanda South",
+            "value": "kalapata",
+            "label": "Kalapata"
           },
           {
-            value: "mwibona",
-            label: "Mwibona",
+            "value": "lobokat",
+            "label": "Lobokat"
           },
           {
-            value: "wemilabi",
-            label: "Wemilabi",
+            "value": "katilu",
+            "label": "Katilu"
           },
           {
-            value: "luanda-township",
-            label: "Luanda Township",
-          },
-        ],
+            "value": "kaputir",
+            "label": "Kaputir"
+          }
+        ]
       },
       {
-        value: "hamisi",
-        label: "Hamisi",
-        children: [
+        "value": "loima",
+        "label": "Loima",
+        "children": [
           {
-            value: "jepkoyai",
-            label: "Jepkoyai",
+            "value": "lokiriama-lorengippi",
+            "label": "Lokiriama/Lorengippi"
           },
           {
-            value: "tambua",
-            label: "Tambua",
+            "value": "loima",
+            "label": "Loima"
           },
           {
-            value: "muhudu",
-            label: "Muhudu",
+            "value": "turkwel",
+            "label": "Turkwel"
           },
           {
-            value: "banja",
-            label: "Banja",
-          },
-          {
-            value: "shamakhokho",
-            label: "Shamakhokho",
-          },
-          {
-            value: "gisambai",
-            label: "Gisambai",
-          },
-          {
-            value: "shiru",
-            label: "Shiru",
-          },
-        ],
+            "value": "kotaruk-lobei",
+            "label": "Kotaruk/Lobei"
+          }
+        ]
       },
       {
-        value: "sabatia",
-        label: "Sabatia",
-        children: [
+        "value": "turkana-central",
+        "label": "Turkana Central",
+        "children": [
           {
-            value: "busali",
-            label: "Busali",
+            "value": "kanamkemer",
+            "label": "Kanamkemer"
           },
           {
-            value: "wodanga",
-            label: "Wodanga",
+            "value": "lodwar-township",
+            "label": "Lodwar Township"
           },
           {
-            value: "north-maragoli",
-            label: "North Maragoli",
+            "value": "kalokol",
+            "label": "Kalokol"
           },
           {
-            value: "chavakali",
-            label: "Chavakali",
+            "value": "kangatotha",
+            "label": "Kangatotha"
           },
           {
-            value: "west-sabatia",
-            label: "West Sabatia",
-          },
-          {
-            value: "lyaduywa/izava",
-            label: "Lyaduywa/Izava",
-          },
-        ],
+            "value": "kerio-delta",
+            "label": "Kerio Delta"
+          }
+        ]
       },
       {
-        value: "vihiga",
-        label: "Vihiga",
-        children: [
+        "value": "turkana-west",
+        "label": "Turkana West",
+        "children": [
           {
-            value: "mungoma",
-            label: "Mungoma",
+            "value": "nanaam",
+            "label": "Nanaam"
           },
           {
-            value: "central-maragoli",
-            label: "Central Maragoli",
+            "value": "lokichoggio",
+            "label": "Lokichoggio"
           },
           {
-            value: "south-maragoli",
-            label: "South Maragoli",
+            "value": "kalobeyei",
+            "label": "Kalobeyei"
           },
           {
-            value: "lugaga-wamuluma",
-            label: "Lugaga Wamuluma",
+            "value": "songot",
+            "label": "Songot"
           },
-        ],
+          {
+            "value": "letea",
+            "label": "Letea"
+          },
+          {
+            "value": "lopur",
+            "label": "Lopur"
+          },
+          {
+            "value": "kakuma",
+            "label": "Kakuma"
+          }
+        ]
       },
-    ],
+      {
+        "value": "kibish",
+        "label": "Kibish",
+        "children": [
+          {
+            "value": "kibish",
+            "label": "Kibish"
+          },
+          {
+            "value": "lapur",
+            "label": "Lapur"
+          }
+        ]
+      },
+      {
+        "value": "turkana-north",
+        "label": "Turkana North",
+        "children": [
+          {
+            "value": "nakalale",
+            "label": "Nakalale"
+          },
+          {
+            "value": "kaikor-kaaleng",
+            "label": "Kaikor/Kaaleng"
+          },
+          {
+            "value": "lake-zone",
+            "label": "Lake Zone"
+          },
+          {
+            "value": "kaeris",
+            "label": "Kaeris"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "008",
-    label: "Wajir",
-    children: [
+    "value": "027",
+    "label": "Uasin Gishu",
+    "children": [
       {
-        value: "wajir-west",
-        label: "Wajir West",
-        children: [
+        "value": "kesses",
+        "label": "Kesses",
+        "children": [
           {
-            value: "ganyure/wagalla",
-            label: "Ganyure/Wagalla",
+            "value": "tarakwa",
+            "label": "Tarakwa"
           },
           {
-            value: "ademasajide",
-            label: "Ademasajide",
+            "value": "tulwet-chuiyat",
+            "label": "Tulwet/Chuiyat"
           },
           {
-            value: "hadado/athibohol",
-            label: "Hadado/Athibohol",
+            "value": "cheptiret-kipchamo",
+            "label": "Cheptiret/Kipchamo"
           },
           {
-            value: "arbajahan",
-            label: "Arbajahan",
-          },
-        ],
+            "value": "racecourse",
+            "label": "Racecourse"
+          }
+        ]
       },
       {
-        value: "tarbaj",
-        label: "Tarbaj",
-        children: [
+        "value": "kapseret",
+        "label": "Kapseret",
+        "children": [
           {
-            value: "wargadud",
-            label: "Wargadud",
+            "value": "langas",
+            "label": "Langas"
           },
           {
-            value: "tarbaj",
-            label: "Tarbaj",
+            "value": "megun",
+            "label": "Megun"
           },
           {
-            value: "sarman",
-            label: "Sarman",
+            "value": "ngeria",
+            "label": "Ngeria"
           },
           {
-            value: "elben",
-            label: "Elben",
+            "value": "kipkenyo",
+            "label": "Kipkenyo"
           },
-        ],
+          {
+            "value": "simat-kapseret",
+            "label": "Simat/Kapseret"
+          }
+        ]
       },
       {
-        value: "wajir-east",
-        label: "Wajir East",
-        children: [
+        "value": "ainabkoi",
+        "label": "Ainabkoi",
+        "children": [
           {
-            value: "khorof/harar",
-            label: "Khorof/Harar",
+            "value": "ainabkoi-olare",
+            "label": "Ainabkoi/Olare"
           },
           {
-            value: "barwago",
-            label: "Barwago",
+            "value": "kaptagat",
+            "label": "Kaptagat"
           },
           {
-            value: "township",
-            label: "Township",
-          },
-          {
-            value: "wagberi",
-            label: "Wagberi",
-          },
-          {
-            value: "godoma",
-            label: "Godoma",
-          },
-        ],
+            "value": "kapsoya",
+            "label": "Kapsoya"
+          }
+        ]
       },
       {
-        value: "wajir-north",
-        label: "Wajir North",
-        children: [
+        "value": "moiben",
+        "label": "Moiben",
+        "children": [
           {
-            value: "danaba",
-            label: "Danaba",
+            "value": "kimumu",
+            "label": "Kimumu"
           },
           {
-            value: "batalu",
-            label: "Batalu",
+            "value": "moiben",
+            "label": "Moiben"
           },
           {
-            value: "malkagufu",
-            label: "Malkagufu",
+            "value": "karuna-meibeki",
+            "label": "Karuna/Meibeki"
           },
           {
-            value: "korondile",
-            label: "Korondile",
+            "value": "sergoit",
+            "label": "Sergoit"
           },
           {
-            value: "bute",
-            label: "Bute",
-          },
-          {
-            value: "gurar",
-            label: "Gurar",
-          },
-        ],
+            "value": "tembelio",
+            "label": "Tembelio"
+          }
+        ]
       },
-    ],
+      {
+        "value": "turbo",
+        "label": "Turbo",
+        "children": [
+          {
+            "value": "huruma",
+            "label": "Huruma"
+          },
+          {
+            "value": "kapsaos",
+            "label": "Kapsaos"
+          },
+          {
+            "value": "kiplombe",
+            "label": "Kiplombe"
+          },
+          {
+            "value": "kamagut",
+            "label": "Kamagut"
+          },
+          {
+            "value": "tapsagoi",
+            "label": "Tapsagoi"
+          },
+          {
+            "value": "ngenyilel",
+            "label": "Ngenyilel"
+          }
+        ]
+      },
+      {
+        "value": "soy",
+        "label": "Soy",
+        "children": [
+          {
+            "value": "kuinet-kapsuswa",
+            "label": "Kuinet/Kapsuswa"
+          },
+          {
+            "value": "soy",
+            "label": "Soy"
+          },
+          {
+            "value": "kipsomba",
+            "label": "Kipsomba"
+          },
+          {
+            "value": "segero-barsombe",
+            "label": "Segero/Barsombe"
+          },
+          {
+            "value": "ziwa",
+            "label": "Ziwa"
+          },
+          {
+            "value": "kapkures",
+            "label": "Kapkures"
+          },
+          {
+            "value": "mois-bridge",
+            "label": "Mois Bridge"
+          }
+        ]
+      }
+    ]
   },
   {
-    value: "024",
-    label: "West Pokot",
-    children: [
+    "value": "038",
+    "label": "Vihiga",
+    "children": [
       {
-        value: "pokot-south",
-        label: "Pokot South",
-        children: [
+        "value": "emuhaya",
+        "label": "Emuhaya",
+        "children": [
           {
-            value: "tapach",
-            label: "Tapach",
+            "value": "west-bunyore",
+            "label": "West Bunyore"
           },
           {
-            value: "lelan",
-            label: "Lelan",
+            "value": "central-bunyore",
+            "label": "Central Bunyore"
           },
           {
-            value: "batei",
-            label: "Batei",
+            "value": "north-east-bunyore",
+            "label": "North East Bunyore"
           },
           {
-            value: "chepareria",
-            label: "Chepareria",
+            "value": "",
+            "label": ""
           },
-        ],
+          {
+            "value": "",
+            "label": ""
+          },
+          {
+            "value": "",
+            "label": ""
+          }
+        ]
       },
       {
-        value: "pokot-north",
-        label: "Pokot North",
-        children: [
+        "value": "luanda",
+        "label": "Luanda",
+        "children": [
           {
-            value: "alale",
-            label: "Alale",
+            "value": "emabungo",
+            "label": "Emabungo"
           },
           {
-            value: "kiwawa",
-            label: "Kiwawa",
+            "value": "luanda-south",
+            "label": "Luanda South"
           },
           {
-            value: "kapchok",
-            label: "Kapchok",
+            "value": "mwibona",
+            "label": "Mwibona"
           },
           {
-            value: "kasei",
-            label: "Kasei",
+            "value": "wemilabi",
+            "label": "Wemilabi"
           },
           {
-            value: "kodich",
-            label: "Kodich",
-          },
-          {
-            value: "suam",
-            label: "Suam",
-          },
-        ],
+            "value": "luanda-township",
+            "label": "Luanda Township"
+          }
+        ]
       },
       {
-        value: "pokot-central",
-        label: "Pokot Central",
-        children: [
+        "value": "hamisi",
+        "label": "Hamisi",
+        "children": [
           {
-            value: "weiwei",
-            label: "Weiwei",
+            "value": "jepkoyai",
+            "label": "Jepkoyai"
           },
           {
-            value: "lomut",
-            label: "Lomut",
+            "value": "tambua",
+            "label": "Tambua"
           },
           {
-            value: "masool",
-            label: "Masool",
+            "value": "muhudu",
+            "label": "Muhudu"
           },
           {
-            value: "sekerr",
-            label: "Sekerr",
+            "value": "banja",
+            "label": "Banja"
           },
-        ],
+          {
+            "value": "shamakhokho",
+            "label": "Shamakhokho"
+          },
+          {
+            "value": "gisambai",
+            "label": "Gisambai"
+          },
+          {
+            "value": "shiru",
+            "label": "Shiru"
+          }
+        ]
       },
       {
-        value: "west-pokot",
-        label: "West Pokot",
-        children: [
+        "value": "sabatia",
+        "label": "Sabatia",
+        "children": [
           {
-            value: "sook",
-            label: "Sook",
+            "value": "busali",
+            "label": "Busali"
           },
           {
-            value: "endugh",
-            label: "Endugh",
+            "value": "wodanga",
+            "label": "Wodanga"
           },
           {
-            value: "siyoi",
-            label: "Siyoi",
+            "value": "north-maragoli",
+            "label": "North Maragoli"
           },
           {
-            value: "mnagei",
-            label: "Mnagei",
+            "value": "chavakali",
+            "label": "Chavakali"
           },
           {
-            value: "kapenguria",
-            label: "Kapenguria",
+            "value": "west-sabatia",
+            "label": "West Sabatia"
           },
           {
-            value: "riwo",
-            label: "Riwo",
-          },
-        ],
+            "value": "lyaduywa-izava",
+            "label": "Lyaduywa/Izava"
+          }
+        ]
       },
-    ],
+      {
+        "value": "vihiga",
+        "label": "Vihiga",
+        "children": [
+          {
+            "value": "mungoma",
+            "label": "Mungoma"
+          },
+          {
+            "value": "central-maragoli",
+            "label": "Central Maragoli"
+          },
+          {
+            "value": "south-maragoli",
+            "label": "South Maragoli"
+          },
+          {
+            "value": "lugaga-wamuluma",
+            "label": "Lugaga Wamuluma"
+          }
+        ]
+      }
+    ]
   },
-];
+  {
+    "value": "008",
+    "label": "Wajir",
+    "children": [
+      {
+        "value": "wajir-west",
+        "label": "Wajir West",
+        "children": [
+          {
+            "value": "ganyure-wagalla",
+            "label": "Ganyure/Wagalla"
+          },
+          {
+            "value": "ademasajide",
+            "label": "Ademasajide"
+          },
+          {
+            "value": "hadado-athibohol",
+            "label": "Hadado/Athibohol"
+          },
+          {
+            "value": "arbajahan",
+            "label": "Arbajahan"
+          }
+        ]
+      },
+      {
+        "value": "tarbaj",
+        "label": "Tarbaj",
+        "children": [
+          {
+            "value": "wargadud",
+            "label": "Wargadud"
+          },
+          {
+            "value": "tarbaj",
+            "label": "Tarbaj"
+          },
+          {
+            "value": "sarman",
+            "label": "Sarman"
+          },
+          {
+            "value": "elben",
+            "label": "Elben"
+          }
+        ]
+      },
+      {
+        "value": "wajir-east",
+        "label": "Wajir East",
+        "children": [
+          {
+            "value": "khorof-harar",
+            "label": "Khorof/Harar"
+          },
+          {
+            "value": "barwago",
+            "label": "Barwago"
+          },
+          {
+            "value": "township",
+            "label": "Township"
+          },
+          {
+            "value": "wagberi",
+            "label": "Wagberi"
+          },
+          {
+            "value": "godoma",
+            "label": "Godoma"
+          }
+        ]
+      },
+      {
+        "value": "wajir-north",
+        "label": "Wajir North",
+        "children": [
+          {
+            "value": "danaba",
+            "label": "Danaba"
+          },
+          {
+            "value": "batalu",
+            "label": "Batalu"
+          },
+          {
+            "value": "malkagufu",
+            "label": "Malkagufu"
+          },
+          {
+            "value": "korondile",
+            "label": "Korondile"
+          },
+          {
+            "value": "bute",
+            "label": "Bute"
+          },
+          {
+            "value": "gurar",
+            "label": "Gurar"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "value": "024",
+    "label": "West Pokot",
+    "children": [
+      {
+        "value": "pokot-south",
+        "label": "Pokot South",
+        "children": [
+          {
+            "value": "tapach",
+            "label": "Tapach"
+          },
+          {
+            "value": "lelan",
+            "label": "Lelan"
+          },
+          {
+            "value": "batei",
+            "label": "Batei"
+          },
+          {
+            "value": "chepareria",
+            "label": "Chepareria"
+          }
+        ]
+      },
+      {
+        "value": "pokot-north",
+        "label": "Pokot North",
+        "children": [
+          {
+            "value": "alale",
+            "label": "Alale"
+          },
+          {
+            "value": "kiwawa",
+            "label": "Kiwawa"
+          },
+          {
+            "value": "kapchok",
+            "label": "Kapchok"
+          },
+          {
+            "value": "kasei",
+            "label": "Kasei"
+          },
+          {
+            "value": "kodich",
+            "label": "Kodich"
+          },
+          {
+            "value": "suam",
+            "label": "Suam"
+          }
+        ]
+      },
+      {
+        "value": "pokot-central",
+        "label": "Pokot Central",
+        "children": [
+          {
+            "value": "weiwei",
+            "label": "Weiwei"
+          },
+          {
+            "value": "lomut",
+            "label": "Lomut"
+          },
+          {
+            "value": "masool",
+            "label": "Masool"
+          },
+          {
+            "value": "sekerr",
+            "label": "Sekerr"
+          }
+        ]
+      },
+      {
+        "value": "west-pokot",
+        "label": "West Pokot",
+        "children": [
+          {
+            "value": "sook",
+            "label": "Sook"
+          },
+          {
+            "value": "endugh",
+            "label": "Endugh"
+          },
+          {
+            "value": "siyoi",
+            "label": "Siyoi"
+          },
+          {
+            "value": "mnagei",
+            "label": "Mnagei"
+          },
+          {
+            "value": "kapenguria",
+            "label": "Kapenguria"
+          },
+          {
+            "value": "riwo",
+            "label": "Riwo"
+          }
+        ]
+      }
+    ]
+  }
+]
 
 export default Counties;

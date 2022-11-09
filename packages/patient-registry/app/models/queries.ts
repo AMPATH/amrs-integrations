@@ -14,10 +14,7 @@ export async function getFacilityMfl(param: string) {
     .then((con) => {
       amrsCON = con;
       return CM.query(sql, amrsCON)
-        .then((r) => {
-          console.log("MFL PAYLOAD QUERY RESULT ", r[0]);
-          return r[0];
-        })
+        .then((r) => r[0])
         .catch((err) => console.log("MFL Database Query Error ", err))
         .finally(() => CM.releaseConnections(amrsCON));
     })
@@ -34,14 +31,12 @@ async function getPerson_id(uuid: string) {
     .then((con) => {
       amrsCON = con;
       return CM.query(sql, amrsCON)
-        .then((r) => {
-          return r[0];
-        })
+        .then((r) => r[0])
         .catch((err) => console.log("Database Query Error ", err))
         .finally(() => CM.releaseConnections(amrsCON));
     })
     .catch((err) => {
-      console.log("Database Connection Error ", err);
+      console.log("Database Connection Error at person_id", err);
     });
 }
 
@@ -55,10 +50,7 @@ export async function getPatient(uuid: string) {
     .then((con) => {
       amrsCON = con;
       return CM.query(sql, amrsCON)
-        .then((r) => {
-          console.log("PAYLOAD QUERY RESULT ", r[0]);
-          return r[0];
-        })
+        .then((r) => r[0])
         .catch((err) => console.log("Database Query Error ", err))
         .finally(() => CM.releaseConnections(amrsCON));
     })
@@ -88,8 +80,8 @@ function patientQuery(personIdVal: Number, uuid: string) {
   LOWER(t8.country) as Country,
   LOWER(t8.address10) as CountryOfBirth,
   LOWER(t8.address1) as County,
-  REPLACE(LOWER(t8.address2), " ", "-") as SubCounty,
-  REPLACE(LOWER(t8.address7), " ", "-") as Ward,
+  LOWER(t8.address2) as SubCounty,
+  LOWER(t8.address7) as Ward,
   t8.city_village as Village,
   t8.address3 as LandMark,
   t8.address8 as Address,
@@ -129,4 +121,33 @@ function patientQuery(personIdVal: Number, uuid: string) {
   left join amrs.person_attribute pakt on (pakt.person_id = t1.person_id and pakt.person_attribute_type_id = 25 and pakt.voided = 0) #Kin phone
   left join amrs.person_attribute pakp on (pakp.person_id = t1.person_id and pakp.person_attribute_type_id = 71 and pakp.voided = 0)
     where t1.uuid = '${uuid}' group by t1.person_id`;
+}
+
+export async function getBatchUpdateData() {
+  const CM = getConnectionManager();
+  let amrsCON: any;
+  const sql = `SELECT 
+          id.identifier, cc.identifier as ccc
+          FROM
+          amrs.patient_identifier id
+              inner JOIN
+          amrs.patient_identifier cc ON (id.patient_id = cc.patient_id
+              AND cc.identifier_type = 28
+              AND cc.voided = 0)
+          WHERE
+          id.identifier_type = 45
+              AND id.voided = 0
+              AND cc.identifier IS NOT NULL AND cc.location_id = 1
+              GROUP BY id.identifier`;
+  return CM.getConnectionAmrs()
+    .then((con) => {
+      amrsCON = con;
+      return CM.query(sql, amrsCON)
+        .then((r) => r)
+        .catch((err) => console.log("Batch Update Query Error ", err))
+        .finally(() => CM.releaseConnections(amrsCON));
+    })
+    .catch((err) => {
+      console.log("Batch Update Db Connection Error ", err);
+    });
 }

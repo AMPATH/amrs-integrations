@@ -3,6 +3,7 @@ import { apiRoutes } from "./api/routes";
 import config from "@amrs-integrations/core";
 import { setConfiguration } from "redis-smq";
 import PatientService from "./services/patient.service";
+import { processBatchUpdates } from "./models/batch-update";
 let redisConfig: any = config.redis;
 setConfiguration(redisConfig);
 const init = async () => {
@@ -14,7 +15,8 @@ const init = async () => {
   server.route(apiRoutes);
   await server.start();
   console.log("Server running on %s", server.info.uri);
-  patientService.retryQueuedClients();
+  await patientService.retryQueuedClients();
+  // await processBatchUpdates(); CONSUMER FOR BATCH UPDATE
 };
 
 process.on("unhandledRejection", (err) => {

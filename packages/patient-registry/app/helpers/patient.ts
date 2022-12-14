@@ -16,7 +16,23 @@ export async function getPatientIdentifiers(patientUUID: string) {
 
   return identifiers;
 }
+export async function saveCountryAttribute(patientUuid:string, countryCode:string) {
+  const payload = {
+    attributeType: "8d871afc-c2cc-11de-8d13-0010c6dffd0f",
+    value: countryCode,
+  };
 
+  let httpClient = new config.HTTPInterceptor(
+    config.amrsUrl || "",
+    config.amrsUsername || "",
+    config.amrsPassword || "",
+    "amrs"
+  );
+  return await httpClient.axios.post(
+    "/ws/rest/v1/patient/" + patientUuid + "/attribute",
+    payload
+  )
+}
 export async function saveUpiIdentifier(
   upi: string,
   patientUuid: string,

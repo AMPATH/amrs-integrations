@@ -1,6 +1,6 @@
 import config from "@amrs-integrations/core";
 import { validateToken } from "../helpers/auth";
-import { saveUpiIdentifier, getPatientIdentifiers } from "../helpers/patient";
+import { saveUpiIdentifier, getPatientIdentifiers, saveCountryAttribute } from "../helpers/patient";
 import { getPatient, getFacilityMfl } from "../models/queries";
 import Gender from "../ClientRegistryLookupDictionaries/gender";
 import Countries from "../ClientRegistryLookupDictionaries/countries";
@@ -125,7 +125,8 @@ export default class PatientService {
         let savedUpi = await this.saveUpiNumber(
           dhpResponse.client.clientNumber,
           params.patientUuid,
-          location
+          location,
+          params.countryCode
         );
         console.log("Saved UPI, Existing Patient", savedUpi.identifier);
         return;
@@ -157,7 +158,8 @@ export default class PatientService {
         let savedUpi: any = await this.saveUpiNumber(
           dhpResponse.clientNumber,
           params.patientUuid,
-          location
+          location,
+          params.countryCode
         );
         console.log("Created successfully, assigned UPI", savedUpi.identifier);
       })
@@ -246,9 +248,11 @@ export default class PatientService {
   private async saveUpiNumber(
     upi: string,
     patientUuid: string,
-    locationUuid: string
+    locationUuid: string,
+    countryCode:string
   ) {
     const result = await saveUpiIdentifier(upi, patientUuid, locationUuid);
+    const countryAttribute= await saveCountryAttribute(patientUuid,countryCode)
     return result;
   }
 
@@ -422,7 +426,7 @@ export default class PatientService {
       cb();
     };
 
-    consumer.consume("verb_queue", false, messageHandler, (err, isRunning) => {
+    consumer.consume("verb_queue_test", false, messageHandler, (err, isRunning) => {
       if (err) console.error(err);
       // the message handler will be started only if the consumer is running
       else
@@ -439,7 +443,7 @@ export default class PatientService {
     message
       .setBody(JSON.stringify(patientPayload))
       .setTTL(3600000)
-      .setQueue("verb_queue");
+      .setQueue("verb_queue_test");
     producer.produce(message, (err) => {
       if (err) console.log(err);
       else { 

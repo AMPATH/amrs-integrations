@@ -1,5 +1,5 @@
 import config from "@amrs-integrations/core";
-import { validateToken } from "../helpers/auth";
+import { client, validateToken } from "../helpers/auth";
 import { saveUpiIdentifier, getPatientIdentifiers, saveCountryAttribute } from "../helpers/patient";
 import { getPatient, getFacilityMfl } from "../models/queries";
 import Gender from "../ClientRegistryLookupDictionaries/gender";
@@ -65,13 +65,7 @@ export default class PatientService {
   public async searchPatient(params: any) {
     // await scheduleBatchUpdate(); //TODO -> Trigger using cron job
     let accessToken = await validateToken();
-    let httpClient = new config.HTTPInterceptor(
-      config.dhp.url || "",
-      "",
-      "",
-      "dhp",
-      accessToken
-    );
+    let httpClient = await client("dhp");
     let identifiers = await getPatientIdentifiers(params.patientUuid);
     let universalId = identifiers.results.filter(
       (id: any) =>
@@ -189,7 +183,66 @@ export default class PatientService {
 
     return payload;
   }
+  public async updatePatient(
+    params: any
+  ) {
+    let identifiers = await getPatientIdentifiers(params.patientUuid);
+    let location="";
+    let nupi="";
+    identifiers.results.forEach((id: any) => {
+      if( id.identifierType.uuid == "ced014a1-068a-4a13-b6b3-17412f754af2"){
+        location=id.location;
+        nupi=id.identifier;
+      }
+    });
+    let httpClient = await client("dhp");
+    let payload = await this.constructPayload(
+      params.patientUuid,
+      location,
+      params.countryCode
+    );
+    payload.clientNumber=nupi;
+    console.log("Current patient payload ", payload);
+    /** Patient not found: Construct payload and save to Registry*/
+    const slackService = new SlackService();
 
+    httpClient.axios
+      .post("", payload)
+      .then(async (dhpResponse: any) => {
+        // let savedUpi: any = await this.saveUpiNumber(
+        //   dhpResponse.clientNumber,
+        //   params.patientUuid,
+        //   location,
+        //   params.countryCode
+        // );
+        console.log("Created successfully, assigned UPI", dhpResponse);
+      })
+      .catch((err: any) => {
+        const slackPayload = {
+          patientIdentifier: params.amrsNumber
+            ? params.amrsNumber
+            : params.patientUuid,
+          errors: "",
+        };
+
+        if (err.response.data.errors !== undefined) {
+          /**Send bad request error to slack, error 400 */
+          slackPayload.errors = JSON.stringify(err.response.data.errors);
+        } else {
+          /**Queue patient in Redis, error 500 */
+          slackPayload.errors = "Verification retried";
+          const redisBody = {
+            payload: payload,
+            params: params,
+            location: location,
+          };
+          //this.queueClientsToRetry(redisBody);
+        }
+        slackService.postErrorMessage(slackPayload);
+      });
+
+    return payload;
+  }
   private async constructPayload(
     patientUuid: string,
     locationUuid: string,

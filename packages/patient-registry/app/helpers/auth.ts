@@ -1,6 +1,7 @@
 import qs from "qs";
 import * as fs from "fs";
 import config from "@amrs-integrations/core";
+import HttpClient from "@amrs-integrations/core/dist/app/http-client";
 export default async function getAccessToken() {
   // Validate token in file
   var data = qs.stringify({
@@ -32,7 +33,27 @@ export default async function getAccessToken() {
   );
   return response;
 }
-
+export async function client(implementation: string) {
+  let httpClient: any;
+  if (implementation === "dhp") {
+    let access_token = await validateToken();
+    new config.HTTPInterceptor(
+      config.dhp.url || "",
+      "",
+      "",
+      "dhp",
+      access_token
+    );
+  }else{
+    httpClient=new config.HTTPInterceptor(
+      config.amrsUrl || "",
+      config.amrsUsername || "",
+      config.amrsPassword || "",
+      "amrs"
+    );
+  }
+  return httpClient;
+}
 export async function validateToken() {
   let isValid = false;
   try {

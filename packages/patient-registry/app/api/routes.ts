@@ -23,5 +23,15 @@ export const apiRoutes: ServerRoute[] = [
       const response = h.response(identifiers);
       return response;
     },
+  },
+  {
+    method: "PUT",
+    path: "/api/uno",
+    handler: async function (request, h: ResponseToolkit) {
+      const service = new PatientService();
+      const identifiers = await service.updatePatient(request.query);
+      const response = h.response(identifiers);
+      return response;
+    },
   }
 ];

@@ -1,12 +1,7 @@
-import config from "@amrs-integrations/core";
+import { client } from "./auth";
 
 export async function getPatientIdentifiers(patientUUID: string) {
-  let httpClient = new config.HTTPInterceptor(
-    config.amrsUrl || "",
-    config.amrsUsername || "",
-    config.amrsPassword || "",
-    "amrs"
-  );
+  let httpClient =await client("amrs")
   let identifiers = await httpClient.axios(
     "/ws/rest/v1/patient/" + patientUUID + "/identifier",
     {
@@ -22,12 +17,7 @@ export async function saveCountryAttribute(patientUuid:string, countryCode:strin
     value: countryCode,
   };
 
-  let httpClient = new config.HTTPInterceptor(
-    config.amrsUrl || "",
-    config.amrsUsername || "",
-    config.amrsPassword || "",
-    "amrs"
-  );
+  let httpClient = await client("amrs")
   return await httpClient.axios.post(
     "/ws/rest/v1/patient/" + patientUuid + "/attribute",
     payload
@@ -45,12 +35,7 @@ export async function saveUpiIdentifier(
     preferred: false,
   };
 
-  let httpClient = new config.HTTPInterceptor(
-    config.amrsUrl || "",
-    config.amrsUsername || "",
-    config.amrsPassword || "",
-    "amrs"
-  );
+  let httpClient = await client("amrs")
   return await httpClient.axios.post(
     "/ws/rest/v1/patient/" + patientUuid + "/identifier",
     payload

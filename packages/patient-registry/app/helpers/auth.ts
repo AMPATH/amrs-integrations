@@ -1,16 +1,18 @@
 import qs from "qs";
 import * as fs from "fs";
+
 import config from "@amrs-integrations/core";
+
 export default async function getAccessToken() {
   // Validate token in file
-  var data = qs.stringify({
+  const data = qs.stringify({
     client_id: config.dhp.clientId,
     client_secret: config.dhp.clientSecret,
     grant_type: config.dhp.grantType,
     scope: config.dhp.scope,
   });
   console.log(data);
-  let httpClient = new config.HTTPInterceptor(
+  const httpClient = new config.HTTPInterceptor(
     config.dhp.authUrl || "",
     "",
     "",
@@ -43,7 +45,7 @@ export async function validateToken() {
         ? (isValid = false)
         : (isValid = true);
       if (isValid) {
-        console.log("Fetch old accesstoken", data);
+        console.info("Valid Accesstoken: ", data);
         return data;
       } else {
         let response = await getAccessToken();
@@ -59,11 +61,9 @@ export async function validateToken() {
     console.error(err);
   }
 }
-function parseJwt(token: string) {
-  var base64Url = token.split(".")[1];
-  var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const buff = new Buffer(base64, "base64");
-  const payloadinit = buff.toString("ascii");
-  const payload = JSON.parse(payloadinit);
-  return payload;
+
+const parseJwt = (token: string) => {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  return JSON.parse(Buffer.from(base64, "base64").toString("ascii"));
 }

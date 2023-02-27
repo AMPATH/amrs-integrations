@@ -1,7 +1,8 @@
 import config from "@amrs-integrations/core";
+import { COUNTRY_CODE_ATTRIBUTE_TYPE_UUID } from "../constants";
 
 export async function getPatientIdentifiers(patientUUID: string) {
-  let httpClient = new config.HTTPInterceptor(
+  const httpClient = new config.HTTPInterceptor(
     config.amrsUrl || "",
     config.amrsUsername || "",
     config.amrsPassword || "",
@@ -10,19 +11,20 @@ export async function getPatientIdentifiers(patientUUID: string) {
   let identifiers = await httpClient.axios(
     "/ws/rest/v1/patient/" + patientUUID + "/identifier",
     {
-      method: "get",
+      method: "GET",
     }
   );
 
   return identifiers;
 }
+
 export async function saveCountryAttribute(patientUuid:string, countryCode:string) {
   const payload = {
     attributeType: "8d871afc-c2cc-11de-8d13-0010c6dffd0f",
     value: countryCode,
   };
 
-  let httpClient = new config.HTTPInterceptor(
+  const httpClient = new config.HTTPInterceptor(
     config.amrsUrl || "",
     config.amrsUsername || "",
     config.amrsPassword || "",
@@ -33,6 +35,7 @@ export async function saveCountryAttribute(patientUuid:string, countryCode:strin
     payload
   )
 }
+
 export async function saveUpiIdentifier(
   upi: string,
   patientUuid: string,
@@ -40,12 +43,12 @@ export async function saveUpiIdentifier(
 ) {
   const payload = {
     identifier: upi,
-    identifierType: "cba702b9-4664-4b43-83f1-9ab473cbd64d",
+    identifierType: COUNTRY_CODE_ATTRIBUTE_TYPE_UUID,
     location: locationUuid,
     preferred: false,
   };
 
-  let httpClient = new config.HTTPInterceptor(
+  const httpClient = new config.HTTPInterceptor(
     config.amrsUrl || "",
     config.amrsUsername || "",
     config.amrsPassword || "",

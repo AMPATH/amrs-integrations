@@ -20,7 +20,7 @@ export default class SlackService {
 
       axios(options)
         .then((response: any) => {
-          console.log("Error occurred for patient ", response.options.data);
+          console.log("Error occurred for patient ", response.data);
           resolve(response.data);
         })
         .catch((error: any) => {

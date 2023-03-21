@@ -19,7 +19,7 @@
     "lerna-dockerize": "lerna-dockerize --template-dockerfile-name Dockerfile.template"
   },
   "devDependencies": {
-    "lerna": "^4.0.0",
+    "lerna": "^6.5.1",
     "lerna-dockerize": "^0.8.4",
     "prettier": "^2.1.2"
   },

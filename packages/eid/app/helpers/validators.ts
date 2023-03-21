@@ -32,18 +32,23 @@ export default class Validators {
   }
 
   validateCsv(file: any) {
-    // check that file is  aCSV
-    if (file.hapi.headers["content-type"] !== "text/csv") {
-      return { error: "Invalid file type. Only CSV files are allowed" };
-    }
-    const oneMB = 1024 * 1024;
-    // check file size517
-    if (file.size > oneMB) {
-      //1MB
-      return { error: "File size too large" };
+    try {
+      // Check that file is a CSV
+      if (file.hapi.headers["content-type"] !== "text/csv") {
+        return { error: "Invalid file type. Only CSV files are allowed", status: 'error' };
+      }
+
+      // Check if file size is greater than zero
+    if (file._data.length <= 0) {
+      return {error: "Failed. Uploaded file is empty.", status: 'error'};
     }
 
-    return true;
+      return true;
+
+    } catch (error) {
+      console.error(error);
+      return { error: "An error occurred while validating the CSV file", status: 'error' };
+    }
   }
   // check if all the required columns are present
   validateColumns(filePath: fs.PathLike, expectedColumns: any) {

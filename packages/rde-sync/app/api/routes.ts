@@ -1,7 +1,7 @@
 import { ServerRoute } from "@hapi/hapi";
-import PatientService, { RequestParams } from "../services/patient.service";
+import RdeSyncService from "../services/rde-sync.service";
 import MonthlyReportService from "../services/monthly-report.service";
-import { QueuePatientPayload } from "../models/RequestParams";
+import { QueuePatientPayload, RDEQueuePayload } from "../models/RequestParams";
 
 const Joi = require("joi");
 
@@ -10,10 +10,10 @@ export const apiRoutes: ServerRoute[] = [
     method: "POST",
     path: "/api/rde-sync/queue",
     handler: async function (request, h) {
-      const patientService = new PatientService();
+      const rdeSyncService = new RdeSyncService();
 
-      return await patientService.queueRDEPatients(
-        request.payload as RequestParams,
+      return await rdeSyncService.queueRDEPatients(
+        request.payload as RDEQueuePayload,
         h
       );
     },
@@ -24,15 +24,15 @@ export const apiRoutes: ServerRoute[] = [
     handler: async function (request, h) {
       const id = request.params.id;
 
-      const patientService = new PatientService();
-      await patientService.deletePatientRecord(id, h);
+      const rdeSyncService = new RdeSyncService();
+      await rdeSyncService.deletePatientRecord(id, h);
 
       return "deleted";
     },
   },
   {
     method: "GET",
-    path: "/api/rde-sync/queue-patients",
+    path: "/api/rde-sync/queue-patientlist",
     handler: async function (request, h) {
       const params = request.params || {};
 
@@ -60,7 +60,7 @@ export const apiRoutes: ServerRoute[] = [
     handler: async function (request, h) {
       const monthlyService = new MonthlyReportService();
 
-      const { patientIds } = request.payload as QueuePatientPayload;
+      const { patientIds, userId, reportingMonth } = request.payload as QueuePatientPayload;
 
       if (
         !patientIds ||
@@ -70,7 +70,7 @@ export const apiRoutes: ServerRoute[] = [
         throw new Error("Invalid personIds provided");
       }
       try {
-        await monthlyService.queuePatients(patientIds);
+        await monthlyService.queueAndProcessedPatients(patientIds, userId, reportingMonth);
         return h.response({ message: "Processing Queued Patients" }).code(201);
       } catch (error) {
         console.error(error);

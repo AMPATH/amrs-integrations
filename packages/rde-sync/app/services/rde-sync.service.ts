@@ -1,14 +1,10 @@
 import { AMRS_POOL, ETL_POOL } from "../db";
 import { ResponseToolkit } from "@hapi/hapi";
 import { RowDataPacket } from "mysql2";
+import { RDEQueuePayload } from "../models/RequestParams";
+import { QueueStatus } from "../models/Model";
 
-export interface RequestParams {
-  identifiers: string[];
-  user_id: number;
-  reporting_month: string;
-}
-
-class PatientService {
+class RdeSyncService {
   async getPatientIds(identifiers: string[]) {
     let whereQuery = "";
     identifiers.forEach((identifier) => {
@@ -27,8 +23,8 @@ class PatientService {
     return result;
   }
 
-  async queueRDEPatients(request: RequestParams, h: ResponseToolkit) {
-    const { identifiers, user_id, reporting_month } = request;
+  async queueRDEPatients(request: RDEQueuePayload, h: ResponseToolkit) {
+    const { identifiers, userId, reportingMonth } = request;
 
     const [rows] = await this.getPatientIds(identifiers);
 
@@ -39,7 +35,7 @@ class PatientService {
       let now = moment().tz("Africa/Nairobi");
       let formattedDateTime = now.format("YYYY-MM-DD HH:mm:ss");
 
-      let query = `INSERT INTO rde_sync_queue (user_id, patient_id, date_created, reporting_month, status) VALUES (${user_id}, ${patientId}, '${formattedDateTime}', '${reporting_month}', 'QUEUED')`;
+      let query = `INSERT INTO rde_sync_queue (user_id, patient_id, date_created, reporting_month, status) VALUES (${userId}, ${patientId}, '${formattedDateTime}', '${reportingMonth}', 'QUEUED')`;
 
       const connection = await ETL_POOL.getConnection();
       const [rows] = await connection.execute(query);
@@ -55,18 +51,40 @@ class PatientService {
   }
 
   async updatePatientStatus(
-    patientIds: string[],
-    status: string,
-    h: ResponseToolkit
-  ) {
-    patientIds.forEach(async (id) => {
-      let query = `UPDATE rde_sync_queue SET status = '${status}' WHERE patient_id = ${id}`;
-      const connection = await ETL_POOL.getConnection();
-      const [updates] = await connection.execute(query);
+    patientIds: number[],
+    status: QueueStatus) {
+    const connection = await ETL_POOL.getConnection();
+    const queueStatus: string = QueueStatus[status];
+    try {
+      for (const id of patientIds) {
+        const query =
+          "UPDATE rde_sync_queue SET status = ? WHERE patient_id = ?";
+        const [updates] = await connection.execute(query, [queueStatus, id]);
+        console.info("Patient queue status updated", updates);
+      }
+      //return h.response({ message: "Patient status updated" }).code(200);
+    } catch (error) {
+      console.error(error);
+      // return h
+      //   .response({ message: "Failed to update patient status" })
+      //   .code(500);
+    } finally {
       connection.release();
-      return h.response(updates).code(200);
-    });
+    }
   }
+  // async updatePatientStatus(
+  //   patientIds: string[],
+  //   status: string,
+  //   h: ResponseToolkit
+  // ) {
+  //   patientIds.forEach(async (id) => {
+  //     let query = `UPDATE rde_sync_queue SET status = '${status}' WHERE patient_id = ${id}`;
+  //     const connection = await ETL_POOL.getConnection();
+  //     const [updates] = await connection.execute(query);
+  //     connection.release();
+  //     return h.response(updates).code(200);
+  //   });
+  // }
 
   async deletePatientRecord(id: string, h: ResponseToolkit) {
     const identifiers = [id];
@@ -82,4 +100,4 @@ class PatientService {
   }
 }
 
-export default PatientService;
+export default RdeSyncService;

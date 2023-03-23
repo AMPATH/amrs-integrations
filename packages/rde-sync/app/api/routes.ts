@@ -1,4 +1,4 @@
-import { ResponseToolkit, ServerRoute } from "@hapi/hapi";
+import { ServerRoute } from "@hapi/hapi";
 import RdeSyncService from "../services/rde-sync.service";
 import MonthlyReportService from "../services/monthly-report.service";
 import { QueuePatientPayload, RDEQueuePayload } from "../models/RequestParams";
@@ -165,6 +165,30 @@ export const apiRoutes: ServerRoute[] = [
     handler: async function (request, h) {
       const hivSummaryService = new HIVSummaryService();
       return await hivSummaryService.getSummarySyncQueue(h);
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/rde-sync/queue",
+    handler: async function (request, h) {
+      const params = request.params || {};
+
+      const reportParams = {
+        user_id: request.query?.user_id,
+        reporting_month: request.query?.reporting_month,
+        h: h,
+      };
+
+      const monthlyService = new MonthlyReportService();
+      return monthlyService.getHivMonthlyReportFrozen(reportParams);
+    },
+    options: {
+      validate: {
+        query: Joi.object({
+          user_id: Joi.number().integer().required(),
+          reporting_month: Joi.string().required(),
+        }),
+      },
     },
   },
 ];

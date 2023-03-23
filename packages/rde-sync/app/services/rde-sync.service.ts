@@ -62,29 +62,12 @@ class RdeSyncService {
         const [updates] = await connection.execute(query, [queueStatus, id]);
         console.info("Patient queue status updated", updates);
       }
-      //return h.response({ message: "Patient status updated" }).code(200);
     } catch (error) {
       console.error(error);
-      // return h
-      //   .response({ message: "Failed to update patient status" })
-      //   .code(500);
     } finally {
       connection.release();
     }
   }
-  // async updatePatientStatus(
-  //   patientIds: string[],
-  //   status: string,
-  //   h: ResponseToolkit
-  // ) {
-  //   patientIds.forEach(async (id) => {
-  //     let query = `UPDATE rde_sync_queue SET status = '${status}' WHERE patient_id = ${id}`;
-  //     const connection = await ETL_POOL.getConnection();
-  //     const [updates] = await connection.execute(query);
-  //     connection.release();
-  //     return h.response(updates).code(200);
-  //   });
-  // }
 
   async deletePatientRecord(id: string, h: ResponseToolkit) {
     const identifiers = [id];

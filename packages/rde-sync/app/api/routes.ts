@@ -169,7 +169,7 @@ export const apiRoutes: ServerRoute[] = [
   },
   {
     method: "GET",
-    path: "/api/rde-sync/queue-patients",
+    path: "/api/rde-sync/queue-patientlist",
     handler: async function (request, h) {
       const params = request.params || {};
 

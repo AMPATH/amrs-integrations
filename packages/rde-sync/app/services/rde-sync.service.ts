@@ -1,9 +1,8 @@
 import { AMRS_POOL, ETL_POOL } from "../db";
-import { Request, ResponseToolkit } from "@hapi/hapi";
+import { ResponseToolkit } from "@hapi/hapi";
 import { RowDataPacket } from "mysql2";
-import { QueuePatientPayload, RDEQueuePayload } from "../models/RequestParams";
-import { AffectedRows, PatientIds, QueueStatus } from "../models/Model";
-import { string } from "joi";
+import { RDEQueuePayload } from "../models/RequestParams";
+import { QueueStatus } from "../models/Model";
 
 class RdeSyncService {
   async getPatientIds(identifiers: string[]) {
@@ -40,29 +39,20 @@ class RdeSyncService {
 
       const connection = await ETL_POOL.getConnection();
       const [rows] = await connection.execute(query);
-      const { affectedRows } = rows as AffectedRows;
       connection.release();
-
-      return affectedRows;
+      h.response(rows).created;
     };
 
-    try {
-      if (Array.isArray(rows)) {
-        let totalRows: number = 0;
-
-        for (const row of rows) {
-          const response = await handleRow(row as RowDataPacket);
-          response ? (totalRows += response) : totalRows;
-        }
-
-        return { createdRows: totalRows };
-      }
-    } catch (err) {
-      console.error(err);
+    if (Array.isArray(rows)) {
+      rows.forEach((row: any) => {
+        return handleRow(row as RowDataPacket);
+      });
     }
   }
 
-  async updatePatientStatus(patientIds: number[], status: QueueStatus) {
+  async updatePatientStatus(
+    patientIds: number[],
+    status: QueueStatus) {
     const connection = await ETL_POOL.getConnection();
     const queueStatus: string = QueueStatus[status];
     try {
@@ -72,66 +62,40 @@ class RdeSyncService {
         const [updates] = await connection.execute(query, [queueStatus, id]);
         console.info("Patient queue status updated", updates);
       }
+      //return h.response({ message: "Patient status updated" }).code(200);
     } catch (error) {
       console.error(error);
+      // return h
+      //   .response({ message: "Failed to update patient status" })
+      //   .code(500);
     } finally {
       connection.release();
     }
   }
+  // async updatePatientStatus(
+  //   patientIds: string[],
+  //   status: string,
+  //   h: ResponseToolkit
+  // ) {
+  //   patientIds.forEach(async (id) => {
+  //     let query = `UPDATE rde_sync_queue SET status = '${status}' WHERE patient_id = ${id}`;
+  //     const connection = await ETL_POOL.getConnection();
+  //     const [updates] = await connection.execute(query);
+  //     connection.release();
+  //     return h.response(updates).code(200);
+  //   });
+  // }
 
   async deletePatientRecord(id: string, h: ResponseToolkit) {
     const identifiers = [id];
     const [patientId] = await this.getPatientIds(identifiers);
-
     if (Array.isArray(patientId)) {
       const id = patientId[0] as { patient_id: number };
-      const query = `DELETE FROM rde_sync_queue WHERE patient_id = ${id?.patient_id}`;
+      const query = `DELETE FROM rde_sync_queue WHERE patient_id = ${id.patient_id}`;
       const connection = await ETL_POOL.getConnection();
       const [deleted] = await connection.execute(query);
       connection.release();
       return h.response(deleted).code(204);
-    }
-  }
-
-  async processingStatus(id: string, h: ResponseToolkit) {
-    let count;
-    try {
-      const query = `SELECT * FROM hiv_monthly_report_dataset_build_queue_${id}`;
-      const connection = await ETL_POOL.getConnection();
-      const [rows] = await connection.execute(query);
-      if (Array.isArray(rows)) {
-        count = rows.length;
-        connection.release();
-        const response = { totalRows: count };
-        return response;
-      }
-    } catch (err) {
-      count = 0;
-      const response = { totalRows: count };
-      return response;
-    }
-  }
-
-  async freezingData(request: QueuePatientPayload, h: ResponseToolkit) {
-    const { patientIds, userId, reportingMonth } = request;
-
-    let whereQuery = "";
-    patientIds.forEach((id) => {
-      whereQuery += `${id},`;
-    });
-
-    const query = `REPLACE INTO etl.hiv_monthly_report_dataset_frozen (SELECT * from etl.hiv_monthly_report_dataset_v1_2
-          WHERE hiv_monthly_report_dataset_v1_2.endDate = '${reportingMonth}' AND hiv_monthly_report_dataset_v1_2.person_id
-          IN (${whereQuery.slice(0, -1)}));`;
-
-    try {
-      const connection = await ETL_POOL.getConnection();
-      const [rows] = await connection.execute(query);
-      connection.release();
-      return h.response(rows).code(201);
-    } catch (e) {
-      console.error(e);
-      return h.response("Internal server error \n " + e).code(500);
     }
   }
 }

@@ -169,7 +169,7 @@ export const apiRoutes: ServerRoute[] = [
   },
   {
     method: "GET",
-    path: "/api/rde-sync/queue",
+    path: "/api/rde-sync/queue-patients",
     handler: async function (request, h) {
       const params = request.params || {};
 
@@ -187,6 +187,39 @@ export const apiRoutes: ServerRoute[] = [
         query: Joi.object({
           user_id: Joi.number().integer().required(),
           reporting_month: Joi.string().required(),
+        }),
+      },
+    },
+  },
+  {
+    method: "POST",
+    path: "/api/rde-sync/process-queue-patients",
+    handler: async function (request, h) {
+      const monthlyService = new MonthlyReportService();
+
+      const { patientIds, userId, reportingMonth } = request.payload as QueuePatientPayload;
+
+      if (
+        !patientIds ||
+        !Array.isArray(patientIds) ||
+        patientIds.length === 0
+      ) {
+        throw new Error("Invalid personIds provided");
+      }
+      try {
+        await monthlyService.queueAndProcessedPatients(patientIds, userId, reportingMonth);
+        return h.response({ message: "Processing Queued Patients" }).code(201);
+      } catch (error) {
+        console.error(error);
+        return h.response({ message: "Failed to Queue or Invoke Process the Queued patients" }).code(500);
+      }
+    },
+    options: {
+      validate: {
+        payload: Joi.object({
+          userId: Joi.number().integer().required(),
+          reportingMonth: Joi.string().required(),
+          patientIds: Joi.array().required(),
         }),
       },
     },

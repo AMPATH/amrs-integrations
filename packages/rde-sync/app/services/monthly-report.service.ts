@@ -13,22 +13,29 @@ interface MonthlyReportQueryParams {
 class MonthlyReportService {
   async getHivMonthlyReportFrozen(param: MonthlyReportQueryParams) {
     let query = `select hmf.date_created,
-        person_id,
-        person_uuid,
-        birthdate,
-        age,
-        gender,
-        location_id,
-        clinic,
-        rtc_date,
-        prev_status,
-        hmf.status,
-        next_status,
-        endDate as reporting_month,
+        hmf.person_id,
+        hmf.person_uuid,
+        CONCAT(COALESCE(person_name.given_name, ''), ' ', COALESCE(person_name.middle_name, ''), ' ',
+              COALESCE(person_name.family_name, '')) AS patient_name,
+              hmf.birthdate,
+              hmf.age,
+              hmf.gender,
+              hmf.location_id,
+              hmf.clinic,
+              hmf.rtc_date,
+              hmf.prev_status,
+        hmf.status as frozen_status,
+        hl.status as live_status,
+        hmf.next_status,
+        hmf.endDate as reporting_month,
         rs.status as queue_status
  from etl.hiv_monthly_report_dataset_frozen hmf
  left join etl.rde_sync_queue rs on hmf.person_id = rs.patient_id
- where rs.user_id = ? and hmf.endDate = ?`;
+ left join hiv_monthly_report_dataset_v1_2 hl on  hmf.person_id = hl.person_id
+ LEFT JOIN amrs_migration.person_name person_name ON (hmf.person_id = person_name.person_id AND
+  (person_name.voided IS NULL || person_name.voided = 0) AND
+  person_name.preferred = 1)
+ where rs.user_id = ? and rs.status not in ('FROZEN') and hmf.endDate = ? group by hmf.person_id`;
     try {
       const connection = await ETL_POOL.getConnection();
 
@@ -44,7 +51,11 @@ class MonthlyReportService {
     }
   }
 
-  async queueAndProcessedPatients(personIds: number[], userId: number, reportingMonth: string): Promise<void> {
+  async queueAndProcessedPatients(
+    personIds: number[],
+    userId: number,
+    reportingMonth: string
+  ): Promise<void> {
     const connection = await ETL_POOL.getConnection();
     try {
       await connection.beginTransaction();
@@ -57,7 +68,9 @@ class MonthlyReportService {
       await connection.query(replaceQuery, personIds);
       await connection.commit();
 
-      const startOfReportingMonth = `${formatDate(getMonthStartDate(new Date(reportingMonth)))}`;
+      const startOfReportingMonth = `${formatDate(
+        getMonthStartDate(new Date(reportingMonth))
+      )}`;
       console.log("startDate", startOfReportingMonth);
       //Invoke processing SP
       this.invokeHivMonthlyStoredProcedure(

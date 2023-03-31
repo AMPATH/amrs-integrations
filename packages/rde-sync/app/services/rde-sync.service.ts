@@ -1,7 +1,7 @@
 import { AMRS_POOL, ETL_POOL } from "../db";
 import { ResponseToolkit } from "@hapi/hapi";
 import { RowDataPacket } from "mysql2";
-import { RDEQueuePayload } from "../models/RequestParams";
+import { QueuePatientPayload, RDEQueuePayload } from "../models/RequestParams";
 import { QueueStatus } from "../models/Model";
 
 class RdeSyncService {
@@ -79,6 +79,48 @@ class RdeSyncService {
       const [deleted] = await connection.execute(query);
       connection.release();
       return h.response(deleted).code(204);
+    }
+  }
+
+  async processingStatus(id: string, h: ResponseToolkit) {
+    let count;
+    try {
+      const query = `SELECT * FROM hiv_monthly_report_dataset_build_queue_${id}`;
+      const connection = await ETL_POOL.getConnection();
+      const [rows] = await connection.execute(query);
+      if (Array.isArray(rows)) {
+        count = rows.length;
+        connection.release();
+        const response = { totalRows: count };
+        return response;
+      }
+    } catch (err) {
+      count = 0;
+      const response = { totalRows: count };
+      return response;
+    }
+  }
+
+  async freezingData(request: QueuePatientPayload, h: ResponseToolkit) {
+    const { patientIds, userId, reportingMonth } = request;
+
+    let whereQuery = "";
+    patientIds.forEach((id) => {
+      whereQuery += `${id},`;
+    });
+
+    const query = `REPLACE INTO etl.hiv_monthly_report_dataset_frozen (SELECT * from etl.hiv_monthly_report_dataset_v1_2
+          WHERE hiv_monthly_report_dataset_v1_2.endDate = '${reportingMonth}' AND hiv_monthly_report_dataset_v1_2.person_id
+          IN (${whereQuery.slice(0, -1)}));`;
+
+    try {
+      const connection = await ETL_POOL.getConnection();
+      const [rows] = await connection.execute(query);
+      connection.release();
+      return h.response(rows).code(201);
+    } catch (e) {
+      console.error(e);
+      return h.response("Internal server error \n " + e).code(500);
     }
   }
 }

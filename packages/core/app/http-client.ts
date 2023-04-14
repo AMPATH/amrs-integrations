@@ -10,7 +10,7 @@ export default abstract class HttpClient {
     const amrsUrl = config.amrsUrl;
     if (requestType === "amrs") {
       baseURL = amrsUrl;
-    } else if(requestType === "adt") {
+    } else if (requestType === "adt") {
       baseURL = adtBaseUrl;
     }
     this.axios = axios.create({

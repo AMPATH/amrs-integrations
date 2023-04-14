@@ -1,6 +1,6 @@
 import * as Papa from "papaparse";
 import * as Fs from "fs";
-import GetPatient from "../helpers/getPatientUUID";
+import GetPatient from "../helpers/dbConnect";
 import config from "@amrs-integrations/core";
 import Validators from "../helpers/validators";
 import Helpers from "../helpers/helperFunctions";
@@ -11,6 +11,8 @@ export default class ExtractVLAndPostToETL {
     try {
       let logMessage: String;
       const helper = new Helpers();
+
+      // this file path needs to be passed from the client
       const file = Fs.readFileSync(
         path.join(path.dirname(__dirname), "../app/uploads/test_data.csv"),
         "utf-8"
@@ -44,7 +46,7 @@ export default class ExtractVLAndPostToETL {
         );
 
         //check if data is already synced
-        obs_count = await getPatient.checkPatientDataSync(data, patientUUID);
+        obs_count = await getPatient.checkPatientVLSync(data, patientUUID);
         if (obs_count[0].count > 0) {
           logMessage = "Patient Results Already Synced" + data.patient_ccc_no;
           //data already synced for this patient

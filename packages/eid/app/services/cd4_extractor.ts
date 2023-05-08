@@ -1,6 +1,6 @@
 import * as Papa from "papaparse";
 import * as Fs from "fs";
-import GetPatient from "../helpers/getPatientUUID";
+import GetPatient from "../helpers/dbConnect";
 import config from "@amrs-integrations/core";
 import Validators from "../helpers/validators";
 import moment from "moment";

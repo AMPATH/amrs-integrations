@@ -1,11 +1,11 @@
 import config from "@amrs-integrations/core";
 import dictionary from "../templates/sms_dictionary.json";
 import qs from "qs";
-import { Patient } from "../models/patient";
+import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
 import { AfricasTalkingResponse } from "../models/sms";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
-import { checkNumber, saveNumber } from "../models/queries";
+import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
 
 export async function SendSMS(params: any) {
   let smsParams: Patient = JSON.parse(params);
@@ -63,7 +63,7 @@ export async function SendSMS(params: any) {
       let smsContent = sms
         .replace("$personName$", personName)
         .replace("$rtc_date$", appointmentDate);
-      let sendSMSResponse: AfricasTalkingResponse = await httpClient.axios(
+      let sendSMSResponse: any = await httpClient.axios(
         "/services/sendsms/",
         {
           method: "post",
@@ -77,10 +77,61 @@ export async function SendSMS(params: any) {
           }),
         }
       );
-      console.log('Message sent:',sendSMSResponse)
+      console.log('Message sent:',sendSMSResponse);
+      // Save the message response
+      let date_created=moment()
+      .format("YYYY-MM-DD");;
+      let smsResponse:SMSResponse={
+        person_id: smsParams.person_id,
+        phone_number: phoneNumber.number,
+        message_type: smsParams.messageType,
+        message_id: sendSMSResponse.responses[0]["messageid"],
+        date_created: date_created,
+        delivery_status: "pending"
+      }
+
+      console.log("Delivery", smsResponse)
+      await saveOrUpdateSMSResponse(smsResponse,"create")
       return sendSMSResponse;
     } else {
       console.log("Invalid phone number");
     }
   }
+}
+
+export async function UpdateDelivery() {
+  //Retrive all clients with pending status
+  let messageID:[]=await fetchClientsWithPendingDeliveryStatus();
+  //update status
+  let httpClient = new config.HTTPInterceptor(
+    config.sms.url || "",
+    "",
+    "",
+    "sms"
+  );
+  messageID.forEach(async (message_id:any) =>{
+    console.log(message_id.message_id)
+    let sendSMSResponse: any = await httpClient.axios(
+      "/services/getdlr/",
+      {
+        method: "get",
+        data: qs.stringify({
+          messageID: message_id.message_id,
+          partnerID: config.sms.partnerID,
+          apikey: config.sms.apiKey
+        }),
+      }
+    );
+
+    console.log(sendSMSResponse["delivery-description"], sendSMSResponse)
+    let deliveryReport:SMSResponse={
+      person_id: 0,
+      phone_number: "",
+      message_type: "",
+      message_id: message_id.message_id,
+      date_created: "",
+      delivery_status: sendSMSResponse["delivery-description"]
+    }
+    await saveOrUpdateSMSResponse(deliveryReport,"update")
+  })
 }

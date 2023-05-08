@@ -1,5 +1,5 @@
 import config from "@amrs-integrations/core";
-import { Patient } from "./patient";
+import { Patient, SMSResponse } from "./patient";
 let CM = config.ConnectionManager.getInstance();
 
 export async function dailyAppointmentsquery(appointmentDate: string) {
@@ -253,4 +253,30 @@ export async function checkNumber(msisdn: string) {
   let result: any = await CM.query(sql, amrsCON);
   await CM.releaseConnections(amrsCON)
   return result;
+}
+
+export async function fetchClientsWithPendingDeliveryStatus() {
+  let amrsCON = await CM.getConnectionAmrs();
+  let sql = `select message_id from etl.sms_delivery_report where delivery_status="pending"`;
+  console.log("Query", sql);
+  let result: [] = await CM.query(sql, amrsCON);
+  await CM.releaseConnections(amrsCON)
+  return result;
+}
+export async function saveOrUpdateSMSResponse(
+  smsResponse: SMSResponse,
+  type: string
+) {
+  let amrsCON = await CM.getConnectionAmrs();
+  let sql = "";
+  if (type === "create") {
+    sql = `Insert into etl.sms_delivery_report values (${smsResponse.person_id},"${smsResponse.phone_number}","${smsResponse.message_type}",${smsResponse.message_id},"${smsResponse.date_created}","${smsResponse.delivery_status}")`;
+  } else {
+    sql = `Update etl.sms_delivery_report set delivery_status ="${smsResponse.delivery_status}" where message_id="${smsResponse.message_id}"`;
+  }
+
+  console.log("Query", sql);
+  
+  let result: SMSResponse = await CM.query(sql, amrsCON);
+  await CM.releaseConnections(amrsCON)
 }

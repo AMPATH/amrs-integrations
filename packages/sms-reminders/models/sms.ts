@@ -1,20 +1,20 @@
 export interface AfricasTalkingResponse {
-    SMSMessageData: SMSMessageData;
+  SMSMessageData: SMSMessageData;
 }
 
 export interface SMSMessageData {
-    Message:    string;
-    Recipients: Recipients;
+  Message: string;
+  Recipients: Recipients;
 }
 
 export interface Recipients {
-    Recipient: Recipient;
+  Recipient: Recipient;
 }
 
 export interface Recipient {
-    number:     string;
-    cost:       string;
-    status:     string;
-    statusCode: string;
-    messageId:  string;
+  number: string;
+  cost: string;
+  status: string;
+  statusCode: string;
+  messageId: number;
 }

@@ -3,7 +3,6 @@ import dictionary from "../templates/sms_dictionary.json";
 import qs from "qs";
 import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
-import { AfricasTalkingResponse } from "../models/sms";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
 
@@ -77,7 +76,6 @@ export async function SendSMS(params: any) {
           }),
         }
       );
-      console.log('Message sent:',sendSMSResponse);
       // Save the message response
       let date_created=moment()
       .format("YYYY-MM-DD");;
@@ -89,8 +87,6 @@ export async function SendSMS(params: any) {
         date_created: date_created,
         delivery_status: "pending"
       }
-
-      console.log("Delivery", smsResponse)
       await saveOrUpdateSMSResponse(smsResponse,"create")
       return sendSMSResponse;
     } else {

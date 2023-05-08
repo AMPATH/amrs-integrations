@@ -36,5 +36,5 @@ export interface SMSResponse {
   message_type: string;
   message_id: number;
   date_created: string;
-  delivery_status: number;
+  delivery_status: string;
 }

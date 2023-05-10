@@ -4,21 +4,83 @@ let CM = config.ConnectionManager.getInstance();
 
 export async function dailyAppointmentsquery(appointmentDate: string) {
   let amrsCON = await CM.getConnectionAmrs();
-  let sql =
-    "SELECT t1.uuid,t2.person_id AS `person_id`,t2.scheduled_date as rtc_date, GROUP_CONCAT(DISTINCT contacts.value SEPARATOR ', ') AS `phone_number`, person_name.given_name AS `person_name` FROM etl.flat_appointment `t2` FORCE INDEX (location_med_pickup_rtc_date) LEFT JOIN ( SELECT fa.encounter_id AS `encounter_id`, MAX(fa.encounter_id) AS `max_encounter_id`, person_id AS `person_id` FROM etl.flat_appointment `fa` FORCE INDEX (location_med_pickup_rtc_date) WHERE (date(fa.scheduled_date) >= '" +
-    appointmentDate +
-    "') AND (date(fa.scheduled_date) <= '" +
-    appointmentDate +
-    "') AND (fa.is_clinical = 1 OR fa.encounter_type = 186) AND (fa.encounter_type NOT IN (21 , 99999)) GROUP BY person_id) `latest_encounter` ON (latest_encounter.person_id = t2.person_id) LEFT JOIN etl.flat_appointment `t3` ON (t3.person_id = t2.person_id AND t3.encounter_id = latest_encounter.max_encounter_id) LEFT JOIN etl.flat_appointment `death_reporting` ON (death_reporting.person_id = t2.person_id AND death_reporting.encounter_type IN (31) AND death_reporting.encounter_datetime >= t2.encounter_datetime) LEFT JOIN etl.flat_hiv_summary_v15b `fhs` ON (t2.encounter_id = fhs.encounter_id) INNER JOIN amrs.person `t1` ON (t2.person_id = t1.person_id) LEFT JOIN amrs.person_name `person_name` ON (t1.person_id = person_name.person_id AND (person_name.voided IS NULL || person_name.voided = 0) AND person_name.preferred = 1) LEFT JOIN amrs.person_attribute `contacts` ON (t1.person_id = contacts.person_id AND (contacts.voided IS NULL || contacts.voided = 0) AND contacts.person_attribute_type_id IN (10)) LEFT JOIN amrs.person_address `pa` ON (t1.person_id = pa.person_id) WHERE contacts.value IS NOT NULL and (date(t2.scheduled_date) >= '" +
-    appointmentDate +
-    "') AND (date(t2.scheduled_date) <= '" +
-    appointmentDate +
-    "') AND fhs.next_clinical_datetime_hiv is null AND (t3.program_id IN (1, 4, 2, 11, 10, 19, 30, 9, 8, 3, 20, 25, 27, 28, 29, 31) OR t3.program_id IS NULL) AND (t2.encounter_type NOT IN (21, 99999)) AND (((t2.next_encounter_type <> 116 OR t2.next_encounter_type IS NULL ) OR t2.scheduled_date >= t2.next_encounter_datetime)) AND (t2.is_clinical = 1) AND (t2.is_clinical = 1) AND (fhs.transfer_out_location_id IS NULL OR fhs.transfer_out_location_id <> 9999) AND ((death_reporting.encounter_datetime IS NULL) OR (DATE(t2.scheduled_date) < DATE(death_reporting.encounter_datetime))) AND (1 = (IF(DATE_FORMAT(t2.scheduled_date, '%Y-%m-%d') = '" +
-    appointmentDate +
-    "', 1, NULL))) GROUP BY t1.person_id";
+  let sql = `SELECT t2.person_id                                                                                     AS person_id,
+  t2.encounter_type                                                                                AS encounter_type,
+  pr.name                                                                                          AS program,
+  t2.rtc_date                                                                                      AS rtc_date,
+  date_format(t2.med_pickup_rtc_date, '%Y-%m-%d')                                                  AS med_pick_up_date,
+  NULL                                                                                             AS prev_clinical_encounter_datetime,
+  t2.next_clinical_encounter_datetime                                                              AS next_clinical_encounter_datetime,
+  date_format(t2.scheduled_date, '%Y-%m-%d')                                                       AS scheduled_date,
+  if(DATE_FORMAT(t2.scheduled_date, '%Y-%m-%d') = '${appointmentDate}', 1, null)                           AS patients,
+  date_format(fhs.arv_first_regimen_start_date, '%Y-%m-%d')                                        AS arv_first_regimen_start_date,
+  t1.uuid                                                                                          AS patient_uuid,
+  t1.uuid                                                                                          AS uuid,
+  t1.gender                                                                                        AS gender,
+  t1.birthdate                                                                                     AS birthdate,
+  extract(year from (from_days(datediff(now(), t1.birthdate))))                                    AS age,
+  person_name.given_name AS person_name,
+  GROUP_CONCAT(DISTINCT id.identifier SEPARATOR ', ')                                              AS identifiers,
+  GROUP_CONCAT(DISTINCT contacts.value SEPARATOR ', ')                                             AS phone_number,
+  date_format(fh.rtc_date, '%Y-%m-%d')                                                             AS latest_rtc_date
+FROM etl.flat_appointment t2 FORCE INDEX (location_med_pickup_rtc_date)
+    LEFT JOIN (SELECT fa.encounter_id      AS encounter_id,
+                      MAX(fa.encounter_id) AS max_encounter_id,
+                      person_id            AS person_id
+               FROM etl.flat_appointment fa FORCE INDEX (location_med_pickup_rtc_date)
+               WHERE (date(fa.scheduled_date) >= '${appointmentDate}')
+                 AND (date(fa.scheduled_date) <= '${appointmentDate}')
+                 AND (fa.location_id in ('214'))
+                 AND (fa.is_clinical = 1 OR fa.encounter_type = 186)
+                 AND (fa.encounter_type NOT IN (21, 99999))
+               GROUP BY person_id) latest_encounter ON (latest_encounter.person_id = t2.person_id)
+    LEFT JOIN etl.flat_appointment t3
+              ON (t3.person_id = t2.person_id AND t3.encounter_id = latest_encounter.max_encounter_id)
+    LEFT JOIN etl.flat_appointment death_reporting
+              ON (death_reporting.person_id = t2.person_id AND death_reporting.encounter_type in (31) AND
+                  death_reporting.encounter_datetime >= t2.encounter_datetime)
+    LEFT JOIN amrs.program pr ON (pr.program_id = t3.program_id)
+    LEFT JOIN etl.flat_hiv_summary_v15b fhs ON (t2.encounter_id = fhs.encounter_id)
+    INNER JOIN amrs.person t1 ON (t2.person_id = t1.person_id)
+    LEFT JOIN amrs.person_name person_name ON (t1.person_id = person_name.person_id AND
+                                                 (person_name.voided IS NULL || person_name.voided = 0) AND
+                                                 person_name.preferred = 1)
+    LEFT JOIN amrs.patient_identifier id
+              ON (t1.person_id = id.patient_id AND (id.voided IS NULL || id.voided = 0))
+    LEFT JOIN amrs.person_attribute contacts
+              ON (t1.person_id = contacts.person_id AND (contacts.voided IS NULL || contacts.voided = 0) AND
+                  contacts.person_attribute_type_id in (10, 48))
+    LEFT JOIN etl.flat_hiv_summary_v15b fh
+              ON (t1.person_id = fh.person_id AND fh.next_clinical_location_id IS NULL AND
+                  fh.encounter_type NOT IN (99999))
+    LEFT JOIN amrs.encounter_type et ON (fh.encounter_type = et.encounter_type_id)
+    LEFT JOIN amrs.person_address pa ON (t1.person_id = pa.person_id)
+    LEFT JOIN amrs.visit_type vt ON (t2.visit_type_id = vt.visit_type_id)
+    LEFT JOIN etl.flat_covid_extract c ON (t1.person_id = c.person_id AND c.next_encounter_datetime IS NULL)
+    LEFT JOIN etl.flat_consent consent ON (consent.person_id = t2.person_id)
+    LEFT JOIN etl.sms_delivery_report delivery_report ON (delivery_report.person_id = t2.person_id)
+    LEFT JOIN etl.flat_hiv_summary_v15b tb
+              ON (t1.person_id = tb.person_id AND tb.next_clinical_datetime_hiv IS NULL AND
+                  tb.is_clinical_encounter = 1)
+    LEFT JOIN etl.flat_cervical_cancer_screening_rc cs
+              ON (cs.person_id = t1.person_id AND cs.next_clinical_datetime_cervical_cancer_screening IS NULL)
+WHERE (date(t2.scheduled_date) >= '${appointmentDate}')
+AND (date(t2.scheduled_date) <= '${appointmentDate}')
+AND (t2.location_id not in ('195'))
+AND (t3.program_id in (1, 4, 2, 11, 10, 19, 30, 9, 8, 3, 20, 25, 27, 28, 29, 31, 51) OR t3.program_id IS NULL)
+AND (t2.encounter_type not in (21, 99999))
+AND (((t2.next_encounter_type <> 116 OR t2.next_encounter_type is null) OR
+   t2.scheduled_date >= t2.next_encounter_datetime))
+AND (t2.is_clinical = 1)
+AND (t2.is_clinical = 1)
+AND (fhs.transfer_out_location_id IS NULL or fhs.transfer_out_location_id <> 9999)
+AND ((death_reporting.encounter_datetime IS NULL) OR
+  (DATE(t2.scheduled_date) < DATE(death_reporting.encounter_datetime)))
+AND (1 = (if(DATE_FORMAT(t2.scheduled_date, '%Y-%m-%d') = '${appointmentDate}', 1, null)))
+GROUP BY t1.person_id`;
   console.log("Query", sql);
   let result: Patient[] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 export async function getConsentedAndOptedoutClients(
@@ -55,9 +117,9 @@ export async function getConsentedAndOptedoutClients(
                     AND (t2.encounter_type IN (213)) and t2.encounter_datetime > "${encounterDateTime}"
                     AND (death_reporting.encounter_datetime IS NULL)
               GROUP BY t1.person_id;`;
-              console.log(sql);
+  console.log(sql);
   let result: Patient[] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 
@@ -123,9 +185,9 @@ export async function getHonoredAppointments(
                   1,
                   NULL)))
             GROUP BY t1.person_id`;
-            console.log(sql)
+  console.log(sql);
   let result: Patient[] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 
@@ -220,9 +282,9 @@ export async function getMissedAppointments(yesterday: string) {
                     1,
                     NULL)))
             GROUP BY t1.person_id`;
-            console.log(sql);
+  console.log(sql);
   let result: Patient[] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 
@@ -231,7 +293,7 @@ export async function saveNumber(
   status: string,
   existingPhone: boolean
 ) {
-  console.log('niko area', status, existingPhone)
+  console.log("niko area", status, existingPhone);
   let amrsCON = await CM.getConnectionAmrs();
   let sql = "";
   if (status === "active" && existingPhone == false) {
@@ -241,9 +303,9 @@ export async function saveNumber(
   }
 
   console.log("Query", sql);
-  
+
   let result: Patient[] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
 }
 
 export async function checkNumber(msisdn: string) {
@@ -251,16 +313,16 @@ export async function checkNumber(msisdn: string) {
   let sql = `select * from etl.sms_msisdn_tracker where msisdn="${msisdn}"`;
   console.log("Query", sql);
   let result: any = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 
 export async function fetchClientsWithPendingDeliveryStatus() {
   let amrsCON = await CM.getConnectionAmrs();
-  let sql = `select message_id from etl.sms_delivery_report where delivery_status="pending"`;
+  let sql = `select message_id from etl.sms_delivery_report where delivery_status in("pending","SentToNetwork") and message_type not in("congratulations","welcome")`;
   console.log("Query", sql);
   let result: [] = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
   return result;
 }
 export async function saveOrUpdateSMSResponse(
@@ -276,7 +338,7 @@ export async function saveOrUpdateSMSResponse(
   }
 
   console.log("Query", sql);
-  
+
   let result: SMSResponse = await CM.query(sql, amrsCON);
-  await CM.releaseConnections(amrsCON)
+  await CM.releaseConnections(amrsCON);
 }

@@ -63,7 +63,7 @@ export async function SendSMS(params: any) {
         .replace("$personName$", personName)
         .replace("$rtc_date$", appointmentDate);
       let sendSMSResponse: any = await httpClient.axios(
-        "/services/sendsms/",
+        "/sms",
         {
           method: "post",
           data: qs.stringify({

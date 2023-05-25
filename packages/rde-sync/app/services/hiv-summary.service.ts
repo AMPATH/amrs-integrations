@@ -7,7 +7,7 @@ class HIVSummaryService {
     const { patientIds } = request;
 
     const executingQuery = async (id: string) => {
-      const query = `replace into etl.flat_hiv_summary_sync_queue (select patient_id from amrs_migration.patient_identifier where identifier in (
+      const query = `replace into etl.flat_hiv_summary_sync_queue (select patient_id from amrs.patient_identifier where identifier in (
             '${id}'
             ));`;
       const connection = await ETL_POOL.getConnection();
@@ -54,11 +54,11 @@ class HIVSummaryService {
             LEFT JOIN
         etl.flat_hiv_summary_v15b fh ON (hs.person_id = fh.person_id)
             INNER JOIN
-        amrs_migration.location l ON (fh.location_id = l.location_id)
+        amrs.location l ON (fh.location_id = l.location_id)
             LEFT JOIN
-        amrs_migration.person p ON (hs.person_id = p.person_id)
+        amrs.person p ON (hs.person_id = p.person_id)
             INNER JOIN
-        amrs_migration.person_name pn ON p.person_id = pn.person_id
+        amrs.person_name pn ON p.person_id = pn.person_id
     GROUP BY fh.person_id
     ORDER BY fh.encounter_datetime DESC;`;
       const connection = await ETL_POOL.getConnection();

@@ -41,7 +41,7 @@ FROM
         LEFT JOIN
     hiv_monthly_report_dataset_v1_2 hl ON hmf.person_id = hl.person_id
         LEFT JOIN
-    amrs_migration.person_name person_name ON (hmf.person_id = person_name.person_id
+    amrs.person_name person_name ON (hmf.person_id = person_name.person_id
         AND (person_name.voided IS NULL
         || person_name.voided = 0)
         AND person_name.preferred = 1)

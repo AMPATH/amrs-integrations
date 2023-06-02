@@ -4,6 +4,7 @@ import MonthlyReportService from "../services/monthly-report.service";
 import { QueuePatientPayload, RDEQueuePayload } from "../models/RequestParams";
 import { PatientIds } from "../models/Model";
 import HIVSummaryService from "../services/hiv-summary.service";
+import SearchObsWithID from "../services/search-obs-id.service";
 
 const Joi = require("joi");
 
@@ -181,6 +182,15 @@ export const apiRoutes: ServerRoute[] = [
     handler: async function (request, h) {
       const hivSummaryService = new HIVSummaryService();
       return await hivSummaryService.getSummarySyncQueue(h);
+    }
+  },
+  {
+    method: "GET",
+    path: "/api/obs/{id}",
+    handler: async function (request, h) {
+      const id = request.params.id;
+      const searchObsWithID = new SearchObsWithID();
+      return await searchObsWithID.searchObsWithID(id);
     },
   },
 ];

@@ -1,5 +1,6 @@
 import{
-    Registration,
+    Registration
+    /*
     MessageHeader,
     PatientIdentification,
     ExternalPatientId,
@@ -11,9 +12,12 @@ import{
     NokName,
     PatientVisit,
     ObservationResult
+    */
 }
 from '../models/registration';
 
 export async function getRegistration() {
-    throw new Error('Function not implemented.');
+    let registration:Registration
+    let payload: any;
+    return payload;
 }

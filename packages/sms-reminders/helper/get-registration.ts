@@ -15,9 +15,11 @@ import{
     */
 }
 from '../models/registration';
+import example from '../models/example.registration_payload.json'
 
-export async function getRegistration() {
-    let registration:Registration
-    let payload: any;
+export const getRegistration = async (params:any) => {
+    console.log(params);
+    const payload: Registration = example;
+    console.log(JSON.stringify(payload));
     return payload;
 }

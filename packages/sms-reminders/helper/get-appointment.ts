@@ -12,7 +12,9 @@ import {
     PlacerAppointmentNumber
 }
 from '../models/appointment';
+import example from '../models/example.appointment_payload.json';
 
 export async function getAppointment(){
-    throw new Error('Function not implemented.');
+    const payload: Appointment = example;
+    return payload;
 }

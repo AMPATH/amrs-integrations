@@ -5,7 +5,12 @@ import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
-
+import { getRegistration } from "../helper/get-registration";
+import { getAppointment } from "../helper/get-appointment";
+const checkIfSafaricom= (phone: string) =>{
+  
+  return true;
+}
 export async function SendSMS(params: any) {
   let smsParams: Patient = JSON.parse(params);
   // TODO: Check the telco used for the provider then pick approapriate shortcode

@@ -12,3 +12,7 @@ import {
     PlacerAppointmentNumber
 }
 from '../models/appointment';
+
+export async function getAppointment(){
+    throw new Error('Function not implemented.');
+}

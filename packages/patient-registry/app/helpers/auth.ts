@@ -5,7 +5,6 @@ import config from "@amrs-integrations/core";
 
 export default async function getAccessToken() {
   // Validate token in file
-  console.log("Access token");
   const data = qs.stringify({
     client_id: config.dhp.clientId,
     client_secret: config.dhp.clientSecret,

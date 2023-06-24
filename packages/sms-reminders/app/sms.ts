@@ -7,17 +7,19 @@ import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
 import { getRegistration } from "../helper/get-registration";
 import { getAppointment } from "../helper/get-appointment";
-const checkIfSafaricom= (phone: string) =>{
-  
-  return true;
-}
+import { isSafaricomNumber, retrievePhoneCarrier } from "../helper/get-carrier-prefix";
+
 export async function SendSMS(params: any) {
+
   let smsParams: Patient = JSON.parse(params);
   // TODO: Check the telco used for the provider then pick approapriate shortcode
   if (smsParams.phone_number && isValidPhoneNumber(smsParams.phone_number, "KE")) {
     const phoneNumber = parsePhoneNumber(smsParams.phone_number, "KE");
+    let carrier = retrievePhoneCarrier(phoneNumber.nationalNumber);
+    console.log("saf?: ", isSafaricomNumber(carrier));
     let numberExist: any[] = await checkNumber(phoneNumber.number);
     console.log(numberExist);
+    
     if (
       (smsParams.messageType === "welcome" &&
         numberExist.length > 0 &&
@@ -67,6 +69,7 @@ export async function SendSMS(params: any) {
       let smsContent = sms
         .replace("$personName$", personName)
         .replace("$rtc_date$", appointmentDate);
+
       let sendSMSResponse: any = await httpClient.axios(
         "/services/sendsms/",
         {
@@ -77,13 +80,12 @@ export async function SendSMS(params: any) {
             apikey: config.sms.apiKey,
             mobile: phoneNumber.number,
             timeToSend: smsParams.timeToSend,
-            message: smsContent,
+            message: await getRegistration()//smsContent,
           }),
         }
       );
       // Save the message response
-      let date_created=moment()
-      .format("YYYY-MM-DD");;
+      let date_created=moment().format("YYYY-MM-DD");;
       let smsResponse:SMSResponse={
         person_id: smsParams.person_id,
         phone_number: phoneNumber.number,

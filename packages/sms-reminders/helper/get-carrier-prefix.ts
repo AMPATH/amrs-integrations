@@ -21,4 +21,4 @@ const isSafaricomNumber = (prefix:number) => {
     return false;
 }
 
-export default { retrievePhoneCarrier, isSafaricomNumber }
+export { retrievePhoneCarrier, isSafaricomNumber }

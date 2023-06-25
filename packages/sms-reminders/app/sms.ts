@@ -15,89 +15,91 @@ export async function SendSMS(params: any) {
   // TODO: Check the telco used for the provider then pick approapriate shortcode
   if (smsParams.phone_number && isValidPhoneNumber(smsParams.phone_number, "KE")) {
     const phoneNumber = parsePhoneNumber(smsParams.phone_number, "KE");
-    let carrier = retrievePhoneCarrier(phoneNumber.nationalNumber);
-    console.log("saf?: ", isSafaricomNumber(carrier));
     let numberExist: any[] = await checkNumber(phoneNumber.number);
     console.log(numberExist);
-    
-    if (
-      (smsParams.messageType === "welcome" &&
-        numberExist.length > 0 &&
-        numberExist[0].status === "active") ||
-      (smsParams.messageType === "optout" &&
-        numberExist.length > 0 &&
-        numberExist[0].status === "optedout") ||
-      (smsParams.messageType === "optout" && numberExist.length! > 0)
-    ) {
-      return;
-    } else if (
-      (smsParams.messageType === "optout" &&
-        numberExist.length > 0 &&
-        numberExist[0].status === "active") ||
-      (smsParams.messageType === "welcome" && numberExist.length == 0) ||
-      (smsParams.messageType === "welcome" &&
-        numberExist.length > 0 &&
-        numberExist[0].status === "optedout")
-    ) {
-      let status = smsParams.messageType === "optout" ? "optedout" : "active";
-      saveNumber(phoneNumber.number, status, numberExist.length > 0);
-    }
-    let appointmentDate = moment(smsParams.rtc_date).format("YYYY-MM-DD");
-    let sms = "";
-    let personName = smsParams.person_name;
-    if (smsParams.language === "english") {
-      sms =
-        dictionary.templates.find(
-          (x: { type: string }) => x.type === smsParams.messageType
-        )?.english || "";
-        console.log('sending message',smsParams.messageType,sms)
-    } else {
-      sms =
-        dictionary.templates.find(
-          (x: { type: string }) => x.type === smsParams.messageType
-        )?.kiswahili || "";
-        console.log('sending message',smsParams.messageType,sms)
-    }
-    let httpClient = new config.HTTPInterceptor(
-      config.sms.url || "",
-      "",
-      "",
-      "sms"
-    );
-
-    if (sms !== "") {
-      let smsContent = sms
-        .replace("$personName$", personName)
-        .replace("$rtc_date$", appointmentDate);
-
-      let sendSMSResponse: any = await httpClient.axios(
-        "/services/sendsms/",
-        {
-          method: "post",
-          data: qs.stringify({
-            shortcode: config.sms.shortCode,
-            partnerID: config.sms.partnerID,
-            apikey: config.sms.apiKey,
-            mobile: phoneNumber.number,
-            timeToSend: smsParams.timeToSend,
-            message: await getRegistration()//smsContent,
-          }),
-        }
-      );
-      // Save the message response
-      let date_created=moment().format("YYYY-MM-DD");;
-      let smsResponse:SMSResponse={
-        person_id: smsParams.person_id,
-        phone_number: phoneNumber.number,
-        message_type: smsParams.messageType,
-        message_id: sendSMSResponse.responses[0]["messageid"],
-        date_created: date_created,
-        delivery_status: "pending"
+    let carrier = retrievePhoneCarrier(phoneNumber.nationalNumber);
+    let isSaf: boolean = isSafaricomNumber(carrier);
+    if(isSaf === false)
+    {
+      if (
+        (smsParams.messageType === "welcome" &&
+          numberExist.length > 0 &&
+          numberExist[0].status === "active") ||
+        (smsParams.messageType === "optout" &&
+          numberExist.length > 0 &&
+          numberExist[0].status === "optedout") ||
+        (smsParams.messageType === "optout" && numberExist.length! > 0)
+      ) {
+        return;
+      } else if (
+        (smsParams.messageType === "optout" &&
+          numberExist.length > 0 &&
+          numberExist[0].status === "active") ||
+        (smsParams.messageType === "welcome" && numberExist.length == 0) ||
+        (smsParams.messageType === "welcome" &&
+          numberExist.length > 0 &&
+          numberExist[0].status === "optedout")
+      ) {
+        let status = smsParams.messageType === "optout" ? "optedout" : "active";
+        saveNumber(phoneNumber.number, status, numberExist.length > 0);
       }
-      await saveOrUpdateSMSResponse(smsResponse,"create")
-      return sendSMSResponse;
-    } else {
-      console.log("Invalid phone number");
+      let appointmentDate = moment(smsParams.rtc_date).format("YYYY-MM-DD");
+      let sms = "";
+      let personName = smsParams.person_name;
+      if (smsParams.language === "english") {
+        sms =
+          dictionary.templates.find(
+            (x: { type: string }) => x.type === smsParams.messageType
+          )?.english || "";
+          console.log('sending message',smsParams.messageType,sms)
+      } else {
+        sms =
+          dictionary.templates.find(
+            (x: { type: string }) => x.type === smsParams.messageType
+          )?.kiswahili || "";
+          console.log('sending message',smsParams.messageType,sms)
+      }
+      let httpClient = new config.HTTPInterceptor(
+        config.sms.url || "",
+        "",
+        "",
+        "sms"
+      );
+
+      if (sms !== "") {
+        let smsContent = sms
+          .replace("$personName$", personName)
+          .replace("$rtc_date$", appointmentDate);
+
+        let sendSMSResponse: any = await httpClient.axios(
+          "/services/sendsms/",
+          {
+            method: "post",
+            data: qs.stringify({
+              shortcode: config.sms.shortCode,
+              partnerID: config.sms.partnerID,
+              apikey: config.sms.apiKey,
+              mobile: phoneNumber.number,
+              timeToSend: smsParams.timeToSend,
+              message: await getRegistration()//smsContent,
+            }),
+          }
+        );
+        // Save the message response
+        let date_created=moment().format("YYYY-MM-DD");;
+        let smsResponse:SMSResponse={
+          person_id: smsParams.person_id,
+          phone_number: phoneNumber.number,
+          message_type: smsParams.messageType,
+          message_id: sendSMSResponse.responses[0]["messageid"],
+          date_created: date_created,
+          delivery_status: "pending"
+        }
+        await saveOrUpdateSMSResponse(smsResponse,"create")
+        return sendSMSResponse;
+      } else {
+        console.log("Invalid phone number");
+      }
     }
   }
 }

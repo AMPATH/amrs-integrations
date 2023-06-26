@@ -5,13 +5,10 @@ import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
-import { getRegistration } from "../helper/get-registration";
-import { getAppointment } from "../helper/get-appointment";
-import { isSafaricomNumber, retrievePhoneCarrier } from "../helper/get-carrier-prefix";
-import { sendAppointmentToUshauri, sendRegistrationToUshauri } from "../helper/send-to-ushauri";
+import { sendAppointmentToUshauri, sendRegistrationToUshauri, sendToUshauri } from "../helper/send-to-ushauri";
 
 export async function SendSMS(params: any) {
-
+console.log(params);
   let smsParams: Patient = JSON.parse(params);
   // TODO: Check the telco used for the provider then pick approapriate shortcode
   if (smsParams.phone_number && isValidPhoneNumber(smsParams.phone_number, "KE")) {
@@ -98,9 +95,11 @@ export async function SendSMS(params: any) {
         /**
          * TODO: Ushauri logic goes here
          */
-        const args = {natnum:phoneNumber.nationalNumber, smsParams};
-        const ushauriRegistrationResponse = await sendRegistrationToUshauri(smsParams);
-        const ushauriAppointmentResponse = await sendAppointmentToUshauri(args);
+        //1). if it is a ne reg then log it in the ushauri db
+        //   a). send registration payload
+        //2). send appointment
+        const args = { natnum:phoneNumber.nationalNumber, smsParams };
+        await sendToUshauri(args);
         
         /** end */
 

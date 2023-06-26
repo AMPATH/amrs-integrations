@@ -14,7 +14,7 @@ import {
 from '../models/appointment';
 import example from '../models/example.appointment_payload.json';
 
-export async function getAppointment(){
+export async function getAppointment(params: any){
     const payload: Appointment = example;
     return payload;
 }

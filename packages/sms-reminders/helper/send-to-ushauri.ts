@@ -3,6 +3,18 @@ import { isSafaricomNumber, retrievePhoneCarrier } from "./get-carrier-prefix";
 import { getRegistration } from "./get-registration";
 import { getAppointment } from "./get-appointment";
 
+let CM = config.ConnectionManager.getInstance();
+
+const checkIfInUshauriDb = async (person_id: number ) => {
+    
+    let amrsCON = await CM.getConnectionAmrs();
+    const sql = `select * from ushauri.registration_log where ="${person_id}"`;
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+
+    return result;
+}
+
 export const sendRegistrationToUshauri = async (params: any) => {
 
     let paylod: any = await getRegistration(params);
@@ -10,19 +22,21 @@ export const sendRegistrationToUshauri = async (params: any) => {
         "https://openhimapi.kenyahmis.org/rest/api" || "",
         "test@gmail.com",
         "Test@gmail.com",
-        "sms"
+        "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
     );
 
-    let sendToOpenHIM: any = await httpClient.axios(
+    let sendToOpenHIMRes: any = await httpClient.axios(
         "/IL/registration/test",
         {
             method: "post",
             data: paylod,
         }
     );
-    console.log(sendToOpenHIM);
+
+    return sendToOpenHIMRes;
 }
-export const sendAppointmentToUshauri =async (params: any) => {
+
+export const sendAppointmentToUshauri = async (params: any) => {
     let payload: any = await getAppointment(params.smsParams);
     let carrier = retrievePhoneCarrier(params.natnum);
     let isSaf: boolean = isSafaricomNumber(carrier);
@@ -36,10 +50,10 @@ export const sendAppointmentToUshauri =async (params: any) => {
         "https://openhimapi.kenyahmis.org/rest/api" || "",
         "test@gmail.com",
         "Test@gmail.com",
-        "sms"
+        "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
     );
 
-    let sendToOpenHIM: any = await httpClient.axios(
+    let sendToOpenHIMRes: any = await httpClient.axios(
         "/IL/registration/test",
         {
             method: "post",
@@ -47,5 +61,17 @@ export const sendAppointmentToUshauri =async (params: any) => {
         }
     );
 
-    console.log(sendToOpenHIM);
+    return sendToOpenHIMRes;
+}
+
+export const sendToUshauri =async (params:any) => {
+
+    let result = checkIfInUshauriDb(params.person_id);
+    let response: any;
+
+    if (result === null)
+    {
+        response = await sendRegistrationToUshauri(params);
+    }
+    response = await sendAppointmentToUshauri(params);
 }

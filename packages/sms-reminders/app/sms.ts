@@ -8,6 +8,7 @@ import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrU
 import { getRegistration } from "../helper/get-registration";
 import { getAppointment } from "../helper/get-appointment";
 import { isSafaricomNumber, retrievePhoneCarrier } from "../helper/get-carrier-prefix";
+import { sendAppointmentToUshauri, sendRegistrationToUshauri } from "../helper/send-to-ushauri";
 
 export async function SendSMS(params: any) {
 
@@ -17,10 +18,7 @@ export async function SendSMS(params: any) {
     const phoneNumber = parsePhoneNumber(smsParams.phone_number, "KE");
     let numberExist: any[] = await checkNumber(phoneNumber.number);
     console.log(numberExist);
-    let carrier = retrievePhoneCarrier(phoneNumber.nationalNumber);
-    let isSaf: boolean = isSafaricomNumber(carrier);
-    if(isSaf === false)
-    {
+    
       if (
         (smsParams.messageType === "welcome" &&
           numberExist.length > 0 &&
@@ -81,7 +79,7 @@ export async function SendSMS(params: any) {
               apikey: config.sms.apiKey,
               mobile: phoneNumber.number,
               timeToSend: smsParams.timeToSend,
-              message: await getRegistration()//smsContent,
+              message: smsContent,
             }),
           }
         );
@@ -96,11 +94,20 @@ export async function SendSMS(params: any) {
           delivery_status: "pending"
         }
         await saveOrUpdateSMSResponse(smsResponse,"create")
+        
+        /**
+         * TODO: Ushauri logic goes here
+         */
+        const args = {natnum:phoneNumber.nationalNumber, smsParams};
+        const ushauriRegistrationResponse = await sendRegistrationToUshauri(smsParams);
+        const ushauriAppointmentResponse = await sendAppointmentToUshauri(args);
+        
+        /** end */
+
         return sendSMSResponse;
       } else {
         console.log("Invalid phone number");
       }
-    }
   }
 }
 

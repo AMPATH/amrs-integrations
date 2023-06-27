@@ -14,36 +14,17 @@ const checkIfInUshauriDb = async (person_id: number ) => {
 
     return result;
 }
-interface callParams{
-    url: string,
-    endpoint: string,
-    payload: any,
-    auth:{
-        username: string,
-        password: string,
-        token: string
-    }
-}
-let args: callParams ={
-    url: "",
-    endpoint: "",
-    payload: {},
-    auth: {
-        username: "",
-        password: "",
-        token: ""
-    }
-}
-const ushauriAppiCall = async (args: callParams) => {
+
+const ushauriAppiCall = async (args: any) => {
     let httpClient = new config.HTTPInterceptor(
-        args.url || "",
-        args.auth.username,
-        args.auth.password,
-        args.auth.token
+        config.openhim.url || "",
+        config.openhim.auth.username || '',
+        config.openhim.auth.password || '',
+        ""
     );
 
     let response: any = await httpClient.axios(
-        args.endpoint,
+        '/IL/registration/test',
         {
             method: "post",
             data: args.payload,
@@ -55,7 +36,7 @@ const ushauriAppiCall = async (args: callParams) => {
 export const sendRegistrationToUshauri = async (params: any) => {
 
     let paylod: any = await getRegistration(params);
-    args.payload = paylod;
+    let args = {payload: paylod}
     let response = ushauriAppiCall(args);
 
     return response;
@@ -71,7 +52,7 @@ export const sendAppointmentToUshauri = async (params: any) => {
         //TODO: set the payload CONSENT_FOR_REMINDER to 'N' To make advanta happy
     }
 
-    args.payload = payload;
+    let args = { payload: payload };
     let response = ushauriAppiCall(args);
 
     return response;

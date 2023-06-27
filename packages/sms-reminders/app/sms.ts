@@ -5,7 +5,7 @@ import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
-import { sendAppointmentToUshauri, sendRegistrationToUshauri, sendToUshauri } from "../helper/send-to-ushauri";
+import { sendToUshauri } from "../helper/send-to-ushauri";
 
 export async function SendSMS(params: any) {
 console.log(params);

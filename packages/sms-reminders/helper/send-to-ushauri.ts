@@ -25,13 +25,13 @@ interface callParams{
     }
 }
 let args: callParams ={
-    url: "https://openhimapi.kenyahmis.org/rest/api",
-    endpoint: "/IL/registration/test",
+    url: "",
+    endpoint: "",
     payload: {},
     auth: {
-        username: "test@gmail.com",
-        password: "Test@gmail.com",
-        token: "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
+        username: "",
+        password: "",
+        token: ""
     }
 }
 const ushauriAppiCall = async (args: callParams) => {

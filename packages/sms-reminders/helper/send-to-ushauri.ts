@@ -14,26 +14,51 @@ const checkIfInUshauriDb = async (person_id: number ) => {
 
     return result;
 }
-
-export const sendRegistrationToUshauri = async (params: any) => {
-
-    let paylod: any = await getRegistration(params);
+interface callParams{
+    url: string,
+    endpoint: string,
+    payload: any,
+    auth:{
+        username: string,
+        password: string,
+        token: string
+    }
+}
+let args: callParams ={
+    url: "https://openhimapi.kenyahmis.org/rest/api",
+    endpoint: "/IL/registration/test",
+    payload: {},
+    auth: {
+        username: "test@gmail.com",
+        password: "Test@gmail.com",
+        token: "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
+    }
+}
+const ushauriAppiCall = async (args: callParams) => {
     let httpClient = new config.HTTPInterceptor(
-        "https://openhimapi.kenyahmis.org/rest/api" || "",
-        "test@gmail.com",
-        "Test@gmail.com",
-        "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
+        args.url || "",
+        args.auth.username,
+        args.auth.password,
+        args.auth.token
     );
 
-    let sendToOpenHIMRes: any = await httpClient.axios(
-        "/IL/registration/test",
+    let response: any = await httpClient.axios(
+        args.endpoint,
         {
             method: "post",
-            data: paylod,
+            data: args.payload,
         }
     );
 
-    return sendToOpenHIMRes;
+    return response;
+}
+export const sendRegistrationToUshauri = async (params: any) => {
+
+    let paylod: any = await getRegistration(params);
+    args.payload = paylod;
+    let response = ushauriAppiCall(args);
+
+    return response;
 }
 
 export const sendAppointmentToUshauri = async (params: any) => {
@@ -46,22 +71,10 @@ export const sendAppointmentToUshauri = async (params: any) => {
         //TODO: set the payload CONSENT_FOR_REMINDER to 'N' To make advanta happy
     }
 
-    let httpClient = new config.HTTPInterceptor(
-        "https://openhimapi.kenyahmis.org/rest/api" || "",
-        "test@gmail.com",
-        "Test@gmail.com",
-        "dGVzdEBnbWFpbC5jb206VGVzdEAxMjM="
-    );
+    args.payload = payload;
+    let response = ushauriAppiCall(args);
 
-    let sendToOpenHIMRes: any = await httpClient.axios(
-        "/IL/registration/test",
-        {
-            method: "post",
-            data: payload,
-        }
-    );
-
-    return sendToOpenHIMRes;
+    return response;
 }
 
 export const sendToUshauri =async (params:any) => {

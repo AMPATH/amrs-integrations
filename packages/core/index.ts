@@ -98,6 +98,13 @@ dhp:{
   scope:process.env.dhpScope,
   url:process.env.dhpURL,
   authUrl:process.env.dhpTokenURL
+},
+openhim:{
+  url: process.env.openHIMUrl,
+  auth: {
+      username: process.env.openHIMUsername,
+      password: process.env.openHIMPassword
+  }
 }
 };
 

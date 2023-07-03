@@ -51,8 +51,7 @@ export default class ExtractCSVAndPostToETL {
             if (
               !data.lab_viral_load ||
               !data.collection_date ||
-              !data.patient_ccc_no ||
-              !data.order_number
+              !data.patient_ccc_no 
             ) {
               failed++;
               logToFile(
@@ -66,7 +65,7 @@ export default class ExtractCSVAndPostToETL {
             let patientCCCNo = data.patient_ccc_no;
             let value = data.lab_viral_load;
             let collectionDate = data.collection_date;
-            let order = data.order_number;
+            let order = data.order_number ? data.order_number : '';;
             // Check if the patient CCC number is valid
 
             const isValidCCC = validator.checkIdentifierIsCCC(patientCCCNo);
@@ -130,8 +129,8 @@ export default class ExtractCSVAndPostToETL {
 
             ResultData.push(obs);
             let httpClient = new config.HTTPInterceptor(
-              //      config.dhp.url || "http://10.50.80.56:5001/eid/csv",
-              "http://10.50.80.56:5001/staging/eid/csv",
+                    config.dhp.url || "http://10.50.80.56:5001/eid/csv",
+              // "http://10.50.80.56:5001/staging/eid/csv",
               "",
               "",
               "dhp",
@@ -158,122 +157,121 @@ export default class ExtractCSVAndPostToETL {
           console.log(err);
         }
       } else if (isCD4File) {
-        try {
-          // Replace spaces in headers with underscores
-          const options = {
-            header: true,
-            transformHeader: (header: string) =>
-              header.replace(/\s+/g, "_").toLowerCase(),
-          };
+        // try {
+        //   // Replace spaces in headers with underscores
+        //   const options = {
+        //     header: true,
+        //     transformHeader: (header: string) =>
+        //       header.replace(/\s+/g, "_").toLowerCase(),
+        //   };
 
-          const rows = Papa.parse(fileContents, options).data;
+        //   const rows = Papa.parse(fileContents, options).data;
 
-          total = rows.length;
-          // Iterate through rows and make POST request
-          for (let row of rows) {
-            console.log(row);
-            // Get patient UUID using identifier
-            let data: any = row;
-            //check if all required columns are available
-            if (
-              !data.cd4_abs||
-              !data.date_collected_drawn ||
-              !data.ampath_no||
-              !data.order_number
-            ) {
-              failed++;
-              logToFile(
-                filename,
-                "error",
-                `${data.patient_ccc_no}': One or more extracted columns are empty' `
-              );
-              continue;
-            }
+        //   total = rows.length;
+        //   // Iterate through rows and make POST request
+        //   for (let row of rows) {
+        //     console.log(row);
+        //     // Get patient UUID using identifier
+        //     let data: any = row;
+        //     //check if all required columns are available
+        //     if (
+        //       !data.cd4_abs ||
+        //       !data.date_collected_drawn ||
+        //       !data.ampath_no ||
+        //       !data.order_number
+        //     ) {
+        //       failed++;
+        //       logToFile(
+        //         filename,
+        //         "error",
+        //         `${data.patient_ccc_no}': One or more extracted columns are empty' `
+        //       );
+        //       continue;
+        //     }
 
-            let patientCCCNo = data.ampath_no;
-            let value = data.cd4_abs;
-            let collectionDate = data.date_collected_drawn;
-            let order = data.order_number;
-            // Check if the patient CCC number is valid
+        //     let patientCCCNo = data.ampath_no;
+        //     let value = data.cd4_abs;
+        //     let collectionDate = data.date_collected_drawn;
+        //     let order = data.order_number;
+        //     // Check if the patient CCC number is valid
 
-            const isValidCCC = validator.checkIdentifierIsCCC(patientCCCNo);
+        //     const isValidCCC = validator.checkIdentifierIsCCC(patientCCCNo);
 
-            // get the patient uuid from db
-            const patientID = await getPatient.getPatientUUIDUsingIdentifier(
-              patientCCCNo,
-              isValidCCC
-            );
-            if (patientID.length == 0) {
-              failed++;
-              logToFile(
-                filename,
-                "error",
-                `${patientCCCNo}': No record for this patient'`
-              );
-              continue;
-            }
-            uuid = patientID[0].uuid;
-          
-            let collection_date = moment
-              .utc(collectionDate, "DD/MM/YYYY")
-              .add(3, "hours")
-              .format("YYYY-MM-DD 00:00:00");
+        //     // get the patient uuid from db
+        //     const patientID = await getPatient.getPatientUUIDUsingIdentifier(
+        //       patientCCCNo,
+        //       isValidCCC
+        //     );
+        //     if (patientID.length == 0) {
+        //       failed++;
+        //       logToFile(
+        //         filename,
+        //         "error",
+        //         `${patientCCCNo}': No record for this patient'`
+        //       );
+        //       continue;
+        //     }
+        //     uuid = patientID[0].uuid;
 
-            // check if data is already synced
-            const isDataSynced = await getPatient.checkPatientCD4Sync(
-              row,
-              patientID,
-              collection_date
-            );
+        //     let collection_date = moment
+        //       .utc(collectionDate, "DD/MM/YYYY")
+        //       .add(3, "hours")
+        //       .format("YYYY-MM-DD 00:00:00");
 
-            if (isDataSynced[0].count > 0) {
-              alreadySynced++;
-              logToFile(
-                filename,
-                "info",
-                `${patientCCCNo}': Record already exists'`
-              );
+        //     // check if data is already synced
+        //     const isDataSynced = await getPatient.checkPatientCD4Sync(
+        //       row,
+        //       patientID,
+        //       collection_date
+        //     );
 
-              continue;
-            }
-            let obs: EIDPayloads.Observation = {
-              person: uuid,
-              concept: "457c741d-8f71-4829-b59d-594e0a618892",
-              obsDatetime: collection_date,
-              value: value,
-              order: order,
-            };
+        //     if (isDataSynced[0].count > 0) {
+        //       alreadySynced++;
+        //       logToFile(
+        //         filename,
+        //         "info",
+        //         `${patientCCCNo}': Record already exists'`
+        //       );
 
-            ResultData.push(obs);
-            let httpClient = new config.HTTPInterceptor(
-              //      config.dhp.url || "http://10.50.80.56:5001/eid/csv",
-              "http://10.50.80.56:5001/staging/eid/csv",
-              "",
-              "",
-              "dhp",
-              ""
-            );
+        //       continue;
+        //     }
+        //     let obs: EIDPayloads.Observation = {
+        //       person: uuid,
+        //       concept: "457c741d-8f71-4829-b59d-594e0a618892",
+        //       obsDatetime: collection_date,
+        //       value: value,
+        //       order: order,
+        //     };
 
-            httpClient.axios
-              .post("", obs)
-              .then(async (openHIMResp: any) => {
-                successfulSync++;
-                console.log("CD4 saved successfully", openHIMResp.identifier);
-              })
-              .catch(async (err: any) => {
-                console.log("Error syncing:", err);
-                failed++;
-                logToFile(
-                  filename,
-                  "error",
-                  `${patientCCCNo}': Error syncing CD4 '`
-                );
-              });
-          }
-        } catch (err) {
-          console.log(err);
-        }
-        
+        //     ResultData.push(obs);
+        //     let httpClient = new config.HTTPInterceptor(
+        //       config.dhp.url || "http://10.50.80.56:5001/eid/csv",
+        //       // "http://10.50.80.56:5001/staging/eid/csv",
+        //       "",
+        //       "",
+        //       "dhp",
+        //       ""
+        //     );
+
+        //     httpClient.axios
+        //       .post("", obs)
+        //       .then(async (openHIMResp: any) => {
+        //         successfulSync++;
+        //         console.log("CD4 saved successfully", openHIMResp.identifier);
+        //       })
+        //       .catch(async (err: any) => {
+        //         console.log("Error syncing:", err);
+        //         failed++;
+        //         logToFile(
+        //           filename,
+        //           "error",
+        //           `${patientCCCNo}': Error syncing CD4 '`
+        //         );
+        //       });
+        //   }
+        // } catch (err) {
+        //   console.log(err);
+        // }
       } else {
         // File is neither a CD4 nor a viral load file
         logToFile(
@@ -315,4 +313,3 @@ export default class ExtractCSVAndPostToETL {
 function sleep(ms: any) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-

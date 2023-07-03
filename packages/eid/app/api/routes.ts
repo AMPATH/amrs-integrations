@@ -11,6 +11,7 @@ let payload1: any = {
     parse: true,
     multipart: true,
     allow: "multipart/form-data",
+    maxBytes: 10 * 1024 * 1024, // 10MB
   },
 };
 

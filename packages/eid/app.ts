@@ -8,7 +8,7 @@ const init = async () => {
   });
   server.route(apiRoutes);
   await server.start();
-  console.log("Server running on %s", server.info.uri);
+  console.log("Servers running on %s", server.info.uri);
 };
 
 process.on("unhandledRejection", (err) => {

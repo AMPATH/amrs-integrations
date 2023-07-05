@@ -8,13 +8,30 @@ let CM = config.ConnectionManager.getInstance();
 const checkIfInUshauriDb = async (person_id: number ) => {
     
     let amrsCON = await CM.getConnectionAmrs();
-    const sql = `select * from ushauri.registration_log where ="${person_id}"`;
+    const sql = `select * from etl.ushauri where person_id="${person_id}"`;
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+
+    return result;
+}
+export const deleteUshauriRecord = async (person_id: number) => {
+    let amrsCON = await CM.getConnectionAmrs();
+    const sql = `delete from etl.ushauri where etl.ushauri.person_id= "${person_id}"`;
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+
+    return result;
+}
+const registerToUshauriDB = async (person_id: number) => {
+    let amrsCON = await CM.getConnectionAmrs();
+    const sql = `insert into etl.ushauri(person_id) values("${person_id}")`;
     let result: any = await CM.query(sql, amrsCON);
     await CM.releaseConnections(amrsCON);
 
     return result;
 }
 
+/* Make a call to the ushauri service via OpenHIM */
 const ushauriAppiCall = async (args: any) => {
     let httpClient = new config.HTTPInterceptor(
         config.openhim.url || "",
@@ -23,49 +40,59 @@ const ushauriAppiCall = async (args: any) => {
         ""
     );
 
-    let response: any = await httpClient.axios(
+    let response = await httpClient.axios(
         '/IL/registration/test',
         {
             method: "post",
-            data: args.payload,
+            data: args,
         }
-    );
-
+    )
+    .then((res: any)=> {
+        return res;
+    })
+    .catch((err: any) => {
+        return err;
+    })
     return response;
 }
 export const sendRegistrationToUshauri = async (params: any) => {
-
-    let paylod: any = await getRegistration(params);
-    let args = {payload: paylod}
-    let response = ushauriAppiCall(args);
+    let payload: any = await getRegistration(params);
+    if (payload == null)
+        return null;
+    let response = await ushauriAppiCall(JSON.stringify(payload));
 
     return response;
 }
 
 export const sendAppointmentToUshauri = async (params: any) => {
-    let payload: any = await getAppointment(params.smsParams);
+
+    let payload = await getAppointment(params.smsParams);
+    if (payload == null) return null;
     let carrier = retrievePhoneCarrier(params.natnum);
     let isSaf: boolean = isSafaricomNumber(carrier);
 
-    if (isSaf === true)
+    if (isSaf == true)
     {
-        //TODO: set the payload CONSENT_FOR_REMINDER to 'N' To make advanta happy
+        payload.APPOINTMENT_INFORMATION[0].CONSENT_FOR_REMINDER = 'N';
     }
 
-    let args = { payload: payload };
-    let response = ushauriAppiCall(args);
+    let response = await ushauriAppiCall(JSON.stringify(payload));
 
     return response;
 }
 
-export const sendToUshauri =async (params:any) => {
-
-    let result = checkIfInUshauriDb(params.person_id);
-    let response: any;
-
-    if (result === null)
+export const sendToUshauri = async (params:any) => {
+    let result = await checkIfInUshauriDb(params.smsParams.person_id);
+    if (result.length == 0)
     {
-        response = await sendRegistrationToUshauri(params);
+        let response = await sendRegistrationToUshauri(params.smsParams);
+        if(response != null || response != undefined)
+            result = await registerToUshauriDB(params.smsParams.person_id);
+        else
+        {
+            await deleteUshauriRecord(params.smsParams.person_id)
+            return;
+        }
     }
-    response = await sendAppointmentToUshauri(params);
+    let response = await sendAppointmentToUshauri(params);
 }

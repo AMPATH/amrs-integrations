@@ -6,9 +6,8 @@ import moment from "moment";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
 import { sendToUshauri } from "../helper/send-to-ushauri";
-
+import { deleteUshauriRecord } from "../helper/send-to-ushauri";
 export async function SendSMS(params: any) {
-console.log(params);
   let smsParams: Patient = JSON.parse(params);
   // TODO: Check the telco used for the provider then pick approapriate shortcode
   if (smsParams.phone_number && isValidPhoneNumber(smsParams.phone_number, "KE")) {
@@ -91,18 +90,10 @@ console.log(params);
           delivery_status: "pending"
         }
         await saveOrUpdateSMSResponse(smsResponse,"create")
-        
-        /**
-         * TODO: Ushauri logic goes here
-         */
-        //1). if it is a ne reg then log it in the ushauri db
-        //   a). send registration payload
-        //2). send appointment
+
         const args = { natnum:phoneNumber.nationalNumber, smsParams };
         await sendToUshauri(args);
-        
-        /** end */
-
+       
         return sendSMSResponse;
       } else {
         console.log("Invalid phone number");

@@ -1,115 +1,35 @@
-import config from '@amrs-integrations/core';
-import { now } from 'moment';
 import { Appointment } from '../models/appointment';
+import { Patient } from '../models/patient';
 
-let CM = config.ConnectionManager.getInstance();
+export const getAppointment = async (_param: Patient, rows: any[]) =>{
 
-const queryDB = async (person_id: any) => {
-    let amrsCON = await CM.getConnectionAmrs();
-
-    const sql = `
-    select
-	p.person_id,
-	mc.mfl_code as RECEIVING_FACILITY,
-	convert(now(), char) as MESSAGE_DATETIME,
-	pn.given_name as FIRST_NAME,
-	pn.middle_name as MIDDLE_NAME,
-	pn.family_name as LAST_NAME,
-	p.gender as SEX,
-	convert(p.birthdate, char) as DATE_OF_BIRTH,
-	(case when p.birthdate_estimated = 1 then 'Y' else 'N' end) as DATE_OF_BIRTH_PRECISION,
-	convert(p.death_date, char) as DEATH_DATE,
-	concat(p.cause_of_death, '. ', p.cause_of_death_non_coded) as DEATH_INDICATOR,
-	max(case when pa2.person_attribute_type_id = 10 then pa2.value end) as PHONE_NUMBER,
-	pa.city_village as VILLAGE,
-	pa.address1 as POSTAL_ADDRESS,
-	pa.state_province as COUNTY,
-	pa.county_district as SUB_COUNTY,
-	SUBSTRING_INDEX((case when pa2.person_attribute_type_id = 4 then pa2.value end), ' ', 1) as MOTHER_FIRST_NAME,
-	SUBSTRING_INDEX((case when pa2.person_attribute_type_id = 4 then pa2.value end), ' ', -1) as MOTHER_LAST_NAME,
-	CONCAT(pa.longitude, ',', pa.latitude) as GPS_LOCATION,
-	max(case when pa2.person_attribute_type_id = 31 then pa2.value end) as LAND_MARK,
-	max(case when pa2.person_attribute_type_id = 59 then pa2.value end) as NOK_RELATIONSHIP,
-	case when pa2.person_attribute_type_id = 12 then pa2.value end as NOK_NAME,
-	pn2.given_name  as NOK_FIRST_NAME,
-	pn2.middle_name as NOK_MIDDLE_NAME,
-	pn2.family_name as NOK_LAST_NAME,
-	convert(p2.birthdate, char) as NOK_DATE_OF_BIRTH,
-	case when pa2.person_attribute_type_id = 25 then pa2.value end as NOK_PHONE_NUMBER,
-	p2.gender as NOK_GENDER,
-	p2a.address1 as NOK_ADDRESS,
-	max(case when pi2.identifier_type = 8 then pi2.identifier end) as GODS_NUMBER,
-	max(case when (pi2.identifier_type = 28 or pi2.identifier_type = 29)  then pi2.identifier end) as IPI_IDENTIFIER_TYPE_1_ID,
-	max(case when (pi2.identifier_type = 28 or pi2.identifier_type = 29)  then pit.name end) as IPI_IDENTIFIER_TYPE_1_NAME,
-	max(case when pi2.identifier_type = 45 then pi2.identifier end)as IPI_IDENTIFIER_TYPE_2_ID,
-	max(case when pi2.identifier_type = 45 then pit.name  end)as IPI_IDENTIFIER_TYPE_2_NAME,
-	max(case when r.relationship  = 7 then "married" end) as MARITAL_STATUS,
-	convert(fh.weight, char) as WEIGHT,
-	convert(fh.height, char) as HEIGHT,
-	convert(date(fh.encounter_datetime), char) as VISIT_DATE,
-	et.name as PATIENT_TYPE,
-	convert(date(fh.enrollment_date), char) as HIV_CARE_ENROLLMENT_DATE,
-	convert(date(fh.rtc_date), char) as APPOINTMENT_DATE,
-	u.username as PLACER_ENTITY,
-	e.creator  as PLACER_NUMBER
-from amrs_migration.person p 
-left join amrs_migration.person_name pn on p.person_id = pn.person_id and pn.voided = 0
-left join amrs_migration.person_address pa on p.person_id = pa.person_id and pa.voided = 0
-left join amrs_migration.patient_identifier pi2 on p.person_id = pi2.patient_id and pi2.voided = 0
-left join amrs_migration.patient_identifier_type pit on pi2.identifier_type = pit.patient_identifier_type_id
-left join amrs_migration.person_attribute pa2 on p.person_id = pa2.person_id and pa2.voided = 0
-left join amrs_migration.person_attribute_type pat on pa2.person_attribute_type_id = pat.person_attribute_type_id
-left join amrs_migration.relationship r on p.person_id  = r.person_a and r.voided = 0  
-left join amrs_migration.relationship_type rt on r.relationship = rt.relationship_type_id
-left join ndwr.flat_vitals fv on p.person_id = fv.person_id 
-left join etl.flat_hiv_summary_v15b fh on fh.person_id = p.person_id and fh.is_clinical_encounter = 1 and fh.next_clinical_datetime_hiv is null
-left join amrs_migration.person p2 on p2.person_id = r.person_b and p2.voided = 0
-left join amrs_migration.person_name pn2 on p2.person_id = pn2.person_id and pn2.voided = 0
-left join amrs_migration.person_attribute pa3  on pa3.person_id = p2.person_id and pa3.voided = 0
-left join amrs_migration.person_address p2a on p2a.person_id = p2.person_id  and p2a.voided = 0
-left join amrs_migration.encounter_type et on fh.encounter_type = et.encounter_type_id 
-left join amrs_migration.encounter e on e.encounter_id = et.encounter_type_id 
-left join amrs_migration.users u on u.user_id = e.creator 
-inner join ndwr.mfl_codes mc on pi2.location_id  = mc.location_id 
-where pi2.patient_id =  "${person_id}" and p.voided = 0
-group by fh.person_id;
-    `;
-    let result: any = await CM.query(sql, amrsCON);
-    await CM.releaseConnections(amrsCON);
-
-    return result;
-}
-
-export const getAppointment = async (params: any) =>{
-
-    let rows = await queryDB(params.person_id);
-    if (rows.length === 0) return null;
+    if (rows.length == 0) return null;
     const payload: Appointment = {
         MESSAGE_HEADER: {
            SENDING_APPLICATION: "KENYAEMR",
            SENDING_FACILITY: rows[0].RECEIVING_FACILITY,
            RECEIVING_APPLICATION: "IL",
            RECEIVING_FACILITY: rows[0].RECEIVING_FACILITY,
-           MESSAGE_DATETIME: ((rows[0].MESSAGE_DATETIME).toString()).replace(/[-:\s]/g,''),
+           MESSAGE_DATETIME: (rows[0].MESSAGE_DATETIME)?.toString().replace(/[-:\s]/g,''),
            SECURITY: "",
-           MESSAGE_TYPE: "ADT^A04",
+           MESSAGE_TYPE: "SIU^S12",
            PROCESSING_ID: "P"
         },
         PATIENT_IDENTIFICATION: {
            EXTERNAL_PATIENT_ID: {
-               ID: (rows[0].GODS_NUMBER?.toString())?.replace(/-/g,''),
-               IDENTIFIER_TYPE: "GODS_NUMBER",
+               ID: rows[0].EPI_IDENTIFIER_TYPE_ID?.toString().replace(/-/g,'') || '',
+               IDENTIFIER_TYPE: rows[0].EPI_IDENTIFIER_TYPE_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
                ASSIGNING_AUTHORITY: "MPI"
            },
            INTERNAL_PATIENT_ID: [
             {
-                ID: rows[0].IPI_IDENTIFIER_TYPE_1_ID?.replace(/-/g,'') || '',
-                IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_1_NAME,
+                ID: rows[0].IPI_IDENTIFIER_TYPE_1_ID?.toString().replace(/-/g,'') || '',
+                IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_1_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
                 ASSIGNING_AUTHORITY: "CCC"
             },
             {
-                ID: rows[0].IPI_IDENTIFIER_TYPE_2_ID || '',
-                IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_2_NAME,
+                ID: (rows[0].IPI_IDENTIFIER_TYPE_2_ID)?.toString().replace(/-/g,'')  || '',
+                IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_2_NAME?.replace(/[-\s]/g,'').toUpperCase() || "",
                 ASSIGNING_AUTHORITY: "MOH"
             },
            ],
@@ -146,7 +66,7 @@ export const getAppointment = async (params: any) =>{
             {
               APPOINTMENT_REASON: "FOLLOWUP",
               ACTION_CODE: "A",
-              APPOINTMENT_PLACING_ENTITY: "KENYAEMR",
+              APPOINTMENT_PLACING_ENTITY: "AMRS",
               APPOINTMENT_STATUS: "PENDING",
               APPOINTMENT_TYPE: "CLINICAL",
               APPOINTMENT_NOTE: "N/A",
@@ -160,5 +80,6 @@ export const getAppointment = async (params: any) =>{
             }
         ]
     };
+
     return payload;
 }

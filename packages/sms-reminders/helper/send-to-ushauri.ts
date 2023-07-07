@@ -2,6 +2,7 @@ import config from "@amrs-integrations/core";
 import { isSafaricomNumber, retrievePhoneCarrier } from "./get-carrier-prefix";
 import { getRegistration } from "./get-registration";
 import { getAppointment } from "./get-appointment";
+import { queryDB } from "./extract-payload-record";
 
 let CM = config.ConnectionManager.getInstance();
 
@@ -10,6 +11,7 @@ const checkIfInUshauriDb = async (person_id: number ) => {
     let amrsCON = await CM.getConnectionAmrs();
     const sql = `select * from etl.ushauri where person_id="${person_id}"`;
     let result: any = await CM.query(sql, amrsCON);
+
     await CM.releaseConnections(amrsCON);
 
     return result;
@@ -18,6 +20,7 @@ export const deleteUshauriRecord = async (person_id: number) => {
     let amrsCON = await CM.getConnectionAmrs();
     const sql = `delete from etl.ushauri where etl.ushauri.person_id= "${person_id}"`;
     let result: any = await CM.query(sql, amrsCON);
+
     await CM.releaseConnections(amrsCON);
 
     return result;
@@ -26,6 +29,7 @@ const registerToUshauriDB = async (person_id: number) => {
     let amrsCON = await CM.getConnectionAmrs();
     const sql = `insert into etl.ushauri(person_id) values("${person_id}")`;
     let result: any = await CM.query(sql, amrsCON);
+
     await CM.releaseConnections(amrsCON);
 
     return result;
@@ -53,10 +57,12 @@ const ushauriAppiCall = async (args: any) => {
     .catch((err: any) => {
         return err;
     })
+
     return response;
 }
-export const sendRegistrationToUshauri = async (params: any) => {
-    let payload: any = await getRegistration(params);
+export const sendRegistrationToUshauri = async (params: any, rows: any[]) => {
+    let payload: any = await getRegistration(params, rows);
+
     if (payload == null)
         return null;
     let response = await ushauriAppiCall(JSON.stringify(payload));
@@ -64,10 +70,12 @@ export const sendRegistrationToUshauri = async (params: any) => {
     return response;
 }
 
-export const sendAppointmentToUshauri = async (params: any) => {
+export const sendAppointmentToUshauri = async (params: any, rows: any[]) => {
 
-    let payload = await getAppointment(params.smsParams);
+    let payload = await getAppointment(params.smsParams, rows);
+
     if (payload == null) return null;
+
     let carrier = retrievePhoneCarrier(params.natnum);
     let isSaf: boolean = isSafaricomNumber(carrier);
 
@@ -82,11 +90,13 @@ export const sendAppointmentToUshauri = async (params: any) => {
 }
 
 export const sendToUshauri = async (params:any) => {
+    const rows = await queryDB(params.smsParams.person_id);
     let result = await checkIfInUshauriDb(params.smsParams.person_id);
+
     if (result.length == 0)
     {
-        let response = await sendRegistrationToUshauri(params.smsParams);
-        if(response != null || response != undefined)
+        let response = await sendRegistrationToUshauri(params.smsParams, rows);
+        if((response != null || response != undefined) || response.success == true)
             result = await registerToUshauriDB(params.smsParams.person_id);
         else
         {
@@ -94,5 +104,6 @@ export const sendToUshauri = async (params:any) => {
             return;
         }
     }
-    let response = await sendAppointmentToUshauri(params);
+
+    await sendAppointmentToUshauri(params, rows);
 }

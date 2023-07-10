@@ -96,7 +96,7 @@ export const sendToUshauri = async (params:any) => {
     if (result.length == 0)
     {
         let response = await sendRegistrationToUshauri(params.smsParams, rows);
-        if((response != null || response != undefined) || response.success == true)
+        if((response != null || response != undefined) || response?.success == true)
             result = await registerToUshauriDB(params.smsParams.person_id);
         else
         {

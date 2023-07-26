@@ -3,13 +3,13 @@ import { Patient } from '../models/patient';
 
 export const getRegistration = async (param: Patient, rows: any[]) => {
 
-   if (rows.length == 0) return null;
+   if (rows.length === 0) return null;
    let payload: Registration = {
     MESSAGE_HEADER: {
-        SENDING_APPLICATION: "KENYAEMR",
+        SENDING_APPLICATION: "AMRS",
         SENDING_FACILITY: rows[0].RECEIVING_FACILITY || "12345",
         RECEIVING_APPLICATION: "IL",
-        RECEIVING_FACILITY: rows[0].RECEIVING_FACILITY || "12345",
+        RECEIVING_FACILITY: "12345",
         MESSAGE_DATETIME: ((rows[0].MESSAGE_DATETIME).toString()).replace(/[-:\s]/g,''),
         SECURITY: "",
         MESSAGE_TYPE: "ADT^A04",
@@ -17,21 +17,21 @@ export const getRegistration = async (param: Patient, rows: any[]) => {
     },
     PATIENT_IDENTIFICATION: {
         EXTERNAL_PATIENT_ID: {
-            ID: rows[0].PI_EPID_ID?.replace(/-/g,'') || '',
-            IDENTIFIER_TYPE: rows[0].PI_EPID_TYPE?.replace(/[-\s]/g,'_').toUpperCase() || "GODS_NUMBER",
-            ASSIGNING_AUTHORITY: rows[0].PI_EPID_ASSIGN_AUTH || "MPI"
+            ID: rows[0].EPI_IDENTIFIER_TYPE_ID?.toString().replace(/-/g,'') || '',
+            IDENTIFIER_TYPE: rows[0].EPI_IDENTIFIER_TYPE_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
+            ASSIGNING_AUTHORITY: "MPI"
 
         },
         INTERNAL_PATIENT_ID: [
             {
-               ID: rows[0].PI_IPID_1_ID?.replace(/-/g,'') || '',
-               IDENTIFIER_TYPE: rows[0].PI_IPID_1_TYPE?.replace(/[-\s]/g,'_').toUpperCase() || "CCC_NUMBER",
-               ASSIGNING_AUTHORITY: rows[0].PI_IPID_1_ASSIGN_AUTH ||"CCC"
+               ID: rows[0].IPI_IDENTIFIER_TYPE_1_ID?.replace(/-/g,'') || '',
+               IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_1_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
+               ASSIGNING_AUTHORITY: "CCC"
            },
            {
-               ID: rows[0].PI_IPID_2_ID?.replace(/-/g,'')  || '',
-               IDENTIFIER_TYPE: rows[0].PI_IPID_2_TYPE?.replace(/[-\s]/g,'').toUpperCase() || "",
-               ASSIGNING_AUTHORITY: rows[0].PI_IPID_2_ASSIGN_AUTH || "MOH"
+               ID: rows[0].IPI_IDENTIFIER_TYPE_2_ID?.replace(/-/g,'')  || '',
+               IDENTIFIER_TYPE: "NUPI",
+               ASSIGNING_AUTHORITY: "MOH"
            },
         ],
         PATIENT_NAME: {
@@ -40,9 +40,9 @@ export const getRegistration = async (param: Patient, rows: any[]) => {
             LAST_NAME: rows[0].LAST_NAME
         },
         MOTHER_NAME: {
-            FIRST_NAME: rows[0].MOTHER_NAME || "",
-            MIDDLE_NAME: "",
-            LAST_NAME: ""
+            FIRST_NAME: rows[0].MOTHER_FIRST_NAME || "",
+            MIDDLE_NAME: rows[0].MOTHER_NAME || "",
+            LAST_NAME: rows[0].MOTHER_LAST_NAME || ""
         },
         DATE_OF_BIRTH: (rows[0].DATE_OF_BIRTH)?.replace(/-/g,''),
         SEX: rows[0].SEX || "",
@@ -66,9 +66,9 @@ export const getRegistration = async (param: Patient, rows: any[]) => {
      NEXT_OF_KIN: [
         {
             NOK_NAME: {
-                FIRST_NAME: rows[0].NOK_NAME || "",
-                MIDDLE_NAME:  "",
-                LAST_NAME: ""
+                FIRST_NAME: rows[0].NOK_FIRST_NAME || "",
+                MIDDLE_NAME: rows[0].NOK_MIDDLE_NAME || "",
+                LAST_NAME: rows[0].NOK_LAST_NAME || ""
             },
             RELATIONSHIP: rows[0].NOK_RELATIONSHIP || "",
             ADDRESS: rows[0].NOK_ADDRESS || "",
@@ -80,25 +80,46 @@ export const getRegistration = async (param: Patient, rows: any[]) => {
      ],
      PATIENT_VISIT: {
         VISIT_DATE: rows[0].VISIT_DATE?.toString().replace(/[-:\s]/g,'')|| "",
-        PATIENT_SOURCE: "CCC",
+        PATIENT_SOURCE: "",
         HIV_CARE_ENROLLMENT_DATE: rows[0].HIV_CARE_ENROLLMENT_DATE?.replace(/[-:\s]/g,'')|| "",
-        PATIENT_TYPE: ""
+        PATIENT_TYPE: rows[0].PATIENT_TYPE || ""
      },
-     OBSERVATION_RESULT: []
-   }
-   for(let i = 0; i < rows.length; i++){
-        payload.OBSERVATION_RESULT.push({
-            UNITS: rows[i].UNITS || "",
-            VALUE_TYPE: rows[i].VALUE_TYPE,
-            OBSERVATION_VALUE: rows[i].OBSERVATION_VALUE || "",
-            OBSERVATION_DATETIME: rows[i].OBSERVATION_DATETIME?.toString().replace(/[-:\s]/g,'')|| "",
+     OBSERVATION_RESULT: [
+        {
+            UNITS: "KG",
+            VALUE_TYPE: "NM",
+            OBSERVATION_VALUE: rows[0].WEIGHT?.toString() || "",
+            OBSERVATION_DATETIME:(rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
             CODING_SYSTEM: "",
-            ABNORMAL_FLAGS: rows[i].ABNORMAL_FLAGS || "",
-            OBSERVATION_RESULT_STATUS: rows[i].OBSERVATION_RESULT_STATUS,
-            SET_ID: rows[i].SET_ID || "",
-            OBSERVATION_IDENTIFIER: ""
-        });
+            ABNORMAL_FLAGS: "N",
+            OBSERVATION_RESULT_STATUS: "F",
+            SET_ID: "",
+            OBSERVATION_IDENTIFIER: "START_WEIGHT"
+        },
+        {
+            UNITS: "CM",
+            VALUE_TYPE: "NM",
+            OBSERVATION_VALUE: (rows[0].HEIGHT)?.toString() || "",
+            OBSERVATION_DATETIME:(rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+            CODING_SYSTEM: "",
+            ABNORMAL_FLAGS: "N",
+            OBSERVATION_RESULT_STATUS: "F",
+            SET_ID: "",
+            OBSERVATION_IDENTIFIER: "START_HEIGHT"
+        },
+        {
+            UNITS: "",
+            VALUE_TYPE: "DT",
+            OBSERVATION_VALUE: rows[0].ART_START?.toString().replace(/[-:\s]/g,'')|| "",
+            OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+            CODING_SYSTEM: "",
+            ABNORMAL_FLAGS: "N",
+            OBSERVATION_RESULT_STATUS: "F",
+            SET_ID: "",
+            OBSERVATION_IDENTIFIER: "ART_START"
+        }
+     ]
    }
-   console.log(payload);
+   console.log("registration_payload: ", payload);
     return payload;
 }

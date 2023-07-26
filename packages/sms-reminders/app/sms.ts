@@ -90,15 +90,16 @@ export async function SendSMS(params: any) {
           delivery_status: "pending"
         }
         await saveOrUpdateSMSResponse(smsResponse,"create")
-
         const args = { natnum:phoneNumber.nationalNumber, smsParams };
-        await sendToUshauri(args);
-       
+        // const args = { natnum:"072412345", smsParams:{person_id: "277"}};
+        let response = await sendToUshauri(args);
+
         return sendSMSResponse;
       } else {
         console.log("Invalid phone number");
       }
   }
+
 }
 
 export async function UpdateDelivery() {

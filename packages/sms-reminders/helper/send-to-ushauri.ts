@@ -92,10 +92,11 @@ export const sendAppointmentToUshauri = async (params: any, rows: any[]) => {
 export const sendToUshauri = async (params:any) => {
     const rows = await queryDB(params.smsParams.person_id);
     let result = await checkIfInUshauriDb(params.smsParams.person_id);
+    let response: any;
 
     if (result.length == 0)
     {
-        let response = await sendRegistrationToUshauri(params.smsParams, rows);
+        response = await sendRegistrationToUshauri(params.smsParams, rows);
         if((response != null || response != undefined) || response?.success == true)
             result = await registerToUshauriDB(params.smsParams.person_id);
         else
@@ -105,5 +106,5 @@ export const sendToUshauri = async (params:any) => {
         }
     }
 
-    await sendAppointmentToUshauri(params, rows);
+    return (response = await sendAppointmentToUshauri(params, rows));
 }

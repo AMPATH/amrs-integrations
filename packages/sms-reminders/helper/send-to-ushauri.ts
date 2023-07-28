@@ -36,7 +36,7 @@ const registerToUshauriDB = async (person_id: number) => {
 }
 
 /* Make a call to the ushauri service via OpenHIM */
-const ushauriAppiCall = async (args: any) => {
+const ushauriApiCall = async (args: any) => {
     let httpClient = new config.HTTPInterceptor(
         config.openhim.url || "",
         config.openhim.auth.username || '',
@@ -65,7 +65,7 @@ export const sendRegistrationToUshauri = async (params: any, rows: any[]) => {
 
     if (payload == null)
         return null;
-    let response = await ushauriAppiCall(JSON.stringify(payload));
+    let response = await ushauriApiCall(JSON.stringify(payload));
 
     return response;
 }
@@ -79,12 +79,12 @@ export const sendAppointmentToUshauri = async (params: any, rows: any[]) => {
     let carrier = retrievePhoneCarrier(params.natnum);
     let isSaf: boolean = isSafaricomNumber(carrier);
 
-    if (isSaf == true)
+    if (isSaf == false)
     {
-        payload.APPOINTMENT_INFORMATION[0].CONSENT_FOR_REMINDER = 'N';
+        payload.APPOINTMENT_INFORMATION[0].CONSENT_FOR_REMINDER = 'Y';
     }
 
-    let response = await ushauriAppiCall(JSON.stringify(payload));
+    let response = await ushauriApiCall(JSON.stringify(payload));
 
     return response;
 }

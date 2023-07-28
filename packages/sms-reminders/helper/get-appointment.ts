@@ -18,13 +18,13 @@ export const getAppointment = async (_param: Patient, rows: any[]) =>{
         PATIENT_IDENTIFICATION: {
            EXTERNAL_PATIENT_ID: {
                ID: rows[0].EPI_IDENTIFIER_TYPE_ID?.toString().replace(/-/g,'') || '',
-               IDENTIFIER_TYPE: rows[0].EPI_IDENTIFIER_TYPE_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
+               IDENTIFIER_TYPE: "AMRS_UNIVERSAL_ID",
                ASSIGNING_AUTHORITY: "MPI"
            },
            INTERNAL_PATIENT_ID: [
             {
                 ID: rows[0].IPI_IDENTIFIER_TYPE_1_ID?.toString().replace(/-/g,'') || '',
-                IDENTIFIER_TYPE: rows[0].IPI_IDENTIFIER_TYPE_1_NAME?.replace(/[-\s]/g,'_').toUpperCase() || "",
+                IDENTIFIER_TYPE: "CCC_NUMBER",
                 ASSIGNING_AUTHORITY: "CCC"
             },
             {
@@ -41,7 +41,7 @@ export const getAppointment = async (_param: Patient, rows: any[]) =>{
            MOTHER_NAME: {
                 FIRST_NAME: rows[0].MOTHER_FIRST_NAME || "",
                 MIDDLE_NAME: "",
-                LAST_NAME: rows[0].MOTHER_LAST_NAME || ""
+                LAST_NAME: ""
            },
            DATE_OF_BIRTH: (rows[0].DATE_OF_BIRTH)?.replace(/-/g,''),
            SEX: rows[0].SEX || "",
@@ -59,8 +59,8 @@ export const getAppointment = async (_param: Patient, rows: any[]) =>{
            PHONE_NUMBER: rows[0].PHONE_NUMBER || '',
            MARITAL_STATUS: rows[0].MARITAL_STATUS || "",
            DEATH_DATE: rows[0].DEATH_DATE?.replace(/[-:\s]/g,'') || "",
-           DEATH_INDICATOR: rows[0].DEATH_INDICATOR || "",
-           DATE_OF_BIRTH_PRECISION: rows[0].DATE_OF_BIRTH_PRECISION || ""
+           DEATH_INDICATOR: rows[0].DEATH_INDICATOR?.toString() || "",
+           DATE_OF_BIRTH_PRECISION: rows[0].DATE_OF_BIRTH_PRECISION || "Y"
         },
         APPOINTMENT_INFORMATION: [
             {
@@ -74,12 +74,12 @@ export const getAppointment = async (_param: Patient, rows: any[]) =>{
               VISIT_DATE: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               PLACER_APPOINTMENT_NUMBER: {
                 ENTITY:"AMRS",
-                NUMBER: rows[0].PLACER_NUMBER || ""
+                NUMBER: rows[0].PLACER_NUMBER?.toString() || ""
               },
-              CONSENT_FOR_REMINDER: "Y"
+              CONSENT_FOR_REMINDER: "N"
             }
         ]
     };
-    console.log("appointment_payload: ", payload);
+
     return payload;
 }

@@ -40,7 +40,7 @@ export async function SendSMS(params: any) {
       let appointmentDate = moment(smsParams.rtc_date).format("YYYY-MM-DD");
 
       let days = moment().diff(moment(appointmentDate), 'days');
-      if (days <= 14)
+      if (days >= 14)
       {
         const args = { natnum: phoneNumber.nationalNumber, smsParams };
         //const args = { natnum:"078412345", smsParams:{person_id: "277"}};

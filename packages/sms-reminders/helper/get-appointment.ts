@@ -1,8 +1,9 @@
 import { Appointment } from '../models/appointment';
+import { ObservationResult } from '../models/registration';
 import { Patient } from '../models/patient';
 
 export const getAppointment = async (_param: Patient, rows: any[]) =>{
-
+console.log("extracts: ", rows);
     if (rows.length == 0) return null;
     const payload: Appointment = {
         MESSAGE_HEADER: {
@@ -77,6 +78,96 @@ export const getAppointment = async (_param: Patient, rows: any[]) =>{
                 NUMBER: rows[0].PLACER_NUMBER?.toString() || ""
               },
               CONSENT_FOR_REMINDER: "N"
+            }
+        ],
+        OBSERVATION_RESULT: [
+            {
+              UNITS: "MMHG",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: (rows[0].systolic_bp != null && rows[0].diastolic_bp !=null) ? `${rows[0].systolic_bp}` + '/' + `${rows[0].diastolic_bp}` : "",
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "BP"
+            },
+            {
+              UNITS: "KG",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: rows[0].WEIGHT?.toString() || "",
+              OBSERVATION_DATETIME:(rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "WEIGHT"
+            },
+            {
+              UNITS: "CM",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: (rows[0].HEIGHT)?.toString() || "",
+              OBSERVATION_DATETIME:(rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "HEIGHT"
+            },
+            {
+              UNITS: "STR",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: rows[0].REGIMEN.replace(/ ## /g,'/'),
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "CURRENT REGIMEN"
+            },
+            {
+              UNITS: "STR",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: "WHO STAGE " + `${rows[0].CURRENT_WHO_STAGE}`,
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "WHO STAGE"
+            },
+            {
+              UNITS: "",
+              VALUE_TYPE: "DT",
+              OBSERVATION_VALUE: `${rows[0].test_datetime}`.replace(/[-:\s]/g,''),
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "LAST VL DATE"
+            },
+            {
+              UNITS: "STR",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: `${rows[0].hiv_viral_load}`,
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "CURRENT VL"
+            },
+            {
+              UNITS: "MM",
+              VALUE_TYPE: "NM",
+              OBSERVATION_VALUE: rows[0].muac || "",
+              OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
+              CODING_SYSTEM: "",
+              ABNORMAL_FLAGS: "N",
+              OBSERVATION_RESULT_STATUS: "F",
+              SET_ID: "",
+              OBSERVATION_IDENTIFIER: "MUAC"
             }
         ]
     };

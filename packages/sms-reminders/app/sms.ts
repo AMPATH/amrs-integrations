@@ -38,6 +38,16 @@ export async function SendSMS(params: any) {
         saveNumber(phoneNumber.number, status, numberExist.length > 0);
       }
       let appointmentDate = moment(smsParams.rtc_date).format("YYYY-MM-DD");
+
+      let days = moment().diff(moment(appointmentDate), 'days');
+      if (days <= 14)
+      {
+        const args = { natnum: phoneNumber.nationalNumber, smsParams };
+        //const args = { natnum:"078412345", smsParams:{person_id: "277"}};
+        let response = await sendToUshauri(args);
+        console.log(response);
+      }
+      else{
       let sms = "";
       let personName = smsParams.person_name;
       if (smsParams.language === "english") {
@@ -90,16 +100,13 @@ export async function SendSMS(params: any) {
           delivery_status: "pending"
         }
         await saveOrUpdateSMSResponse(smsResponse,"create")
-        const args = { natnum:phoneNumber.nationalNumber, smsParams };
-        // const args = { natnum:"072412345", smsParams:{person_id: "277"}};
-        let response = await sendToUshauri(args);
-
         return sendSMSResponse;
+        
       } else {
         console.log("Invalid phone number");
       }
+    }
   }
-
 }
 
 export async function UpdateDelivery() {

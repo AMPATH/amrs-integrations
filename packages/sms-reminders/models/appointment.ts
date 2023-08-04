@@ -2,6 +2,7 @@ export interface Appointment {
     MESSAGE_HEADER: MessageHeader
     PATIENT_IDENTIFICATION: PatientIdentification
     APPOINTMENT_INFORMATION: AppointmentInformation[]
+    OBSERVATION_RESULT: ObservationResult[]
   }
   
   export interface MessageHeader {
@@ -80,9 +81,18 @@ export interface Appointment {
     PLACER_APPOINTMENT_NUMBER: PlacerAppointmentNumber
     CONSENT_FOR_REMINDER: string
   }
-  
   export interface PlacerAppointmentNumber {
     ENTITY: string
     NUMBER: string
   }
-  
+  export interface ObservationResult {
+    UNITS: string
+    VALUE_TYPE: string
+    OBSERVATION_VALUE: string
+    OBSERVATION_DATETIME: string
+    CODING_SYSTEM: string
+    ABNORMAL_FLAGS: string
+    OBSERVATION_RESULT_STATUS: string
+    SET_ID: string
+    OBSERVATION_IDENTIFIER: string
+  }

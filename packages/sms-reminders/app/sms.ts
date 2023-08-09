@@ -5,6 +5,7 @@ import { Patient, SMSResponse } from "../models/patient";
 import moment from "moment";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { checkNumber, fetchClientsWithPendingDeliveryStatus, saveNumber, saveOrUpdateSMSResponse } from "../models/queries";
+import { sendToUshauri } from "../helper/send-to-ushauri";
 
 export async function SendSMS(params: any) {
   let smsParams: Patient = params;
@@ -36,6 +37,15 @@ export async function SendSMS(params: any) {
       await saveNumber(phoneNumber.number, status, numberExist.length > 0);
     }
     let appointmentDate = moment(smsParams.rtc_date).format("YYYY-MM-DD");
+    let days = moment().diff(moment(appointmentDate), 'days');
+      if (days >= 14)
+      {
+        const args = { natnum: phoneNumber.nationalNumber, smsParams };
+        //const args = { natnum:"078412345", smsParams:{person_id: "277"}};
+        let response = await sendToUshauri(args);
+        console.log(response);
+      }
+      else{
     let sms = "";
     let personName = smsParams.person_name;
     if (smsParams.language === "english") {
@@ -93,6 +103,7 @@ export async function SendSMS(params: any) {
     } else {
       console.log("Invalid phone number");
     }
+  }
   }
 }
 

@@ -91,7 +91,7 @@ export const queryDB = async (person_id: number) => {
 	convert(date(vl.test_datetime),char) as test_datetime,
 	vl.hiv_viral_load
 FROM
-	amrs_migration.person p
+	amrs.person p
 left JOIN amrs_migration.person_name pn
                  ON
 	( p.person_id = pn.person_id

@@ -41,7 +41,6 @@ export async function SendSMS(params: any) {
       if (days >= 14)
       {
         const args = { natnum: phoneNumber.nationalNumber, smsParams };
-        //const args = { natnum:"078412345", smsParams:{person_id: "277"}};
         let response = await sendToUshauri(args);
         console.log(response);
       }

@@ -105,7 +105,7 @@ left JOIN amrs.person_attribute pa2
                  ON
 	pa.person_id = pa2.person_id
 	AND pa2.voided = 0
-left JOIN amrs_migration.patient_identifier pi2
+left JOIN amrs.patient_identifier pi2
                  ON
 	p.person_id = pi2.patient_id
 	AND pi2.voided = 0

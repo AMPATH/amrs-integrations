@@ -112,7 +112,7 @@ left JOIN amrs.patient_identifier pi2
 inner JOIN amrs.patient_identifier_type pit
                  ON
 	pi2.identifier_type = pit.patient_identifier_type_id
-left JOIN amrs.flat_patient_identifiers_v1 fpiv
+left JOIN etl.flat_patient_identifiers_v1 fpiv
                  ON
 	fpiv.patient_id = p.person_id
 inner JOIN ndwr.mfl_codes mc

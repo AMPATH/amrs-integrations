@@ -1,6 +1,6 @@
-const retrievePhoneCarrier = (nationalNumber: string) => {
+const   retrievePhoneCarrier = (nationalNumber: string) => {
     let prefix: number;
-    prefix = Number(nationalNumber.substring(0, 4));
+    prefix = Number(nationalNumber.substring(0, 3));
 
     return prefix;
 }

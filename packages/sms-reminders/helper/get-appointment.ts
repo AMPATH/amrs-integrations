@@ -117,7 +117,7 @@ console.log("extracts: ", rows);
             {
               UNITS: "STR",
               VALUE_TYPE: "NM",
-              OBSERVATION_VALUE: rows[0].REGIMEN.replace(/ ## /g,'/'),
+              OBSERVATION_VALUE: rows[0].REGIMEN?.replace(/ ## /g,'/'),
               OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               CODING_SYSTEM: "",
               ABNORMAL_FLAGS: "N",
@@ -128,7 +128,7 @@ console.log("extracts: ", rows);
             {
               UNITS: "STR",
               VALUE_TYPE: "NM",
-              OBSERVATION_VALUE: "WHO STAGE " + `${rows[0].CURRENT_WHO_STAGE}`,
+              OBSERVATION_VALUE: "WHO STAGE " + `${rows[0]?.CURRENT_WHO_STAGE}`,
               OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               CODING_SYSTEM: "",
               ABNORMAL_FLAGS: "N",
@@ -139,7 +139,7 @@ console.log("extracts: ", rows);
             {
               UNITS: "",
               VALUE_TYPE: "DT",
-              OBSERVATION_VALUE: `${rows[0].test_datetime}`.replace(/[-:\s]/g,''),
+              OBSERVATION_VALUE: `${rows[0]?.test_datetime}`.replace(/[-:\s]/g,''),
               OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               CODING_SYSTEM: "",
               ABNORMAL_FLAGS: "N",
@@ -150,7 +150,7 @@ console.log("extracts: ", rows);
             {
               UNITS: "STR",
               VALUE_TYPE: "NM",
-              OBSERVATION_VALUE: `${rows[0].hiv_viral_load}`,
+              OBSERVATION_VALUE: `${rows[0]?.hiv_viral_load}`,
               OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               CODING_SYSTEM: "",
               ABNORMAL_FLAGS: "N",
@@ -161,7 +161,7 @@ console.log("extracts: ", rows);
             {
               UNITS: "MM",
               VALUE_TYPE: "NM",
-              OBSERVATION_VALUE: rows[0].muac || "",
+              OBSERVATION_VALUE: rows[0]?.muac || "",
               OBSERVATION_DATETIME: (rows[0].VISIT_DATE)?.toString().replace(/[-:\s]/g,'')|| "",
               CODING_SYSTEM: "",
               ABNORMAL_FLAGS: "N",

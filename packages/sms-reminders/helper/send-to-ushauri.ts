@@ -45,7 +45,7 @@ const ushauriApiCall = async (args: any) => {
     );
 
     let response = await httpClient.axios(
-        '/IL/registration/test',
+        '/IL/registration',
         {
             method: "post",
             data: args,
@@ -78,7 +78,6 @@ export const sendAppointmentToUshauri = async (params: any, rows: any[]) => {
 
     let carrier = retrievePhoneCarrier(params.natnum);
     let isSaf: boolean = isSafaricomNumber(carrier);
-
     if (isSaf == false)
     {
         payload.APPOINTMENT_INFORMATION[0].CONSENT_FOR_REMINDER = 'Y';
@@ -105,6 +104,7 @@ export const sendToUshauri = async (params:any) => {
             return;
         }
     }
+    let Appointmentresponse = await sendAppointmentToUshauri(params, rows)
 
-    return (response = await sendAppointmentToUshauri(params, rows));
+    return Appointmentresponse;
 }

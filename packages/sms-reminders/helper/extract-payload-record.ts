@@ -92,7 +92,7 @@ export const queryDB = async (person_id: number) => {
 	vl.hiv_viral_load
 FROM
 	amrs.person p
-left JOIN amrs_migration.person_name pn
+left JOIN amrs.person_name pn
                  ON
 	( p.person_id = pn.person_id
 		AND p.voided = 0

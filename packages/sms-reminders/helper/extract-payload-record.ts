@@ -109,7 +109,7 @@ left JOIN amrs.patient_identifier pi2
                  ON
 	p.person_id = pi2.patient_id
 	AND pi2.voided = 0
-inner JOIN amrs_migration.patient_identifier_type pit
+inner JOIN amrs.patient_identifier_type pit
                  ON
 	pi2.identifier_type = pit.patient_identifier_type_id
 left JOIN amrs_migration.flat_patient_identifiers_v1 fpiv

@@ -1,0 +1,122 @@
+{
+  "MESSAGE_HEADER": {
+    "SENDING_APPLICATION": "KENYAEMR",
+    "SENDING_FACILITY": "14607",
+    "RECEIVING_APPLICATION": "IL",
+    "RECEIVING_FACILITY": "14607",
+    "MESSAGE_DATETIME": "20230801062451",
+    "SECURITY": "",
+    "MESSAGE_TYPE": "SIU^S12",
+    "PROCESSING_ID": "P"
+  },
+  "PATIENT_IDENTIFICATION": {
+    "EXTERNAL_PATIENT_ID": {
+      "ID": "",
+      "IDENTIFIER_TYPE": "GODS_NUMBER",
+      "ASSIGNING_AUTHORITY": "MPI"
+    },
+    "INTERNAL_PATIENT_ID": [
+      {
+        "ID": "58CCC-2",
+        "IDENTIFIER_TYPE": "PATIENT_CLINIC_NUMBER",
+        "ASSIGNING_AUTHORITY": "CCC"
+      },
+      {
+        "ID": "1111024731",
+        "IDENTIFIER_TYPE": "CCC_NUMBER",
+        "ASSIGNING_AUTHORITY": "CCC"
+      }
+    ],
+    "PATIENT_NAME": {
+      "FIRST_NAME": "USHAURI",
+      "MIDDLE_NAME": "INTEGRATION",
+      "LAST_NAME": "TEST"
+    },
+    "MOTHER_NAME": {
+      "FIRST_NAME": "",
+      "MIDDLE_NAME": "",
+      "LAST_NAME": ""
+    },
+    "DATE_OF_BIRTH": "20190615",
+    "SEX": "F",
+    "PATIENT_ADDRESS": {
+      "PHYSICAL_ADDRESS": {
+        "VILLAGE": "",
+        "WARD": "KABARNET",
+        "SUB_COUNTY": "",
+        "COUNTY": "",
+        "GPS_LOCATION": "",
+        "NEAREST_LANDMARK": ""
+      },
+      "POSTAL_ADDRESS": ""
+    },
+    "PHONE_NUMBER": "0733334433",
+    "MARITAL_STATUS": "",
+    "DEATH_DATE": "",
+    "DEATH_INDICATOR": "",
+    "DATE_OF_BIRTH_PRECISION": "ESTIMATED"
+  },
+  "APPOINTMENT_INFORMATION": [
+    {
+      "APPOINTMENT_REASON": "CLINICAL",
+      "ACTION_CODE": "A",
+      "APPOINTMENT_PLACING_ENTITY": "KENYAEMR",
+      "APPOINTMENT_STATUS": "PENDING",
+      "APPOINTMENT_TYPE": "FOLLOWUP",
+      "APPOINTMENT_NOTE": "N/A",
+      "APPOINTMENT_DATE": "20230915",
+      "VISIT_DATE": "20230707",
+      "PLACER_APPOINTMENT_NUMBER": {
+        "ENTITY": "KENYAEMR",
+        "NUMBER": "269497"
+      },
+      "CONSENT_FOR_REMINDER": "Y"
+    }
+  ],
+  "OBSERVATION_RESULT": [
+    {
+      "UNITS": "KG",
+      "VALUE_TYPE": "NM",
+      "OBSERVATION_VALUE": "67.0",
+      "OBSERVATION_DATETIME": "20230707",
+      "CODING_SYSTEM": "",
+      "ABNORMAL_FLAGS": "N",
+      "OBSERVATION_RESULT_STATUS": "F",
+      "SET_ID": "",
+      "OBSERVATION_IDENTIFIER": "WEIGHT"
+    },
+    {
+      "UNITS": "CM",
+      "VALUE_TYPE": "NM",
+      "OBSERVATION_VALUE": "180",
+      "OBSERVATION_DATETIME": "20230707",
+      "CODING_SYSTEM": "",
+      "ABNORMAL_FLAGS": "N",
+      "OBSERVATION_RESULT_STATUS": "F",
+      "SET_ID": "",
+      "OBSERVATION_IDENTIFIER": "HEIGHT"
+    },
+    {
+      "UNITS": "STR",
+      "VALUE_TYPE": "NM",
+      "OBSERVATION_VALUE": "AZT/3TC/NVP",
+      "OBSERVATION_DATETIME": "",
+      "CODING_SYSTEM": "",
+      "ABNORMAL_FLAGS": "N",
+      "OBSERVATION_RESULT_STATUS": "F",
+      "SET_ID": "",
+      "OBSERVATION_IDENTIFIER": "CURRENT REGIMEN"
+    },
+    {
+      "UNITS": "STR",
+      "VALUE_TYPE": "NM",
+      "OBSERVATION_VALUE": "WHO STAGE 2",
+      "OBSERVATION_DATETIME": "",
+      "CODING_SYSTEM": "",
+      "ABNORMAL_FLAGS": "N",
+      "OBSERVATION_RESULT_STATUS": "F",
+      "SET_ID": "",
+      "OBSERVATION_IDENTIFIER": "WHO STAGE"
+    }
+  ]
+}

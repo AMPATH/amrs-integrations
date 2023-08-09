@@ -97,7 +97,7 @@ left JOIN amrs.person_name pn
 	( p.person_id = pn.person_id
 		AND p.voided = 0
 		AND pn.voided = 0 )
-left JOIN amrs_migration.person_address pa
+left JOIN amrs.person_address pa
                  ON
 	pn.person_id = pa.person_id
 	AND pa.voided = 0

@@ -101,7 +101,7 @@ left JOIN amrs.person_address pa
                  ON
 	pn.person_id = pa.person_id
 	AND pa.voided = 0
-left JOIN amrs_migration.person_attribute pa2
+left JOIN amrs.person_attribute pa2
                  ON
 	pa.person_id = pa2.person_id
 	AND pa2.voided = 0

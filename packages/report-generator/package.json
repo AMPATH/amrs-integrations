@@ -1,0 +1,33 @@
+{
+  "name": "report-generator",
+  "version": "0.1.0-alpha.1",
+  "description": "Allows json data to be mapped and written to an excel or pdf document",
+  "keywords": [
+    "csv",
+    "pdf",
+    "json",
+    "reporting"
+  ],
+  "author": "derrick rono <derrickrono@gmail.com>",
+  "homepage": "https://github.com/AMPATH/amrs-integrations#readme",
+  "license": "ISC",
+  "main": "lib/report-generator.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AMPATH/amrs-integrations.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "start": "tsc && node ./dist/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/AMPATH/amrs-integrations/issues"
+  }
+}

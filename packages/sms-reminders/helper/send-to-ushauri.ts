@@ -35,6 +35,25 @@ const registerToUshauriDB = async (person_id: number) => {
     return result;
 }
 
+const logUshauriResponse = async (rows: any, response: any) => {
+    console.log(response.success)
+    let amrsCON = await CM.getConnectionAmrs();
+    let sql = `
+    INSERT INTO etl.ushauri_responses(nupi, success_status, message_created_datetime, appointment_date, response_msg)
+    VALUES(
+        "${rows[0].IPI_IDENTIFIER_TYPE_2_ID}",
+        "${response.success === true ? 1 : 0}",
+        "${rows[0].MESSAGE_DATETIME}",
+        "${response.response.data.appntmnt_date}",
+        "${response.response.msg}"
+    )
+    `;
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+
+    return result;
+}
+
 /* Make a call to the ushauri service via OpenHIM */
 const ushauriApiCall = async (args: any) => {
     let httpClient = new config.HTTPInterceptor(
@@ -97,7 +116,9 @@ export const sendToUshauri = async (params:any) => {
     {
         response = await sendRegistrationToUshauri(params.smsParams, rows);
         if((response != null || response != undefined) || response?.success == true)
+        {
             result = await registerToUshauriDB(params.smsParams.person_id);
+        }
         else
         {
             await deleteUshauriRecord(params.smsParams.person_id)
@@ -105,6 +126,7 @@ export const sendToUshauri = async (params:any) => {
         }
     }
     let Appointmentresponse = await sendAppointmentToUshauri(params, rows)
+    await logUshauriResponse(rows, Appointmentresponse)
 
     return Appointmentresponse;
 }

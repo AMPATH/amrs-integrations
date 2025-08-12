@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  hie-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: amrs-hie-integration:latest
+    container_name: hie-integration
+    environment:
+      - NODE_ENV=production
+      - PORT=9000
+      # Add other environment variables as needed
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./env:/app/.env:ro
+    restart: unless-stopped
+    networks:
+      - amrs-network
+
+networks:
+  amrs-network:
+    driver: bridge

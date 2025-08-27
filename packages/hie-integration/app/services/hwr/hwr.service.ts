@@ -1,33 +1,44 @@
-import axios from "axios";
-import { TokenService } from "../auth/token.service";
+import { HieHttpClient } from "../../utils/http-client";
 import config from "../../config/env";
-import { HiePractitioner, FhirBundle } from "../../types/hie.type";
 import { AmrsService } from "../amrs/amrs.service";
 import { logger } from "../../utils/logger";
 
+export interface HwrResponse {
+  message: {
+    registration_number: number;
+    found: number;
+    is_active: boolean;
+    name?: string;
+    specialization?: string;
+    license_status?: string;
+  };
+}
+
 export class HwrService {
-  private tokenService = new TokenService();
+  private httpClient = new HieHttpClient();
   private amrsService = new AmrsService();
 
-  async fetchPractitionerFromHie(nationalId: string): Promise<HiePractitioner> {
-    const token = await this.tokenService.getAccessToken();
-    const url = `${config.HIE.HWR_URL}?identifierType=National ID&identifierNumber=${nationalId}`;
-
+  async fetchPractitionerFromHie(nationalId: string, idType: string = 'national-id'): Promise<HwrResponse> {
     try {
-      const response = await axios.get<FhirBundle<HiePractitioner>>(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await this.httpClient.get<HwrResponse>(
+        config.HIE.HWR_URL,
+        {
+          identification_type: idType,
+          identification_number: nationalId
+        }
+      );
 
-      if (response.data.total === 0) {
+      if (response.data.message.found === 0) {
         throw new Error("Practitioner not found in HWR");
       }
 
-      return response.data.entry[0].resource;
+      return response.data;
     } catch (error: any) {
+      // console.log("error", error);
       logger.error(`HIE HWR request failed: ${error.message}`);
       throw new Error(
         `Failed to fetch practitioner from HIE: ${
-          error.response?.data?.error || error.message
+          error.response?.data || error.message
         }`
       );
     }
@@ -35,10 +46,14 @@ export class HwrService {
 
   async updateLicenseStatus(
     nationalId: string,
-    providerUuid?: string
+    providerUuid?: string,
+    idType: string = 'national-id'
   ): Promise<any> {
     const practitioner = await this.fetchPractitionerFromHie(nationalId);
-    const licenseInfo = this.extractLatestLicense(practitioner);
+    
+    // Extract license status from response
+    const licenseStatus = practitioner.message.is_active ? "active" : "inactive";
+    const registrationNumber = practitioner.message.registration_number;
 
     // If provider UUID is not provided, try to find by national ID
     let targetUuid = providerUuid;
@@ -56,41 +71,8 @@ export class HwrService {
     }
 
     return this.amrsService.updateProvider(targetUuid, {
-      licenseStatus: licenseInfo.status,
-      licenseExpiration: licenseInfo.endDate,
+      licenseStatus,
+      // registrationNumber
     });
-  }
-
-  private extractLatestLicense(practitioner: HiePractitioner): {
-    status: string;
-    endDate: string;
-  } {
-    if (!practitioner.qualification) {
-      return { status: "unknown", endDate: "" };
-    }
-
-    // Extract all licenses with status
-    const licenses = practitioner.qualification
-      .filter((q) => q.extension?.some((e) => e.url.includes("license-status")))
-      .map((q) => {
-        const statusExt = q.extension?.find((e) =>
-          e.url.includes("license-status")
-        );
-        return {
-          status: statusExt?.valueString || "unknown",
-          endDate: q.period?.end || "",
-          startDate: q.period?.start || "",
-        };
-      });
-
-    // Find the most recent active license
-    const activeLicense = licenses
-      .filter((l) => l.status === "active")
-      .sort(
-        (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-      )[0];
-
-    // Return active license if found, otherwise try to find any license
-    return activeLicense || licenses[0] || { status: "unknown", endDate: "" };
   }
 }

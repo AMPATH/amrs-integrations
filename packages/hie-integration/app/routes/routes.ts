@@ -16,6 +16,11 @@ export const routes = (): ServerRoute[] => [
             .required()
             .pattern(/^\d+$/)
             .description("National ID number"),
+          idType: Joi.string()
+            .optional()
+            .default("national-id")
+            .valid("national-id", "passport")
+            .description("Identification type"),
         }),
       },
       tags: ["api", "hie", "client-registry"],
@@ -24,11 +29,14 @@ export const routes = (): ServerRoute[] => [
         "Fetches patient data from national registry, compares with AMRS, and updates if necessary",
     },
     handler: async (request, h) => {
-      const { nationalId } = request.payload as { nationalId: string };
+      const { nationalId, idType } = request.payload as {
+        nationalId: string;
+        idType: string;
+      };
       const service = new ClientRegistryService();
 
       try {
-        const result = await service.syncPatient(nationalId);
+        const result = await service.syncPatient(nationalId, idType);
         logger.info(`Patient sync successful: ${nationalId}`);
         return h.response(result).code(200);
       } catch (error: any) {
@@ -36,6 +44,53 @@ export const routes = (): ServerRoute[] => [
         return h
           .response({
             error: "Patient sync failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+
+    // HWR Search Endpoint
+  {
+    method: "GET",
+    path: "/hie/hwr/search",
+    options: {
+      validate: {
+        query: Joi.object({
+          nationalId: Joi.string()
+            .required()
+            .pattern(/^\d+$/)
+            .description("National ID number"),
+          idType: Joi.string()
+            .optional()
+            .default("national-id")
+            .valid("national-id", "passport")
+            .description("Identification type"),
+        }),
+      },
+      tags: ["api", "hie", "hwr"],
+      description: "Search for health worker in HWR",
+      notes: "Directly searches the health worker registry by national ID",
+    },
+    handler: async (request, h) => {
+      const { nationalId, idType } = request.query as {
+        nationalId: string;
+        idType: string;
+      };
+      const service = new HwrService();
+
+      try {
+        const result = await service.fetchPractitionerFromHie(
+          nationalId,
+          idType
+        );
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(`HWR search failed: ${nationalId} - ${error.message}`);
+        return h
+          .response({
+            error: "HWR search failed",
             details: error.message,
           })
           .code(400);
@@ -54,6 +109,11 @@ export const routes = (): ServerRoute[] => [
             .required()
             .pattern(/^\d+$/)
             .description("National ID number"),
+          idType: Joi.string()
+            .optional()
+            .default("national-id")
+            .valid("national-id", "passport")
+            .description("Identification type"),
           providerUuid: Joi.string()
             .optional()
             .description("AMRS provider UUID"),
@@ -65,8 +125,9 @@ export const routes = (): ServerRoute[] => [
         "Checks latest license status from national registry and updates AMRS provider record",
     },
     handler: async (request, h) => {
-      const { nationalId, providerUuid } = request.payload as {
+      const { nationalId, idType, providerUuid } = request.payload as {
         nationalId: string;
+        idType: string;
         providerUuid?: string;
       };
       const service = new HwrService();
@@ -74,7 +135,8 @@ export const routes = (): ServerRoute[] => [
       try {
         const result = await service.updateLicenseStatus(
           nationalId,
-          providerUuid
+          providerUuid,
+          idType
         );
         logger.info(`License refresh successful: ${nationalId}`);
         return h.response(result).code(200);

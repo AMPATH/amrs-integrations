@@ -11,12 +11,19 @@ const getEnv = (key: string, defaultValue?: string): string => {
 };
 
 export default {
+  SERVER: {
+    PORT:  parseInt(getEnv('PORT', '3000')),
+    ENV: getEnv('NODE_ENV', 'development')
+  },
   HIE: {
-    AUTH_URL: getEnv('HIE_AUTH_URL', 'https://apistg.safaricom.co.ke/oauth2/v1/generate?grant_type=client_credentials'),
-    CLIENT_ID: getEnv('HIE_CLIENT_ID'),
-    CLIENT_SECRET: getEnv('HIE_CLIENT_SECRET'),
-    CLIENT_REGISTRY_URL: getEnv('HIE_CLIENT_REGISTRY_URL', 'https://apistg.safaricom.co.ke/hie/v1/Patient'),
-    HWR_URL: getEnv('HIE_HWR_URL', 'https://apistg.safaricom.co.ke/v2/fhir/Practitioner')
+    BASE_URL: getEnv('HIE_BASE_URL', 'https://uat.dha.go.ke'),
+    AUTH_URL: getEnv('HIE_AUTH_URL', '/v1/hie-auth'),
+    CLIENT_REGISTRY_URL: getEnv('HIE_CLIENT_REGISTRY_URL', '/v3/client-registry/fetch-client'),
+    AGENT: process.env.HIE_AGENT,
+    HWR_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
+    CONSUMER_KEY: getEnv('HIE_CONSUMER_KEY'),
+    USERNAME: getEnv('HIE_USERNAME'),
+    PASSWORD: getEnv('HIE_PASSWORD')
   },
   AMRS: {
     BASE_URL: getEnv('AMRS_BASE_URL'),
@@ -25,9 +32,5 @@ export default {
     NATIONAL_ID_TYPE_UUID: getEnv('AMRS_NATIONAL_ID_TYPE_UUID'),
     SHA_ID_TYPE_UUID: getEnv('AMRS_SHA_ID_TYPE_UUID'),
     HOUSEHOLD_ID_TYPE_UUID: getEnv('AMRS_HOUSEHOLD_ID_TYPE_UUID')
-  },
-  SERVER: {
-    PORT: parseInt(getEnv('PORT', '3000')),
-    ENV: getEnv('NODE_ENV', 'development')
   }
 };

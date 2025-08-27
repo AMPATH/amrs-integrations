@@ -1,11 +1,9 @@
 import pino from 'pino';
 
-// 1. Extend pino.Logger to include audit()
 interface AuditLogger extends pino.Logger {
   audit: (message: string, data?: object) => void;
 }
 
-// 2. Create logger with extended type
 const logger: AuditLogger = pino({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   formatters: {

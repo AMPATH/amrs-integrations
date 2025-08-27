@@ -1,46 +1,74 @@
 import axios from "axios";
 import config from "../../config/env";
 import { cache } from "../../utils/cache.util";
+import { logger } from "../../utils/logger";
 
 const TOKEN_CACHE_KEY = "hie_access_token";
 
 export class TokenService {
+  private isRefreshing = false;
+  private refreshQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
+
   async getAccessToken(): Promise<string> {
-    // Check cache first
     const cachedToken = cache.get<string>(TOKEN_CACHE_KEY);
-    if (cachedToken) return cachedToken;
+    if (cachedToken) {
+      console.log(`Using cached token: ${cachedToken}`);
+      return cachedToken;
+    }
 
-    // Fetch new token
-    const credentials = Buffer.from(
-      `${config.HIE.CLIENT_ID}:${config.HIE.CLIENT_SECRET}`
-    ).toString("base64");
+    // If we're already refreshing, add to queue
+    if (this.isRefreshing) {
+      return new Promise((resolve, reject) => {
+        this.refreshQueue.push({ resolve, reject });
+      });
+    }
 
+    this.isRefreshing = true;
+    
     try {
-      const response = await axios.post(
-        config.HIE.AUTH_URL,
-        new URLSearchParams({ grant_type: "client_credentials" }),
+      const credentials = Buffer.from(
+        `${config.HIE.USERNAME}:${config.HIE.PASSWORD}`
+      ).toString("base64");
+
+      const response = await axios.get(
+        `${config.HIE.BASE_URL}${config.HIE.AUTH_URL}`,
         {
+          params: {
+            key: config.HIE.CONSUMER_KEY
+          },
           headers: {
             Authorization: `Basic ${credentials}`,
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
           },
+          timeout: 5000,
         }
       );
 
-      const token = response.data.access_token;
-      const expiresIn = response.data.expires_in;
+      const token = response.data;
+      
+      cache.set(TOKEN_CACHE_KEY, token, 15);
 
-      // Cache token with 5-minute buffer
-      cache.set(TOKEN_CACHE_KEY, token, expiresIn - 300);
+      this.refreshQueue.forEach(({ resolve }) => resolve(token));
+      this.refreshQueue = [];
+      this.isRefreshing = false;
 
       return token;
     } catch (error: any) {
-      // console.error('HIE Authentication Error:', error);
+      // Reject all queued requests
+      this.refreshQueue.forEach(({ reject }) => reject(error));
+      this.refreshQueue = [];
+      this.isRefreshing = false;
+
+      logger.error(`HIE authentication failed: ${error.message}`);
       throw new Error(
         `HIE authentication failed: ${
-          error.response?.data?.error || error.message
+          error.response?.data || error.message
         }`
       );
     }
+  }
+
+  clearToken(): void {
+    cache.del(TOKEN_CACHE_KEY);
   }
 }

@@ -109,3 +109,10 @@ export interface FhirBundle<T> {
     resource: T;
   }>;
 }
+
+export type EncryptedClientResp = {
+  message: {
+    total: number;
+    result: { _pii: string }[];
+  };
+};

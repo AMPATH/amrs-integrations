@@ -12,14 +12,14 @@ export const routes = (): ServerRoute[] => [
     options: {
       validate: {
         payload: Joi.object({
-          nationalId: Joi.string()
+          identificationNumber: Joi.string()
             .required()
             .pattern(/^\d+$/)
             .description("National ID number"),
-          idType: Joi.string()
+          identificationNumbeType: Joi.string()
             .optional()
-            .default("national-id")
-            .valid("national-id", "passport")
+            .default("National ID")
+            .valid("National ID", "passport")
             .description("Identification type"),
         }),
       },
@@ -29,18 +29,26 @@ export const routes = (): ServerRoute[] => [
         "Fetches patient data from national registry, compares with AMRS, and updates if necessary",
     },
     handler: async (request, h) => {
-      const { nationalId, idType } = request.payload as {
-        nationalId: string;
-        idType: string;
+      const {
+        identificationNumber,
+        identificationNumbeType,
+      } = request.payload as {
+        identificationNumber: string;
+        identificationNumbeType: string;
       };
       const service = new ClientRegistryService();
 
       try {
-        const result = await service.syncPatient(nationalId, idType);
-        logger.info(`Patient sync successful: ${nationalId}`);
+        const result = await service.syncPatient(
+          identificationNumber,
+          identificationNumbeType
+        );
+        logger.info(`Patient sync successful: ${identificationNumber}`);
         return h.response(result).code(200);
       } catch (error: any) {
-        logger.error(`Patient sync failed: ${nationalId} - ${error.message}`);
+        logger.error(
+          `Patient sync failed: ${identificationNumber} - ${error.message}`
+        );
         return h
           .response({
             error: "Patient sync failed",
@@ -50,8 +58,56 @@ export const routes = (): ServerRoute[] => [
       }
     },
   },
+  {
+    method: "POST",
+    path: "/hie/client/search",
+    options: {
+      validate: {
+        payload: Joi.object({
+          identificationNumber: Joi.required().description(
+            "Identification number"
+          ),
+          identificationNumbeType: Joi.string()
+            .required()
+            .valid("National ID", "passport")
+            .description("Identification Type"),
+        }),
+      },
+      tags: ["api", "hie", "client-registry"],
+      description: "Sync patient data from HIE client registry",
+      notes:
+        "Fetches patient data from national registry, compares with AMRS, and updates if necessary",
+    },
+    handler: async (request, h) => {
+      const {
+        identificationNumber,
+        identificationNumbeType,
+      } = request.payload as {
+        identificationNumber: string;
+        identificationNumbeType: string;
+      };
+      const service = new ClientRegistryService();
 
-    // HWR Search Endpoint
+      try {
+        const result = await service.fetchPatientFromHie(
+          identificationNumber,
+          identificationNumbeType
+        );
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(
+          `Patient sync failed: ${identificationNumber} - ${error.message}`
+        );
+        return h
+          .response({
+            error: "Patient search failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  // HWR Search Endpoint
   {
     method: "GET",
     path: "/hie/hwr/search",

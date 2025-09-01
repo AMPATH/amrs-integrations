@@ -1,34 +1,46 @@
 import axios from "axios";
 import config from "../../config/env";
-import { HiePatient, FhirBundle } from "../../types/hie.type";
+import {
+  HiePatient,
+  FhirBundle,
+  EncryptedClientResp,
+} from "../../types/hie.type";
 import { PatientMapper } from "./patient.mapper";
 import { AmrsService } from "../amrs/amrs.service";
 import { logger } from "../../utils/logger";
 import { HieHttpClient } from "../../utils/http-client";
+import { decryptData } from "../../utils/descrypt-data";
 
 export class ClientRegistryService {
   private httpClient = new HieHttpClient();
   private amrsService = new AmrsService();
 
   async fetchPatientFromHie(
-    nationalId: string,
+    identificationNumber: string,
     idType: string = "National ID"
   ): Promise<any> {
     try {
-      const response = await this.httpClient.get<any>(
+      const response = await this.httpClient.get<EncryptedClientResp>(
         config.HIE.CLIENT_REGISTRY_URL,
         {
           identification_type: idType,
-          identification_number: nationalId,
+          identification_number: identificationNumber,
           agent: config.HIE.AGENT,
         }
       );
 
-      if (!response.data || response.data.found === 0) {
+      if (!response.data || response.data.message.total === 0) {
         throw new Error("Patient not found in HIE registry");
       }
 
-      return response.data;
+      if (response.data.message.result) {
+        const patientData = response.data.message.result.map((d) => {
+          return decryptData(d._pii);
+        });
+
+        return patientData;
+      }
+      return response.data.message.result || [];
     } catch (error: any) {
       console.log("error", error);
       logger.error(`HIE client registry request failed: ${error.message}`);

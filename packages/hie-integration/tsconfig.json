@@ -9,7 +9,10 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
-  "include": ["app/**/*", "types"]
+  "include": ["app/**/*", "types"],
+  "exclude": ["node_modules", "dist"]
 }

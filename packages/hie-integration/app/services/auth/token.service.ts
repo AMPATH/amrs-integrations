@@ -16,7 +16,6 @@ export class TokenService {
       return cachedToken;
     }
 
-    // If we're already refreshing, add to queue
     if (this.isRefreshing) {
       return new Promise((resolve, reject) => {
         this.refreshQueue.push({ resolve, reject });
@@ -54,7 +53,6 @@ export class TokenService {
 
       return token;
     } catch (error: any) {
-      // Reject all queued requests
       this.refreshQueue.forEach(({ reject }) => reject(error));
       this.refreshQueue = [];
       this.isRefreshing = false;

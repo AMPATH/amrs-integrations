@@ -3,8 +3,16 @@ import hapiPino from 'hapi-pino';
 import config from './config/env';
 import { logger } from './utils/logger';
 import { routes } from './routes/routes';
+import { DatabaseManager } from './config/database';
 
 export const initServer = async () => {
+  // Initialize database connection
+  try {
+    await DatabaseManager.getInstance().initialize();
+  } catch (error) {
+    logger.error('Failed to initialize database connection:', error);
+    process.exit(1);
+  }
   const server = Hapi.server({
     port: config.SERVER.PORT,
     host: '0.0.0.0',
@@ -78,4 +86,11 @@ export const startServer = async () => {
 process.on('unhandledRejection', (err) => {
   logger.error(err);
   process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  logger.info('Shutting down server...');
+  await DatabaseManager.getInstance().close();
+  process.exit(0);
 });

@@ -47,7 +47,6 @@ export class HieHttpClient {
           }
         }
 
-        // Handle other errors
         if (error.response) {
           if (error.response.status >= 400) {
             logger.error(
@@ -67,14 +66,14 @@ export class HieHttpClient {
     return this.axiosInstance.get<T>(url, {
       baseURL: config.HIE.BASE_URL,
       params,
-      timeout: 10000, // 10 second timeout for API requests
+      timeout: 10000,
     });
   }
 
   async post<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
     return this.axiosInstance.post<T>(url, data, {
       baseURL: config.HIE.BASE_URL,
-      timeout: 10000, // 10 second timeout for API requests
+      timeout: 10000,
     });
   }
 }

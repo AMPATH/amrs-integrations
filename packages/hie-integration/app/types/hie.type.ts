@@ -116,3 +116,40 @@ export type EncryptedClientResp = {
     result: { _pii: string }[];
   };
 };
+
+export enum IdentifierType {
+  NATIONAL_ID = "National ID",
+  ALIEN_ID = "Alien ID",
+  PASSPORT = "passport",
+  WORK_PERMIT = "work-permit",
+  DRIVER_LICENSE = "driver-license"
+}
+
+
+export interface Identifier {
+  type: IdentifierType;
+  value: string;
+}
+
+export interface PractitionerRegistryResponse {
+  message: {
+    registrationNumber: number;   
+    found: number;              
+    isActive: boolean;            
+    name?: string;               
+    specialization?: string;     
+    licenseStatus?: string;      
+  };
+}
+
+
+export interface FacilitySearchResponse {
+  message: {
+    facility_code: string;
+    found: number;
+    approved: string | null;
+    facility_level: string | null;
+    operational_status: string | null;
+    current_license_expiry_date: string;
+  };
+}

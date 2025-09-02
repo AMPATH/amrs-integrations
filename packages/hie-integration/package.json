@@ -19,9 +19,12 @@
     "dotenv": "^17.2.1",
     "hapi-pino": "^12.1.0",
     "joi": "^17.13.3",
-     "node-cache": "^5.1.2"
+    "mysql2": "^3.14.4",
+    "node-cache": "^5.1.2",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.26"
   },
-   "devDependencies": {
+  "devDependencies": {
     "@types/hapi__hapi": "^20.0.10",
     "@types/node": "^18.11.9",
     "@types/node-cache": "^4.2.5",

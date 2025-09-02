@@ -20,7 +20,8 @@ export default {
     AUTH_URL: getEnv('HIE_AUTH_URL', '/v1/hie-auth'),
     CLIENT_REGISTRY_URL: getEnv('HIE_CLIENT_REGISTRY_URL', '/v3/client-registry/fetch-client'),
     AGENT: process.env.HIE_AGENT,
-    HWR_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
+    PRACTITIONER_REGISTRY_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
+    FACILITY_SEARCH_URL: getEnv('HIE_FACILITY_SEARCH_URL', '/v1/facility-search'),
     CONSUMER_KEY: getEnv('HIE_CONSUMER_KEY'),
     USERNAME: getEnv('HIE_USERNAME'),
     PASSWORD: getEnv('HIE_PASSWORD')

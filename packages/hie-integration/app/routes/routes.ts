@@ -5,6 +5,7 @@ import { FacilityRegistryService } from "../services/facility-registry/facility-
 import { logger } from "../utils/logger";
 import { IdentifierType } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
+import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -112,6 +113,39 @@ export const routes = (): ServerRoute[] => [
       }
     },
   },
+  {
+  method: "GET",
+  path: "/amrs/providers/active",
+  options: {
+    tags: ["api", "amrs", "providers"],
+    description: "Get active providers from AMRS database",
+    notes: "Returns providers who have been active in the last 12 months at the specified location",
+    validate: {
+      query: Joi.object({
+        locationUuid: Joi.string()
+          .uuid()
+          .required()
+          .description("UUID of the location to filter providers by"),
+      }),
+    },
+  },
+  handler: async (request, h) => {
+    const { locationUuid } = request.query;
+    const service = new AmrsProviderService();
+
+    try {
+      const result = await service.getActiveProviders(locationUuid);
+      
+      return h.response(result).code(200);
+    } catch (error: any) {
+      logger.error(`AMRS providers fetch failed: ${error.message}`);
+      return h.response({
+        error: "Failed to fetch providers from AMRS",
+        details: error.message
+      }).code(500);
+    }
+  }
+},
   {
     method: "GET",
     path: "/hie/facility/search",

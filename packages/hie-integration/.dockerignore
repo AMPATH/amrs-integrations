@@ -16,6 +16,11 @@ coverage
 *.swp
 *.pid
 
+# Configuration files
+config/config.json
+config/*.json
+
+
 # Ignore editor and IDE files
 .idea
 .vscode
@@ -43,6 +48,7 @@ jest.config.js
 
 # Ignore Docker-related files (except Dockerfile)
 docker-compose.yml
+Dockerfile
 docker-compose.*.yml
 .dockerignore
 docker-compose.override.yml

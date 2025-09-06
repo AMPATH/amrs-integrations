@@ -7,7 +7,7 @@ export class PractitionerRepository {
   private repository: Repository<PractitionerRecord>;
 
   constructor() {
-    const connection = DatabaseManager.getInstance().getDataSource();
+    const connection = DatabaseManager.getInstance().getDataSource("primary");
     this.repository = connection.getRepository(PractitionerRecord);
   }
 

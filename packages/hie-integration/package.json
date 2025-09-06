@@ -2,7 +2,7 @@
   "name": "@amrs-integration/hie",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/config && cp app/config/config.json dist/config",
     "start": "node dist/index.js",
     "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
     "clean": "rm -rf dist",
@@ -25,7 +25,9 @@
     "typeorm": "^0.3.26"
   },
   "devDependencies": {
+    "@types/hapi__catbox": "^12.1.0",
     "@types/hapi__hapi": "^20.0.10",
+    "@types/hapi__shot": "^6.0.0",
     "@types/node": "^18.11.9",
     "@types/node-cache": "^4.2.5",
     "tsc-watch": "^6.0.0",

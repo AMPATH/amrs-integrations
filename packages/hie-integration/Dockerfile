@@ -1,35 +1,43 @@
-# Stage 1: Build the application
-FROM node:18-alpine AS builder
+FROM node:16-alpine AS deps
+
 WORKDIR /app
+ENV NODE_ENV=development
 
-# Copy package.json and lock files first for caching
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+COPY packages/hie-integration/package.json packages/hie-integration/yarn.lock ./
 
-# Copy source code
-COPY . ./
+RUN yarn install --frozen-lockfile
 
-# Build TypeScript project
+
+FROM node:16-alpine AS builder
+
+WORKDIR /app
+ENV NODE_ENV=development
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/yarn.lock ./yarn.lock
+
+COPY packages/hie-integration ./packages/hie-integration
+
+WORKDIR /app/packages/hie-integration
 RUN yarn build
 
-# Stage 2: Create production image
-FROM node:18-alpine
+
+# ---------- Runtime Stage ----------
+FROM node:16-alpine AS runtime
+
 WORKDIR /app
-
-# Install production dependencies only
-COPY --from=builder /app/package.json /app/yarn.lock ./
-RUN yarn install --frozen-lockfile --production
-
-# Copy built files
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/.env.prod ./.env
-
-# Copy other required files
-COPY --from=builder /app/tsconfig.json ./
-
-# Expose port and set environment
-EXPOSE 9000
 ENV NODE_ENV=production
 
-# Start command
+# Copy only production deps (optimized)
+COPY packages/hie-integration/package.json packages/hie-integration/yarn.lock ./
+RUN yarn install --frozen-lockfile --production
+
+# Copy built artifacts
+COPY --from=builder /app/packages/hie-integration/dist ./packages/hie-integration/dist
+COPY --from=builder /app/packages/hie-integration/config ./packages/hie-integration/config
+
+WORKDIR /app/packages/hie-integration
+
+EXPOSE 9000
 CMD ["node", "dist/index.js"]

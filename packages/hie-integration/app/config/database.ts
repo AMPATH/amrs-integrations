@@ -1,8 +1,6 @@
 import { DataSource, DataSourceOptions } from "typeorm";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { PractitionerRecord } from "../models/PractitionerRecord";
 import { logger } from "../utils/logger";
+import { getConfig } from "../utils/config-loader";
 
 export interface DatabaseConfig {
   name: string;
@@ -45,29 +43,8 @@ export class DatabaseManager {
     return DatabaseManager.instance;
   }
 
-  private loadConfig(): AppConfig {
-    const configPath = this.findConfigPath();
-    const configContent = readFileSync(configPath, "utf8");
-    return JSON.parse(configContent);
-  }
-
-  private findConfigPath(): string {
-    const possiblePaths = [
-      join(process.cwd(), "config", "config.json"),
-      join(process.cwd(), "config.json"),
-      join(__dirname, "..", "config", "config.json"),
-    ];
-
-    for (const path of possiblePaths) {
-      try {
-        readFileSync(path, "utf8");
-        return path;
-      } catch (error) {
-        continue;
-      }
-    }
-
-    throw new Error("Configuration file not found");
+   private loadConfig(): AppConfig {
+    return getConfig<AppConfig>();
   }
 
   public getServerConfig() {

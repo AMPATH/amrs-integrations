@@ -8,8 +8,9 @@ yarn-error.log*
 lerna-debug.log*
 
 # Configuration files
-config/config.json
-config/*.json
+app/config/config.json
+app/config/*.json
+build-docker.sh
 
 
 

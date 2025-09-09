@@ -25,8 +25,8 @@ export class PractitionerRecord {
   @Column({ type: 'timestamp', name: 'last_synced_at' })
   lastSyncedAt!: Date;
 
-  @Column({ type: 'timestamp', name: 'valid_until' })
-  validUntil!: Date;
+  @Column({ type: 'timestamp', name: 'valid_until', nullable: true })
+  validUntil!: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

@@ -24,7 +24,7 @@ export class PractitionerRegistryService {
 
     if (!shouldFetchFromHie && localRecord) {
       const now = new Date();
-      const expired = localRecord.validUntil < now;
+      const expired = localRecord.validUntil! < now;
       shouldFetchFromHie = expired;
       if (!expired) {
         return localRecord.registryData;

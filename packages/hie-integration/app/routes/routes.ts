@@ -114,37 +114,74 @@ export const routes = (): ServerRoute[] => [
     },
   },
   {
+    method: "GET",
+    path: "/hie/amrs/providers/active",
+    options: {
+      tags: ["api", "amrs", "providers"],
+      description: "Get active providers from AMRS database",
+      notes:
+        "Returns providers who have been active in the last 12 months at the specified location",
+      validate: {
+        query: Joi.object({
+          locationUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("UUID of the location to filter providers by"),
+        }),
+      },
+    },
+    handler: async (request, h) => {
+      const { locationUuid } = request.query;
+      const service = new AmrsProviderService();
+
+      try {
+        const result = await service.getActiveProviders(locationUuid);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(`AMRS providers fetch failed: ${error.message}`);
+        return h
+          .response({
+            error: "Failed to fetch providers from AMRS",
+            details: error.message,
+          })
+          .code(500);
+      }
+    },
+  },
+  {
   method: "GET",
-  path: "/amrs/providers/active",
+  path: "/hie/amrs/provider/national-id",
   options: {
-    tags: ["api", "amrs", "providers"],
-    description: "Get active providers from AMRS database",
-    notes: "Returns providers who have been active in the last 12 months at the specified location",
+    tags: ["api", "amrs", "provider"],
+    description: "Get provider by national ID from AMRS database",
+    notes: "Returns provider matching the provided national ID (partial or full match)",
     validate: {
       query: Joi.object({
-        locationUuid: Joi.string()
-          .uuid()
+        nationalId: Joi.string()
           .required()
-          .description("UUID of the location to filter providers by"),
+          .description("National ID to search for (supports partial matching)"),
       }),
     },
   },
   handler: async (request, h) => {
-    const { locationUuid } = request.query;
+    const { nationalId } = request.query;
     const service = new AmrsProviderService();
 
     try {
-      const result = await service.getActiveProviders(locationUuid);
-      
+      const result = await service.getProviderByNationalId(nationalId);
+
       return h.response(result).code(200);
     } catch (error: any) {
-      logger.error(`AMRS providers fetch failed: ${error.message}`);
-      return h.response({
-        error: "Failed to fetch providers from AMRS",
-        details: error.message
-      }).code(500);
+      logger.error(`AMRS providers fetch by national ID failed: ${error.message}`);
+      return h
+        .response({
+          error: "Failed to fetch providers by national ID from AMRS",
+          details: error.message,
+        })
+        .code(500);
     }
-  }
+  },
 },
   {
     method: "GET",
@@ -184,7 +221,7 @@ export const routes = (): ServerRoute[] => [
   },
   {
     method: "GET",
-    path: "/health",
+    path: "/hie/health",
     options: {
       tags: ["api", "monitoring"],
       description: "Service health check",

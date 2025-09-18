@@ -116,3 +116,50 @@ export type EncryptedClientResp = {
     result: { _pii: string }[];
   };
 };
+
+export enum IdentifierType {
+  NATIONAL_ID = "National ID",
+  ALIEN_ID = "Alien ID",
+  PASSPORT = "passport",
+  MANDATE_NUMBER = "Mandate Number",
+  REFUGEE_ID = "Refugee ID",
+  REGISTRATION_NUMBER = "Registration No",
+  LICENSE_NO = "License No",
+}
+
+
+export interface Identifier {
+  type: IdentifierType;
+  value: string;
+}
+
+export interface PatientSearchPayload {
+  identificationNumber: string;
+  identificationType: IdentifierType;
+  sessionId?: string;
+  otp?: string;
+  skipOtp?: boolean;
+}
+
+export interface PractitionerRegistryResponse {
+  message: {
+    registrationNumber: number;   
+    found: number;              
+    isActive: boolean;            
+    name?: string;               
+    specialization?: string;     
+    licenseStatus?: string;      
+  };
+}
+
+
+export interface FacilitySearchResponse {
+  message: {
+    facility_code: string;
+    found: number;
+    approved: string | null;
+    facility_level: string | null;
+    operational_status: string | null;
+    current_license_expiry_date: string;
+  };
+}

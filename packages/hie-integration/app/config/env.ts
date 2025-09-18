@@ -22,17 +22,10 @@ export default {
     SHR_FETCH_URL: getEnv('HIE_SHR_FETCH_URL', '/v1/shr/summary'),
     SHR_POST_BUNDLE_URL: getEnv('HIE_SHR_POST_BUNDLE_URL', '/v1/shr-med/bundle'),
     AGENT: process.env.HIE_AGENT,
-    HWR_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
+    PRACTITIONER_REGISTRY_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
+    FACILITY_SEARCH_URL: getEnv('HIE_FACILITY_SEARCH_URL', '/v1/facility-search'),
     CONSUMER_KEY: getEnv('HIE_CONSUMER_KEY'),
     USERNAME: getEnv('HIE_USERNAME'),
     PASSWORD: getEnv('HIE_PASSWORD')
   },
-  AMRS: {
-    BASE_URL: getEnv('AMRS_BASE_URL'),
-    USERNAME: getEnv('AMRS_USERNAME'),
-    PASSWORD: getEnv('AMRS_PASSWORD'),
-    NATIONAL_ID_TYPE_UUID: getEnv('AMRS_NATIONAL_ID_TYPE_UUID'),
-    SHA_ID_TYPE_UUID: getEnv('AMRS_SHA_ID_TYPE_UUID'),
-    HOUSEHOLD_ID_TYPE_UUID: getEnv('AMRS_HOUSEHOLD_ID_TYPE_UUID')
-  }
 };

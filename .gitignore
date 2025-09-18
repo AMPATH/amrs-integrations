@@ -113,6 +113,11 @@ build/
 
 #all DSstore files
 *.DS_Store
+<<<<<<< HEAD
 packages/priv.txt
 packages/pub.key
 packages/shr.json
+=======
+
+app/keys/
+>>>>>>> hie-integration

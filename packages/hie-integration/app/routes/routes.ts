@@ -1,65 +1,14 @@
 import Joi from "joi";
 import { ServerRoute } from "@hapi/hapi";
 import { ClientRegistryService } from "../services/client-registry/client-registry.service";
-import { HwrService } from "../services/hwr/hwr.service";
-import { SHRService } from "../services/shr/shr.service";
+import { FacilityRegistryService } from "../services/facility-registry/facility-registry.service";
 import { logger } from "../utils/logger";
-import { FhirBundle } from "../types/hie.type";
+import {  FhirBundle, IdentifierType, PatientSearchPayload } from "../types/hie.type";
+import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
+import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
+import { SHRService } from "../services/shr/shr.service";
 
 export const routes = (): ServerRoute[] => [
-  // Client Registry Endpoints
-  {
-    method: "POST",
-    path: "/hie/client/sync",
-    options: {
-      validate: {
-        payload: Joi.object({
-          identificationNumber: Joi.string()
-            .required()
-            .pattern(/^\d+$/)
-            .description("National ID number"),
-          identificationNumbeType: Joi.string()
-            .optional()
-            .default("National ID")
-            .valid("National ID", "passport")
-            .description("Identification type"),
-        }),
-      },
-      tags: ["api", "hie", "client-registry"],
-      description: "Sync patient data from HIE client registry",
-      notes:
-        "Fetches patient data from national registry, compares with AMRS, and updates if necessary",
-    },
-    handler: async (request, h) => {
-      const {
-        identificationNumber,
-        identificationNumbeType,
-      } = request.payload as {
-        identificationNumber: string;
-        identificationNumbeType: string;
-      };
-      const service = new ClientRegistryService();
-
-      try {
-        const result = await service.syncPatient(
-          identificationNumber,
-          identificationNumbeType
-        );
-        logger.info(`Patient sync successful: ${identificationNumber}`);
-        return h.response(result).code(200);
-      } catch (error: any) {
-        logger.error(
-          `Patient sync failed: ${identificationNumber} - ${error.message}`
-        );
-        return h
-          .response({
-            error: "Patient sync failed",
-            details: error.message,
-          })
-          .code(400);
-      }
-    },
-  },
   {
     method: "POST",
     path: "/hie/client/search",
@@ -69,7 +18,7 @@ export const routes = (): ServerRoute[] => [
           identificationNumber: Joi.required().description(
             "Identification number"
           ),
-          identificationNumbeType: Joi.string()
+          identificationType: Joi.string()
             .required()
             .valid("National ID", "passport")
             .description("Identification Type"),
@@ -83,17 +32,14 @@ export const routes = (): ServerRoute[] => [
     handler: async (request, h) => {
       const {
         identificationNumber,
-        identificationNumbeType,
-      } = request.payload as {
-        identificationNumber: string;
-        identificationNumbeType: string;
-      };
+        identificationType,
+      } = request.payload as PatientSearchPayload;
       const service = new ClientRegistryService();
 
       try {
         const result = await service.fetchPatientFromHie(
           identificationNumber,
-          identificationNumbeType
+          identificationType
         );
         return h.response(result).code(200);
       } catch (error: any) {
@@ -109,102 +55,258 @@ export const routes = (): ServerRoute[] => [
       }
     },
   },
-  // HWR Search Endpoint
   {
-    method: "GET",
-    path: "/hie/hwr/search",
+    method: "POST",
+    path: "/hie/client/validate-custom-otp",
     options: {
       validate: {
-        query: Joi.object({
-          nationalId: Joi.string()
-            .required()
-            .pattern(/^\d+$/)
-            .description("National ID number"),
-          idType: Joi.string()
-            .optional()
-            .default("national-id")
-            .valid("national-id", "passport")
-            .description("Identification type"),
+        payload: Joi.object({
+          sessionId: Joi.string().required(),
+          otp: Joi.string().required(),
         }),
       },
-      tags: ["api", "hie", "hwr"],
-      description: "Search for health worker in HWR",
-      notes: "Directly searches the health worker registry by national ID",
+      tags: ["api", "hie", "client-registry", "otp"],
+      description: "Validate OTP and search for patient",
     },
     handler: async (request, h) => {
-      const { nationalId, idType } = request.query as {
-        nationalId: string;
-        idType: string;
+      const { sessionId, otp } = request.payload as {
+        sessionId: string;
+        otp: string;
       };
-      const service = new HwrService();
+
+      const service = new ClientRegistryService();
 
       try {
-        const result = await service.fetchPractitionerFromHie(
-          nationalId,
-          idType
-        );
-        return h.response(result).code(200);
-      } catch (error: any) {
-        logger.error(`HWR search failed: ${nationalId} - ${error.message}`);
+        const result = await service.validateOtp(sessionId, otp);
+
         return h
           .response({
-            error: "HWR search failed",
+            data: {
+              identification_type: result.identificationType,
+              identification_number: result.identificationNumber,
+              status: result.status,
+            }, 
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`OTP validation failed: ${error.message}`);
+        return h
+          .response({
+            error: "OTP validation failed",
             details: error.message,
           })
           .code(400);
       }
     },
   },
-
-  // Health Worker Registry Endpoints
   {
     method: "POST",
-    path: "/hie/hwr/refresh-license",
+    path: "/hie/client/send-custom-otp",
     options: {
       validate: {
         payload: Joi.object({
-          nationalId: Joi.string()
-            .required()
-            .pattern(/^\d+$/)
-            .description("National ID number"),
-          idType: Joi.string()
-            .optional()
-            .default("national-id")
-            .valid("national-id", "passport")
-            .description("Identification type"),
-          providerUuid: Joi.string()
-            .optional()
-            .description("AMRS provider UUID"),
+          identificationNumber: Joi.string().required(),
+          identificationType: Joi.string()
+            .valid("National ID", "passport")
+            .default("National ID"),
         }),
       },
-      tags: ["api", "hie", "hwr"],
-      description: "Refresh health worker license status",
-      notes:
-        "Checks latest license status from national registry and updates AMRS provider record",
+      tags: ["api", "hie", "client-registry", "otp"],
+      description: "Send OTP to patient's phone number",
     },
     handler: async (request, h) => {
-      const { nationalId, idType, providerUuid } = request.payload as {
-        nationalId: string;
-        idType: string;
-        providerUuid?: string;
-      };
-      const service = new HwrService();
+      const {
+        identificationNumber,
+        identificationType,
+      } = request.payload as PatientSearchPayload;
+
+      const service = new ClientRegistryService();
 
       try {
-        const result = await service.updateLicenseStatus(
-          nationalId,
-          providerUuid,
-          idType
+        const result = await service.sendOtp(
+          identificationNumber,
+          identificationType
         );
-        logger.info(`License refresh successful: ${nationalId}`);
+
+        return h
+          .response({
+            message: "OTP sent successfully",
+            sessionId: result.sessionId,
+            maskedPhone: result.maskedPhone,
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`OTP sending failed: ${error.message}`);
+        return h
+          .response({
+            error: "OTP sending failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/practitioner/search",
+    options: {
+      validate: {
+        query: Joi.object({
+          identifierValue: Joi.string()
+            .required()
+            .description(
+              "Identifier value (e.g. National ID, Passport number)"
+            ),
+          identifierType: Joi.string()
+            .required()
+            .valid(...Object.values(IdentifierType))
+            .default(IdentifierType.NATIONAL_ID)
+            .description("Type of identifier"),
+          refresh: Joi.boolean()
+            .default(false)
+            .description("Force synchronization with HIE registry"),
+        }),
+      },
+      tags: ["api", "hie", "practitioner-registry"],
+      description: "Search for health practitioner in Practitioner Registry",
+      notes:
+        "Searches the national practitioner registry by ID, with local storage",
+    },
+    handler: async (request, h) => {
+      const { identifierValue, identifierType, refresh } = request.query as {
+        identifierValue: string;
+        identifierType: IdentifierType;
+        refresh: boolean;
+      };
+
+      const service = new PractitionerRegistryService();
+
+      try {
+        const result = await service.getPractitioner(
+          { type: identifierType, value: identifierValue },
+          { refresh }
+        );
+
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `License refresh failed: ${nationalId} - ${error.message}`
+          `Practitioner search failed: ${identifierValue} - ${error.message}`
+        );
+
+        return h
+          .response({
+            error: "Practitioner search failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/amrs/providers/active",
+    options: {
+      tags: ["api", "amrs", "providers"],
+      description: "Get active providers from AMRS database",
+      notes:
+        "Returns providers who have been active in the last 12 months at the specified location",
+      validate: {
+        query: Joi.object({
+          locationUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("UUID of the location to filter providers by"),
+        }),
+      },
+    },
+    handler: async (request, h) => {
+      const { locationUuid } = request.query;
+      const service = new AmrsProviderService();
+
+      try {
+        const result = await service.getActiveProviders(locationUuid);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(`AMRS providers fetch failed: ${error.message}`);
+        return h
+          .response({
+            error: "Failed to fetch providers from AMRS",
+            details: error.message,
+          })
+          .code(500);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/amrs/provider/national-id",
+    options: {
+      tags: ["api", "amrs", "provider"],
+      description: "Get provider by national ID from AMRS database",
+      notes:
+        "Returns provider matching the provided national ID (partial or full match)",
+      validate: {
+        query: Joi.object({
+          nationalId: Joi.string()
+            .required()
+            .description(
+              "National ID to search for (supports partial matching)"
+            ),
+        }),
+      },
+    },
+    handler: async (request, h) => {
+      const { nationalId } = request.query;
+      const service = new AmrsProviderService();
+
+      try {
+        const result = await service.getProviderByNationalId(nationalId);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(
+          `AMRS providers fetch by national ID failed: ${error.message}`
         );
         return h
           .response({
-            error: "License refresh failed",
+            error: "Failed to fetch providers by national ID from AMRS",
+            details: error.message,
+          })
+          .code(500);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/facility/search",
+    options: {
+      validate: {
+        query: Joi.object({
+          facilityCode: Joi.string()
+            .required()
+            .pattern(/^\d+$/)
+            .description("Facility code as assigned in HIE (e.g. 24749)"),
+        }),
+      },
+      tags: ["api", "hie", "facility-registry"],
+      description: "Search for a healthcare facility in the Facility Registry",
+      notes: "Proxies the HIE /v1/facility-search endpoint using facility_code",
+    },
+    handler: async (request, h) => {
+      const { facilityCode } = request.query as { facilityCode: string };
+      const service = new FacilityRegistryService();
+
+      try {
+        const result = await service.searchFacilityByCode(facilityCode);
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(
+          `Facility search failed: ${facilityCode} - ${error.message}`
+        );
+        return h
+          .response({
+            error: "Facility search failed",
             details: error.message,
           })
           .code(400);
@@ -291,7 +393,7 @@ export const routes = (): ServerRoute[] => [
   // Health Check Endpoint
   {
     method: "GET",
-    path: "/health",
+    path: "/hie/health",
     options: {
       tags: ["api", "monitoring"],
       description: "Service health check",

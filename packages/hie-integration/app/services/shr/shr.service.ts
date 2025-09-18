@@ -4,7 +4,6 @@ import {
   FhirBundle,
   EncryptedClientResp,
 } from "../../types/hie.type";
-import { AmrsService } from "../amrs/amrs.service";
 import { logger } from "../../utils/logger";
 import { HieHttpClient } from "../../utils/http-client";
 import { EncounterResource, MedicationRequestResource, ObservationResource } from "../../types/shr";
@@ -12,7 +11,6 @@ import { EncounterResource, MedicationRequestResource, ObservationResource } fro
 
 export class SHRService {
     private httpClient = new HieHttpClient();
-    private amrsService = new AmrsService();
 
     async fetchPatientFromSHR(
         cr_id: string

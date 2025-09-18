@@ -7,6 +7,13 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Configuration files
+app/config/config.json
+app/config/*.json
+build-docker.sh
+
+
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -108,3 +115,5 @@ build/
 /app/poc_sample_payload.ts
 /app/sample_data.ts
 token.txt
+
+app/keys/

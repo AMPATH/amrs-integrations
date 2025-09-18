@@ -19,6 +19,8 @@ export default {
     BASE_URL: getEnv('HIE_BASE_URL', 'https://uat.dha.go.ke'),
     AUTH_URL: getEnv('HIE_AUTH_URL', '/v1/hie-auth'),
     CLIENT_REGISTRY_URL: getEnv('HIE_CLIENT_REGISTRY_URL', '/v3/client-registry/fetch-client'),
+    SHR_FETCH_URL: getEnv('HIE_SHR_FETCH_URL', '/v1/shr/summary'),
+    SHR_POST_BUNDLE_URL: getEnv('HIE_SHR_POST_BUNDLE_URL', '/v1/shr-med/bundle'),
     AGENT: process.env.HIE_AGENT,
     HWR_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
     CONSUMER_KEY: getEnv('HIE_CONSUMER_KEY'),

@@ -113,3 +113,6 @@ build/
 
 #all DSstore files
 *.DS_Store
+packages/priv.txt
+packages/pub.key
+packages/shr.json

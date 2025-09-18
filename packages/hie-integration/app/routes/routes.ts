@@ -2,7 +2,9 @@ import Joi from "joi";
 import { ServerRoute } from "@hapi/hapi";
 import { ClientRegistryService } from "../services/client-registry/client-registry.service";
 import { HwrService } from "../services/hwr/hwr.service";
+import { SHRService } from "../services/shr/shr.service";
 import { logger } from "../utils/logger";
+import { FhirBundle } from "../types/hie.type";
 
 export const routes = (): ServerRoute[] => [
   // Client Registry Endpoints
@@ -203,6 +205,82 @@ export const routes = (): ServerRoute[] => [
         return h
           .response({
             error: "License refresh failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  // SHR Fetch Endpoint
+  {
+    method: "GET",
+    path: "/v1/shr/summary",
+    options: {
+      validate: {
+        query: Joi.object({
+          cr_id: Joi.string()
+            .required()
+            .description("Client Registry ID (CRXXXXX)"),
+        }),
+      },
+      tags: ["api", "shr"],
+      description: "Fetch SHR summary data by Client Registry ID",
+      notes: "Retrieves summary data from SHR using the provided CR ID",
+    },
+    handler: async (request, h) => {
+      const { cr_id } = request.query as { cr_id: string };
+      try {
+        const service = new SHRService();
+        const data = await service.fetchPatientFromSHR(cr_id);
+        return h.response(data).code(200);
+      } catch (error: any) {
+        logger.error(`SHR summary fetch failed: ${cr_id} - ${error.message}`);
+        return h
+          .response({
+            error: "SHR summary fetch failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+
+  // SHR Post Bundle Endpoint
+  {
+    method: "POST",
+    path: "/v1/shr/bundle",
+    options: {
+      validate: {
+        payload:
+          Joi.object({
+            resourceType: Joi.string().required(),
+            type: Joi.string().required(),
+            entry: Joi.array()
+              .items(
+                Joi.object({
+                  fullUrl: Joi.string().optional(),
+                  resource: Joi.object().required(),
+                }).unknown(true)
+              )
+              .required(),
+          }).unknown(true)
+      },
+      tags: ["api", "shr"],
+      description: "Post bundle to SHR",
+      notes: "Posts bundle to SHR",
+    },
+    handler: async (request, h) => {
+      const payload = request.payload as any;
+      const bundle = (payload && payload.bundle) ? payload.bundle : payload as FhirBundle<any>;
+      const service = new SHRService();
+      try {
+        const data = await service.postBundleToSHR(bundle);
+        return h.response(data).code(200);
+      } catch (error: any) {
+        logger.error(`SHR bundle post failed: ${error.message}`);
+        return h
+          .response({
+            error: "SHR bundle post failed",
             details: error.message,
           })
           .code(400);

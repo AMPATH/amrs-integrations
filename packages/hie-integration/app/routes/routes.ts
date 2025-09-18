@@ -19,7 +19,7 @@ export const routes = (): ServerRoute[] => [
           ),
           identificationType: Joi.string()
             .required()
-            .valid("National ID", "passport")
+            .valid(...Object.values(IdentifierType))
             .description("Identification Type"),
         }),
       },
@@ -106,7 +106,7 @@ export const routes = (): ServerRoute[] => [
         payload: Joi.object({
           identificationNumber: Joi.string().required(),
           identificationType: Joi.string()
-            .valid("National ID", "passport")
+            .valid(...Object.values(IdentifierType))
             .default("National ID"),
         }),
       },

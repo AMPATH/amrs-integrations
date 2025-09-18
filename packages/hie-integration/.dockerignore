@@ -20,6 +20,8 @@ coverage
 config/config.json
 config/*.json
 
+keys/
+
 
 # Ignore editor and IDE files
 .idea

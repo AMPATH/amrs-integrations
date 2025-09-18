@@ -3,7 +3,7 @@ import { ServerRoute } from "@hapi/hapi";
 import { ClientRegistryService } from "../services/client-registry/client-registry.service";
 import { FacilityRegistryService } from "../services/facility-registry/facility-registry.service";
 import { logger } from "../utils/logger";
-import { IdentifierType } from "../types/hie.type";
+import { IdentifierType, PatientSearchPayload } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 
@@ -17,7 +17,7 @@ export const routes = (): ServerRoute[] => [
           identificationNumber: Joi.required().description(
             "Identification number"
           ),
-          identificationNumbeType: Joi.string()
+          identificationType: Joi.string()
             .required()
             .valid("National ID", "passport")
             .description("Identification Type"),
@@ -31,17 +31,14 @@ export const routes = (): ServerRoute[] => [
     handler: async (request, h) => {
       const {
         identificationNumber,
-        identificationNumbeType,
-      } = request.payload as {
-        identificationNumber: string;
-        identificationNumbeType: string;
-      };
+        identificationType,
+      } = request.payload as PatientSearchPayload;
       const service = new ClientRegistryService();
 
       try {
         const result = await service.fetchPatientFromHie(
           identificationNumber,
-          identificationNumbeType
+          identificationType
         );
         return h.response(result).code(200);
       } catch (error: any) {
@@ -51,6 +48,97 @@ export const routes = (): ServerRoute[] => [
         return h
           .response({
             error: "Patient search failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/client/validate-custom-otp",
+    options: {
+      validate: {
+        payload: Joi.object({
+          sessionId: Joi.string().required(),
+          otp: Joi.string().required(),
+        }),
+      },
+      tags: ["api", "hie", "client-registry", "otp"],
+      description: "Validate OTP and search for patient",
+    },
+    handler: async (request, h) => {
+      const { sessionId, otp } = request.payload as {
+        sessionId: string;
+        otp: string;
+      };
+
+      const service = new ClientRegistryService();
+
+      try {
+        const result = await service.validateOtp(sessionId, otp);
+
+        return h
+          .response({
+            data: {
+              identification_type: result.identificationType,
+              identification_number: result.identificationNumber,
+              status: result.status,
+            }, 
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`OTP validation failed: ${error.message}`);
+        return h
+          .response({
+            error: "OTP validation failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/client/send-custom-otp",
+    options: {
+      validate: {
+        payload: Joi.object({
+          identificationNumber: Joi.string().required(),
+          identificationType: Joi.string()
+            .valid("National ID", "passport")
+            .default("National ID"),
+        }),
+      },
+      tags: ["api", "hie", "client-registry", "otp"],
+      description: "Send OTP to patient's phone number",
+    },
+    handler: async (request, h) => {
+      const {
+        identificationNumber,
+        identificationType,
+      } = request.payload as PatientSearchPayload;
+
+      const service = new ClientRegistryService();
+
+      try {
+        const result = await service.sendOtp(
+          identificationNumber,
+          identificationType
+        );
+
+        return h
+          .response({
+            message: "OTP sent successfully",
+            sessionId: result.sessionId,
+            maskedPhone: result.maskedPhone,
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`OTP sending failed: ${error.message}`);
+        return h
+          .response({
+            error: "OTP sending failed",
             details: error.message,
           })
           .code(400);
@@ -150,39 +238,44 @@ export const routes = (): ServerRoute[] => [
     },
   },
   {
-  method: "GET",
-  path: "/hie/amrs/provider/national-id",
-  options: {
-    tags: ["api", "amrs", "provider"],
-    description: "Get provider by national ID from AMRS database",
-    notes: "Returns provider matching the provided national ID (partial or full match)",
-    validate: {
-      query: Joi.object({
-        nationalId: Joi.string()
-          .required()
-          .description("National ID to search for (supports partial matching)"),
-      }),
+    method: "GET",
+    path: "/hie/amrs/provider/national-id",
+    options: {
+      tags: ["api", "amrs", "provider"],
+      description: "Get provider by national ID from AMRS database",
+      notes:
+        "Returns provider matching the provided national ID (partial or full match)",
+      validate: {
+        query: Joi.object({
+          nationalId: Joi.string()
+            .required()
+            .description(
+              "National ID to search for (supports partial matching)"
+            ),
+        }),
+      },
+    },
+    handler: async (request, h) => {
+      const { nationalId } = request.query;
+      const service = new AmrsProviderService();
+
+      try {
+        const result = await service.getProviderByNationalId(nationalId);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(
+          `AMRS providers fetch by national ID failed: ${error.message}`
+        );
+        return h
+          .response({
+            error: "Failed to fetch providers by national ID from AMRS",
+            details: error.message,
+          })
+          .code(500);
+      }
     },
   },
-  handler: async (request, h) => {
-    const { nationalId } = request.query;
-    const service = new AmrsProviderService();
-
-    try {
-      const result = await service.getProviderByNationalId(nationalId);
-
-      return h.response(result).code(200);
-    } catch (error: any) {
-      logger.error(`AMRS providers fetch by national ID failed: ${error.message}`);
-      return h
-        .response({
-          error: "Failed to fetch providers by national ID from AMRS",
-          details: error.message,
-        })
-        .code(500);
-    }
-  },
-},
   {
     method: "GET",
     path: "/hie/facility/search",

@@ -1,14 +1,14 @@
 import axios from "axios";
 import config from "../../config/env";
-import {
-  EncryptedClientResp,
-} from "../../types/hie.type";
+import { EncryptedClientResp } from "../../types/hie.type";
 import { logger } from "../../utils/logger";
 import { HieHttpClient } from "../../utils/http-client";
 import { decryptData } from "../../utils/descrypt-data";
+import { OtpService } from "./otp.service";
 
 export class ClientRegistryService {
   private httpClient = new HieHttpClient();
+  private otpService = new OtpService();
 
   async fetchPatientFromHie(
     identificationNumber: string,
@@ -32,19 +32,30 @@ export class ClientRegistryService {
         const patientData = response.data.message.result.map((d) => {
           return decryptData(d._pii);
         });
-
         return patientData;
       }
       return response.data.message.result || [];
     } catch (error: any) {
-      console.log("error", error);
       logger.error(`HIE client registry request failed: ${error.message}`);
-      throw new Error(
-        `Failed to fetch patient from HIE: ${
-          error.response?.data || error.message
-        }`
-      );
+      throw error;
     }
   }
 
+  async sendOtp(
+    identificationNumber: string,
+    identificationType: string = "National ID"
+  ): Promise<{ sessionId: string; maskedPhone: string }> {
+    return this.otpService.sendOtp(identificationNumber, identificationType);
+  }
+
+  async validateOtp(
+    sessionId: string,
+    otp: string
+  ): Promise<{
+    status: string;
+    identificationNumber?: string;
+    identificationType?: string;
+  }> {
+    return this.otpService.validateOtp(sessionId, otp);
+  }
 }

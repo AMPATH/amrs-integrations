@@ -121,14 +121,24 @@ export enum IdentifierType {
   NATIONAL_ID = "National ID",
   ALIEN_ID = "Alien ID",
   PASSPORT = "passport",
-  WORK_PERMIT = "work-permit",
-  DRIVER_LICENSE = "driver-license"
+  MANDATE_NUMBER = "Mandate Number",
+  REFUGEE_ID = "Refugee ID",
+  REGISTRATION_NUMBER = "Registration No",
+  LICENSE_NO = "License No",
 }
 
 
 export interface Identifier {
   type: IdentifierType;
   value: string;
+}
+
+export interface PatientSearchPayload {
+  identificationNumber: string;
+  identificationType: IdentifierType;
+  sessionId?: string;
+  otp?: string;
+  skipOtp?: boolean;
 }
 
 export interface PractitionerRegistryResponse {

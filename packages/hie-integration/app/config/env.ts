@@ -28,4 +28,12 @@ export default {
     USERNAME: getEnv('HIE_USERNAME'),
     PASSWORD: getEnv('HIE_PASSWORD')
   },
+  AMRS_FHIR: {
+    BASE_URL: getEnv('AMRS_FHIR_BASE_URL', 'https://ngx.ampath.or.ke/amrs/ws/fhir2/R4'),
+  },
+  AMRS : {
+    BASE_URL: getEnv('AMRS_BASE_URL', 'https://ngx.ampath.or.ke/amrs/ws/fhir2/R4'),
+    USERNAME: getEnv('AMRS_USERNAME'),
+    PASSWORD: getEnv('AMRS_PASSWORD')
+  }
 };

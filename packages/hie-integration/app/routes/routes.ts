@@ -3,7 +3,11 @@ import { ServerRoute } from "@hapi/hapi";
 import { ClientRegistryService } from "../services/client-registry/client-registry.service";
 import { FacilityRegistryService } from "../services/facility-registry/facility-registry.service";
 import { logger } from "../utils/logger";
-import {  FhirBundle, IdentifierType, PatientSearchPayload } from "../types/hie.type";
+import {
+  FhirBundle,
+  IdentifierType,
+  PatientSearchPayload,
+} from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
@@ -85,7 +89,7 @@ export const routes = (): ServerRoute[] => [
               identification_type: result.identificationType,
               identification_number: result.identificationNumber,
               status: result.status,
-            }, 
+            },
           })
           .code(200);
       } catch (error: any) {
@@ -353,19 +357,18 @@ export const routes = (): ServerRoute[] => [
     path: "/v1/shr/bundle",
     options: {
       validate: {
-        payload:
-          Joi.object({
-            resourceType: Joi.string().required(),
-            type: Joi.string().required(),
-            entry: Joi.array()
-              .items(
-                Joi.object({
-                  fullUrl: Joi.string().optional(),
-                  resource: Joi.object().required(),
-                }).unknown(true)
-              )
-              .required(),
-          }).unknown(true)
+        payload: Joi.object({
+          resourceType: Joi.string().required(),
+          type: Joi.string().required(),
+          entry: Joi.array()
+            .items(
+              Joi.object({
+                fullUrl: Joi.string().optional(),
+                resource: Joi.object().required(),
+              }).unknown(true)
+            )
+            .required(),
+        }).unknown(true),
       },
       tags: ["api", "shr"],
       description: "Post bundle to SHR",
@@ -373,7 +376,10 @@ export const routes = (): ServerRoute[] => [
     },
     handler: async (request, h) => {
       const payload = request.payload as any;
-      const bundle = (payload && payload.bundle) ? payload.bundle : payload as FhirBundle<any>;
+      const bundle =
+        payload && payload.bundle
+          ? payload.bundle
+          : (payload as FhirBundle<any>);
       const service = new SHRService();
       try {
         const data = await service.postBundleToSHR(bundle);
@@ -386,6 +392,90 @@ export const routes = (): ServerRoute[] => [
             details: error.message,
           })
           .code(400);
+      }
+    },
+  },
+
+  // SHR Batch job endpoint
+  {
+    method: "POST",
+    path: "/v1/shr/batch-job",
+    options: {
+      validate: {
+        payload: Joi.object({
+          date: Joi.string()
+            .optional()
+            .description(
+              "Date to process (YYYY-MM-DD format), defaults to yesterday"
+            ),
+        }),
+      },
+      tags: ["api", "shr", "batch"],
+      description: "Trigger SHR batch job for processing closed visits",
+      notes:
+        "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
+    },
+    handler: async (request, h) => {
+      const { date } = request.payload as { date?: string };
+
+      try {
+        const service = new SHRService();
+        const jobDate = date ? new Date(date) : new Date();
+        const result = await service.executeBatchJob(jobDate);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(`SHR batch job failed: ${error.message}`);
+        return h
+          .response({
+            error: "SHR batch job failed",
+            details: error.message,
+          })
+          .code(500);
+      }
+    },
+  },
+
+  {
+    method: "POST",
+    path: "/v1/shr/test-patient-bundle",
+    options: {
+      validate: {
+        payload: Joi.object({
+          patientUuid: Joi.string()
+            .required()
+            .description("Patient UUID to test"),
+          date: Joi.string()
+            .optional()
+            .description(
+              "Date to use for testing (YYYY-MM-DD format), defaults to yesterday"
+            ),
+        }),
+      },
+      tags: ["api", "shr", "test"],
+      description: "Test bundle generation for a single patient",
+      notes:
+        "Generates a bundle for the specified patient without pushing to SHR, for testing purposes",
+    },
+    handler: async (request, h) => {
+      const { patientUuid, date } = request.payload as {
+        patientUuid: string;
+        date?: string;
+      };
+
+      try {
+        const service = new SHRService();
+        const result = await service.testPatientBundle(patientUuid, date);
+
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(`SHR test bundle generation failed: ${error.message}`);
+        return h
+          .response({
+            error: "SHR test bundle generation failed",
+            details: error.message,
+          })
+          .code(500);
       }
     },
   },

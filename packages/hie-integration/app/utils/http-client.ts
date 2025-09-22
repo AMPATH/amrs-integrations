@@ -1,15 +1,16 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { TokenService } from "../services/auth/token.service";
 import { logger } from "./logger";
-import config from "../config/env";
 
 export class HieHttpClient {
   private axiosInstance: AxiosInstance;
   private tokenService: TokenService;
+  private baseURL: string;
 
-  constructor() {
+  constructor(baseURL: string) {
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
+    this.baseURL = baseURL;
 
     this.setupInterceptors();
   }
@@ -64,7 +65,7 @@ export class HieHttpClient {
 
   async get<T>(url: string, params?: any): Promise<AxiosResponse<T>> {
     return this.axiosInstance.get<T>(url, {
-      baseURL: config.HIE.BASE_URL,
+      baseURL: this.baseURL,
       params,
       timeout: 10000,
     });
@@ -72,8 +73,10 @@ export class HieHttpClient {
 
   async post<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
     return this.axiosInstance.post<T>(url, data, {
-      baseURL: config.HIE.BASE_URL,
+      baseURL: this.baseURL,
       timeout: 10000,
     });
   }
 }
+
+

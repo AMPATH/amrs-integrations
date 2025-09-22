@@ -4,7 +4,7 @@ import { logger } from "../../utils/logger";
 import { FacilitySearchResponse } from "../../types/hie.type";
 
 export class FacilityRegistryService {
-  private httpClient = new HieHttpClient();
+  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
 
   async searchFacilityByCode(facilityCode: string): Promise<FacilitySearchResponse> {
     try {

@@ -7,7 +7,7 @@ import { decryptData } from "../../utils/descrypt-data";
 import { OtpService } from "./otp.service";
 
 export class ClientRegistryService {
-  private httpClient = new HieHttpClient();
+  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
   private otpService = new OtpService();
 
   async fetchPatientFromHie(

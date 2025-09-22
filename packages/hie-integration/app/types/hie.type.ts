@@ -123,8 +123,8 @@ export enum IdentifierType {
   PASSPORT = "passport",
   MANDATE_NUMBER = "Mandate Number",
   REFUGEE_ID = "Refugee ID",
-  REGISTRATION_NUMBER = "Registration No",
-  LICENSE_NO = "License No",
+  REGISTRATION_NUMBER = "registration_number",
+  LICENSE_NO = "id",
 }
 
 

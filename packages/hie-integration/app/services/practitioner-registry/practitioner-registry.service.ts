@@ -1,12 +1,16 @@
 import { PractitionerRepository } from "../../repositories/PractitionerRepository";
-import { Identifier, PractitionerRegistryResponse } from "../../types/hie.type";
+import {
+  Identifier,
+  IdentifierType,
+  PractitionerRegistryResponse,
+} from "../../types/hie.type";
 import { HieHttpClient } from "../../utils/http-client";
 import config from "../../config/env";
 import { logger } from "../../utils/logger";
 
 export class PractitionerRegistryService {
   private repository: PractitionerRepository;
-  private httpClient = new HieHttpClient();
+  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
 
   constructor() {
     this.repository = new PractitionerRepository();
@@ -51,12 +55,36 @@ export class PractitionerRegistryService {
     identifier: Identifier
   ): Promise<PractitionerRegistryResponse> {
     try {
+      let queryParams: Record<string, string>;
+
+      switch (identifier.type) {
+        case IdentifierType.REGISTRATION_NUMBER:
+          queryParams = {
+            registration_number: identifier.value,
+          };
+          break;
+
+        case IdentifierType.LICENSE_NO:
+          queryParams = {
+            id: identifier.value,
+          };
+          break;
+
+        default:
+          queryParams = {
+            identification_type: identifier.type,
+            identification_number: identifier.value,
+          };
+          break;
+      }
+
+      const queryString = new URLSearchParams(queryParams).toString();
+      const fullUrl = `${config.HIE.BASE_URL}${config.HIE.PRACTITIONER_REGISTRY_URL}`;
+      const urlForLogging = `${fullUrl}?${queryString}`;
+
       const response = await this.httpClient.get<PractitionerRegistryResponse>(
         config.HIE.PRACTITIONER_REGISTRY_URL,
-        {
-          identification_type: identifier.type,
-          identification_number: identifier.value,
-        }
+        queryParams
       );
 
       if (response.data.message.found === 0) {

@@ -46,7 +46,7 @@ export class FhirTransformer {
         bundle,
         transformedObs,
         "Observation",
-        "CR9852923595991-0"
+        "CR7671914222027-5"
       );
     }
 
@@ -74,6 +74,55 @@ export class FhirTransformer {
     return bundle;
   }
 
+  async transformRev(patientData: PatientData): Promise<any> {
+    const {
+      patient,
+      encounters,
+      observationsByEncounter,
+      dateContext,
+    } = patientData;
+
+    const bundle: any = {
+      resourceType: "Bundle",
+      id: `batch-${uuidv4()}`,
+      type: "batch",
+      timestamp: new Date().toISOString(),
+      entry: [],
+    };
+
+    for (const encounter of encounters) {
+      // Transform Encounter
+      const transformedEncounter = await this.transformEncounter(
+        encounter,
+        patient
+      );
+      this.addBundleEntry(bundle, transformedEncounter, "Encounter");
+
+      // Transform linked Observations
+      const linkedObservations = observationsByEncounter[encounter.id] || [];
+          const sampleObservations = linkedObservations.slice(0, 5);
+
+      for (const observation of sampleObservations) {
+        const transformedObs = await this.transformObservationRev(
+          observation,
+          patient,
+          encounter
+        );
+        this.addBundleEntry(bundle, transformedObs, "Observation");
+      }
+    }
+
+    logger.debug(
+      {
+        patient: patient.id,
+        entries: bundle.entry.length,
+      },
+      "Bundle transformed successfully"
+    );
+
+    return bundle;
+  }
+
   private addBundleEntry(
     bundle: any,
     resource: any,
@@ -85,7 +134,7 @@ export class FhirTransformer {
       resource,
       request: {
         method: "POST",
-        url: resourceType,
+        url: "Patient",//resourceType,
       },
     };
 
@@ -124,7 +173,7 @@ export class FhirTransformer {
     ];
 
     // Transform patient reference - this is probably wrong since we can get CR_ID from patient resource
-    const shrPatientId = "CR9852923595991-0"; //this.mappings.patientMap.get(patient.id);
+    const shrPatientId = "CR7671914222027-5"; //this.mappings.patientMap.get(patient.id);
     // if (!shrPatientId) {
     //   throw new Error(
     //     `No SHR patient ID mapping found for local ID: ${patient.id}`
@@ -215,6 +264,52 @@ export class FhirTransformer {
     return transformedEncounter;
   }
 
+  private async transformObservationRev(
+    observation: any,
+    patient: any,
+    encounter: any
+  ): Promise<any> {
+    const transformedObs = { ...observation };
+
+    removeFields(transformedObs, [
+      "text",
+      "partOf",
+      "meta",
+      "referenceRange",
+      "hasMember",
+    ]);
+
+    const shrPatientId = "CR7671914222027-5"; // mapping logic 
+
+    transformedObs.subject = {
+      reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
+      type: "Patient",
+      identifier: {
+        use: "official",
+        system: "https://cr.kenya-hie.health/api/v4/Patient",
+        value: shrPatientId,
+      },
+    };
+
+    // Include encounter reference
+    transformedObs.encounter = {
+      reference: `urn:uuid:${encounter.id}`,
+    };
+
+    const shrPractitionerId = "PUID-0155222-4"; // mapping logic
+    transformedObs.performer = {
+      reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`,
+      identifier: [
+        {
+          system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
+          value: shrPractitionerId,
+        },
+      ],
+    };
+
+    return transformedObs;
+  }
+
   private async transformObservation(
     observation: any,
     patient: any
@@ -234,7 +329,7 @@ export class FhirTransformer {
     removeFields(transformedObs, fieldsToRemove);
 
     // const shrPatientId = this.mappings.patientMap.get(patient.id);
-    const shrPatientId = "CR9852923595991-0"; //this.mappings.patientMap.get(patient.id);
+    const shrPatientId = "CR7671914222027-5"; //this.mappings.patientMap.get(patient.id);
 
     // if (!shrPatientId) {
     //   throw new Error(

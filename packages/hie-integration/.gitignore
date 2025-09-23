@@ -11,6 +11,7 @@ lerna-debug.log*
 app/config/config.json
 app/config/*.json
 build-docker.sh
+app/config/*.log
 
 
 

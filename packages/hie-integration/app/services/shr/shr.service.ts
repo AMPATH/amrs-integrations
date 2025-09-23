@@ -82,18 +82,17 @@ export class SHRService {
     );
 
     try {
-      const patientData = await this.amrsFhirClient.getPatientDataForDate(
+      const patientData = await this.amrsFhirClient.getPatientDataForDateRevApproach(
         patientUuid,
         formattedDate
       );
-      // console.log("patientData", JSON.stringify(patientData.observations, null, 2));
 
-      const shrBundle = await this.transformer.transform(patientData);
+      const shrBundle = await this.transformer.transformRev(patientData);
       // console.log("shrBundle", JSON.stringify(shrBundle, null, 2));
 
-      // return shrBundle;
+      return shrBundle;
       const response = await this.shrFhirClient.postBundle(shrBundle);
-      console.log("-------------------------------")
+      console.log("-------------------------------");
       console.log("response", JSON.stringify(response, null, 2));
 
       logger.info(
@@ -215,63 +214,4 @@ export class SHRService {
       }
     }
   }
-
-  // async fetchLatestPatientVisitFromAMRS(
-  //   patientId: string
-  // ): Promise<any> {
-  //   try {
-  //     const response: FhirBundle<EncounterResource> = await this.amrsService.getLatestPatientVisit(patientId);
-  //     return response || [];
-  //   } catch (error: any) {
-  //     logger.error(`AMRS encounter fetch failed: ${error.message}`);
-  //     throw new Error(
-  //       error.response?.data
-  //     );
-  //   }
-  // }
-
-  // async fetchEncounterByVisitIdFromAMRS(
-  //   visitId: string
-  // ): Promise<any> {
-  //   try {
-  //     const response: FhirBundle<EncounterResource> = await this.amrsService.getEncounterByVisitId(visitId);
-  //     return response || [];
-  //   } catch (error: any) {
-  //     logger.error(`AMRS encounter fetch failed: ${error.message}`);
-  //     throw new Error(
-  //       error.response?.data
-  //     );
-  //   }
-  // }
-
-  // async fetchObservationByEncounterIdFromAMRS(
-  //   encounterId: string
-  // ): Promise<any> {
-  //   try {
-  //     const response: FhirBundle<ObservationResource> = await this.amrsService.getObservationByEncounterId(encounterId);
-  //     return response || [];
-  //   } catch (error: any) {
-  //     logger.error(`AMRS observation fetch failed: ${error.message}`);
-  //     throw new Error(
-  //       error.response?.data
-  //     );
-  //   }
-  // }
-  // //Extract medication request from observation
-
-  // async fetchMedicationRequestFromObservationFromAMRS(
-  //   observationId: string
-  // ): Promise<any> {
-  //   try {
-  //     const response: FhirBundle<MedicationRequestResource> = await this.amrsService.getMedicationRequestByObservationId(observationId);
-  //     return response || [];
-  //   } catch (error: any) {
-  //     logger.error(`AMRS medication request fetch failed: ${error.message}`);
-  //     throw new Error(
-  //       error.response?.data
-  //     );
-  //   }
-  // }
-
-  // Extract clinical note from etl* tables/summary and form the composition resource
 }

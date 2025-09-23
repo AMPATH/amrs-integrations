@@ -78,59 +78,6 @@ export class AmrsFhirClient {
     patientUuid: string,
     dateString: string
   ): Promise<any> {
-    //PatientData
-    logger.debug(
-      { patientUuid, date: dateString },
-      "Fetching all FHIR data for patient and date"
-    );
-
-    try {
-      const [
-        encountersBundle,
-        observationsBundle,
-        // medicationRequestsBundle,
-      ] = await Promise.all([
-        this.search("Encounter", {
-          patient: patientUuid,
-          date: `eq${dateString}`,
-        }),
-        this.search("Observation", {
-          patient: patientUuid, // to be changed to encounter uuid
-          date: `eq${dateString}`,
-        }),
-        // this.search("MedicationRequest", {
-        //   patient: patientUuid,
-        //   authoredon: `eq${dateString}`,
-        // }),
-      ]);
-
-      const patient = await this.getResource<any>("Patient", patientUuid);
-
-      return {
-        patient,
-        encounters: encountersBundle.entry?.map((e: any) => e.resource) || [],
-        observations:
-          observationsBundle.entry?.map((e: any) => e.resource) || [],
-        // medicationRequests:
-        //   medicationRequestsBundle.entry?.map((e: any) => e.resource) || [],
-        dateContext: dateString,
-      };
-    } catch (error: any) {
-      logger.error(
-        { error, patientUuid, date: dateString },
-        "Failed to get patient data for date"
-      );
-      throw new Error(
-        `Failed to get patient data for ${patientUuid} on ${dateString}: ${error.message}`
-      );
-    }
-  }
-
-  //_revinclude approach
-  async getPatientDataForDateRevApproach(
-    patientUuid: string,
-    dateString: string
-  ): Promise<any> {
     logger.debug(
       { patientUuid, date: dateString },
       "Fetching all FHIR data for patient and date with _revinclude"

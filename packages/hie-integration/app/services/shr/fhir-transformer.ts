@@ -14,70 +14,6 @@ export class FhirTransformer {
     const {
       patient,
       encounters,
-      observations,
-      // medicationRequests,
-      dateContext,
-    } = patientData;
-
-    const bundle: any = {
-      resourceType: "Bundle",
-      id: `batch-${uuidv4()}`,
-      type: "batch",
-      timestamp: new Date().toISOString(),
-      entry: [],
-    };
-
-    // Transform and add Encounters
-    for (const encounter of encounters) {
-      const transformedEncounter = await this.transformEncounter(
-        encounter,
-        patient
-      );
-      this.addBundleEntry(bundle, transformedEncounter, "Encounter");
-    }
-
-    // Transform and add Observations
-    for (const observation of observations) {
-      const transformedObs = await this.transformObservation(
-        observation,
-        patient
-      );
-      this.addBundleEntry(
-        bundle,
-        transformedObs,
-        "Observation",
-        "CR7671914222027-5"
-      );
-    }
-
-    // Transform and add Medication Requests
-    // for (const medRequest of medicationRequests) {
-    //   const transformedMedReq = await this.transformMedicationRequest(
-    //     medRequest,
-    //     patient
-    //   );
-    //   this.addBundleEntry(bundle, transformedMedReq, "MedicationRequest");
-    // }
-
-    // TODO: Add Composition resources later implemented
-    // const composition = await this.createComposition(patient, encounters, observations, dateContext);
-    // this.addBundleEntry(bundle, composition, 'Composition');
-
-    logger.debug(
-      {
-        patient: patient.id,
-        entries: bundle.entry.length,
-      },
-      "Bundle transformed successfully"
-    );
-
-    return bundle;
-  }
-
-  async transformRev(patientData: PatientData): Promise<any> {
-    const {
-      patient,
-      encounters,
       observationsByEncounter,
       dateContext,
     } = patientData;
@@ -103,7 +39,7 @@ export class FhirTransformer {
           const sampleObservations = linkedObservations.slice(0, 5);
 
       for (const observation of sampleObservations) {
-        const transformedObs = await this.transformObservationRev(
+        const transformedObs = await this.transformObservation(
           observation,
           patient,
           encounter
@@ -264,7 +200,7 @@ export class FhirTransformer {
     return transformedEncounter;
   }
 
-  private async transformObservationRev(
+  private async transformObservation(
     observation: any,
     patient: any,
     encounter: any
@@ -297,56 +233,6 @@ export class FhirTransformer {
     };
 
     const shrPractitionerId = "PUID-0155222-4"; // mapping logic
-    transformedObs.performer = {
-      reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`,
-      identifier: [
-        {
-          system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
-          value: shrPractitionerId,
-        },
-      ],
-    };
-
-    return transformedObs;
-  }
-
-  private async transformObservation(
-    observation: any,
-    patient: any
-  ): Promise<any> {
-    const transformedObs = { ...observation };
-
-    const fieldsToRemove = [
-      "text",
-      "partOf",
-      "meta",
-      "referenceRange",
-      "hasMember",
-      "encounter",
-      "valueCodeableConcept",
-    ];
-
-    removeFields(transformedObs, fieldsToRemove);
-
-    // const shrPatientId = this.mappings.patientMap.get(patient.id);
-    const shrPatientId = "CR7671914222027-5"; //this.mappings.patientMap.get(patient.id);
-
-    // if (!shrPatientId) {
-    //   throw new Error(
-    //     `No SHR patient ID mapping found for local ID: ${patient.id}`
-    //   );
-    // }
-
-    transformedObs.subject = {
-      reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
-      type: "Patient",
-      identifier: {
-        use: "official",
-        system: "https://cr.kenya-hie.health/api/v4/Patient",
-        value: shrPatientId,
-      },
-    };
-    const shrPractitionerId = "PUID-0155222-4";
     transformedObs.performer = {
       reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`,
       identifier: [

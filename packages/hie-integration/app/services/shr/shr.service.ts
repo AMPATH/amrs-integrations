@@ -82,12 +82,12 @@ export class SHRService {
     );
 
     try {
-      const patientData = await this.amrsFhirClient.getPatientDataForDateRevApproach(
+      const patientData = await this.amrsFhirClient.getPatientDataForDate(
         patientUuid,
         formattedDate
       );
 
-      const shrBundle = await this.transformer.transformRev(patientData);
+      const shrBundle = await this.transformer.transform(patientData);
       // console.log("shrBundle", JSON.stringify(shrBundle, null, 2));
 
       return shrBundle;

@@ -19,6 +19,7 @@ export class SHRService {
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
     this.shrFhirClient = new ShrFhirClient();
+    // this.conceptService = new ConceptService();
 
     // pROBALY we might NEED to implement this mapping service or not
     const idMappings: IdMappings = {
@@ -27,7 +28,7 @@ export class SHRService {
       organizationMap: new Map(),
     };
 
-    this.transformer = new FhirTransformer(idMappings);
+    this.transformer = new FhirTransformer();
   }
 
   async fetchPatientFromSHR(cr_id: string): Promise<any> {
@@ -91,25 +92,25 @@ export class SHRService {
       // console.log("shrBundle", JSON.stringify(shrBundle, null, 2));
 
       return shrBundle;
-      const response = await this.shrFhirClient.postBundle(shrBundle);
-      console.log("-------------------------------");
-      console.log("response", JSON.stringify(response, null, 2));
+      // const response = await this.shrFhirClient.postBundle(shrBundle);
+      // console.log("-------------------------------");
+      // console.log("response", JSON.stringify(response, null, 2));
 
-      logger.info(
-        {
-          patientUuid,
-          date: formattedDate,
-          bundleEntries: shrBundle.entry.length,
-        },
-        "Successfully generated test bundle for patient"
-      );
+      // logger.info(
+      //   {
+      //     patientUuid,
+      //     date: formattedDate,
+      //     bundleEntries: shrBundle.entry.length,
+      //   },
+      //   "Successfully generated test bundle for patient"
+      // );
 
-      return {
-        success: true,
-        patientUuid,
-        date: formattedDate,
-        bundle: shrBundle,
-      };
+      // return {
+      //   success: true,
+      //   patientUuid,
+      //   date: formattedDate,
+      //   bundle: shrBundle,
+      // };
     } catch (error) {
       logger.error(
         { error, patientUuid, date: formattedDate },
@@ -122,6 +123,8 @@ export class SHRService {
   async executeBatchJob(
     jobDate: Date = new Date()
   ): Promise<{ success: boolean; processedPatients: number }> {
+    // await this.conceptService.initializeConceptCache();
+
     const processingDate = new Date(jobDate);
     processingDate.setDate(processingDate.getDate() - 1); // def yesterday
     const dateString = processingDate.toISOString().split("T")[0];
@@ -135,6 +138,9 @@ export class SHRService {
       );
       const patientUuids = Array.from(patientVisitMap.keys());
 
+      // Initialize transformer with concept service
+      // const transformer = new FhirTransformer(this.conceptService);
+
       logger.info(
         { count: patientUuids.length },
         `Processing data for ${patientUuids.length} patients`
@@ -143,7 +149,13 @@ export class SHRService {
       // 2. Process each patient
       for (const patientUuid of patientUuids) {
         try {
-          await this.processPatientForDate(patientUuid, dateString);
+          const patientData = await this.amrsFhirClient.getPatientDataForDate(
+            patientUuid,
+            dateString
+          );
+          const shrBundle = await this.transformer.transform(patientData);
+          const response = await this.shrFhirClient.postBundle(shrBundle);
+          this.validateBundleResponse(response, patientUuid);
         } catch (patientError) {
           logger.error(
             { error: patientError, patientUuid, date: dateString },

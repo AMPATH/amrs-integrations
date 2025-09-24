@@ -14,24 +14,6 @@ export class AmrsFhirClient {
     );
   }
 
-  // async search<T>(
-  //   resourceType: string,
-  //   params: Record<string, string> = {}
-  // ): Promise<any> {
-  //   const queryString = new URLSearchParams(params).toString();
-  //   const url = `${resourceType}?${queryString}`;
-
-  //   logger.debug({ url }, `AMRS FHIR GET request`);
-
-  //   try {
-  //     const response = await this.httpClient.get(url);
-  //     return response.data;
-  //   } catch (error: any) {
-  //     logger.error({ error, resourceType, params }, "AMRS FHIR Search failed");
-  //     throw new Error(`Failed to search for ${resourceType}: ${error.message}`);
-  //   }
-  // }
-
   async search<T>(
     resourceType: string,
     params: Record<string, string | string[]> = {}

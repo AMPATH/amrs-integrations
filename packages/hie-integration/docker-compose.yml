@@ -1,0 +1,23 @@
+services:
+  hie-integration:
+    build:
+      context: ../..   
+      dockerfile: packages/hie-integration/Dockerfile
+    image: amrs-hie-integration:latest
+    container_name: hie-integration
+    working_dir: /packages/hie-integration 
+    environment:
+      - NODE_ENV=production
+      - PORT=9000
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./env:/app/.env:ro
+      - ./config/config.json:/app/config/config.json:ro
+    restart: unless-stopped
+    networks:
+      - amrs-network
+
+networks:
+  amrs-network:
+    driver: bridge

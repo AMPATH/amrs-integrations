@@ -1,4 +1,4 @@
-
+  
 # Logs
 logs
 *.log
@@ -6,7 +6,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-.yarn
+
+# Configuration files
+app/config/config.json
+app/config/*.json
+build-docker.sh
+app/config/*.log
+
+
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -108,13 +115,6 @@ build/
 
 /app/poc_sample_payload.ts
 /app/sample_data.ts
-#all csv files
-*.csv
-
-#all DSstore files
-*.DS_Store
-packages/priv.txt
-packages/pub.key
-packages/shr.json
+token.txt
 
 app/keys/

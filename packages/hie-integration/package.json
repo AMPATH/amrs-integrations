@@ -1,0 +1,38 @@
+{
+  "name": "@amrs-integration/hie",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc && mkdir -p dist/config && cp app/config/config.json dist/config",
+    "start": "node dist/index.js",
+    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "clean": "rm -rf dist",
+    "prestart": "yarn clean && yarn build"
+  },
+  "description": "health information exchange api",
+  "main": "app.ts",
+  "repository": "@amrs-integration/hie",
+  "author": "kantush",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/hapi": "^21.4.2",
+    "@types/uuid": "^8.3.4",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.1",
+    "hapi-pino": "^12.1.0",
+    "joi": "^17.13.3",
+    "mysql2": "^3.14.4",
+    "node-cache": "^5.1.2",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.26",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/hapi__catbox": "^12.1.0",
+    "@types/hapi__hapi": "^20.0.10",
+    "@types/hapi__shot": "^6.0.0",
+    "@types/node": "^18.11.9",
+    "@types/node-cache": "^4.2.5",
+    "tsc-watch": "^6.0.0",
+    "typescript": "^4.9.3"
+  }
+}

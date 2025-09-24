@@ -11,6 +11,7 @@
     "registry": "cd packages/patient-registry && yarn start",
     "eid": "cd packages/eid && yarn start",
     "rde": "cd packages/rde-sync && yarn start",
+    "hie": "cd packages/hie-integration && yarn start",
     "build": "lerna run build",
     "clean": "yarn clean:artifacts && yarn clean:packages && yarn clean:root && rm -rf packages/core/dist",
     "clean:artifacts": "lerna run clean --parallel",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "lerna": "^6.5.1",
     "lerna-dockerize": "^0.8.4",
+    "nodemon": "^3.1.10",
     "prettier": "^2.1.2"
   },
   "dependencies": {

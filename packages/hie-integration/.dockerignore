@@ -1,0 +1,65 @@
+# Ignore version control
+.git
+.gitignore
+
+# Ignore environment files (except production)
+.env
+!.env.prod
+
+# Ignore development artifacts
+node_modules
+dist
+dist-*
+coverage
+*.log
+*.tmp
+*.swp
+*.pid
+
+# Configuration files
+config/config.json
+config/*.json
+
+keys/
+
+
+# Ignore editor and IDE files
+.idea
+.vscode
+*.code-workspace
+
+# Ignore OS metadata
+.DS_Store
+Thumbs.db
+
+# Ignore build and package files
+yarn-error.log
+npm-debug.log
+lerna-debug.log
+
+# Ignore documentation
+docs
+*.md
+
+# Ignore test files
+__tests__
+__mocks__
+*.spec.ts
+*.test.ts
+jest.config.js
+
+# Ignore Docker-related files (except Dockerfile)
+docker-compose.yml
+Dockerfile
+docker-compose.*.yml
+.dockerignore
+docker-compose.override.yml
+
+# Ignore TypeScript cache
+.tsbuildinfo
+
+# Ignore CI/CD configuration
+.github
+.gitlab-ci.yml
+.jenkinsfile
+.travis.yml

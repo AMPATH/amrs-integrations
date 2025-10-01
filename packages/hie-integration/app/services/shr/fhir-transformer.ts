@@ -33,6 +33,7 @@ export class FhirTransformer {
     const clinicalNotes: any[] = [];
     const drugObservations: any[] = [];
 
+
     for (const encounter of encounters) {
       const transformedEncounter = await this.transformEncounter(
         encounter,

@@ -6,7 +6,9 @@ import { FacilitySearchResponse } from "../../types/hie.type";
 export class FacilityRegistryService {
   private httpClient = new HieHttpClient(config.HIE.BASE_URL);
 
-  async searchFacilityByCode(facilityCode: string): Promise<FacilitySearchResponse> {
+  async searchFacilityByCode(
+    facilityCode: string
+  ): Promise<FacilitySearchResponse> {
     try {
       const response = await this.httpClient.get<FacilitySearchResponse>(
         config.HIE.FACILITY_SEARCH_URL,
@@ -23,7 +25,9 @@ export class FacilityRegistryService {
     } catch (error: any) {
       logger.error(`HIE Facility Registry request failed: ${error.message}`);
       throw new Error(
-        `Failed to fetch facility from HIE: ${error.response?.data?.error_msg || error.message}`
+        `Failed to fetch facility from HIE: ${
+          error.response?.data?.error_msg || error.message
+        }`
       );
     }
   }

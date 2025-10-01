@@ -23,7 +23,7 @@ export default {
     SHR_POST_BUNDLE_URL: getEnv('HIE_SHR_POST_BUNDLE_URL', '/v1/shr-med/bundle'),
     AGENT: process.env.HIE_AGENT,
     PRACTITIONER_REGISTRY_URL: getEnv('HIE_HWR_URL', '/v1/practitioner-search'),
-    FACILITY_SEARCH_URL: getEnv('HIE_FACILITY_SEARCH_URL', '/v1/facility-search'),
+    FACILITY_SEARCH_URL: getEnv('HIE_FACILITY_SEARCH_URL', '/v2/facility-search'),
     CONSUMER_KEY: getEnv('HIE_CONSUMER_KEY'),
     USERNAME: getEnv('HIE_USERNAME'),
     PASSWORD: getEnv('HIE_PASSWORD')

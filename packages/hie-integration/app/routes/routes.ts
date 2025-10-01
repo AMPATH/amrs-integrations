@@ -289,7 +289,6 @@ export const routes = (): ServerRoute[] => [
         query: Joi.object({
           facilityCode: Joi.string()
             .required()
-            .pattern(/^\d+$/)
             .description("Facility code as assigned in HIE (e.g. 24749)"),
         }),
       },

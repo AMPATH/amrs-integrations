@@ -263,7 +263,8 @@ export class FhirTransformer {
     };
 
     const shrPractitionerId = "PUID-0155222-4"; // mapping logic
-    transformedObs.performer = {
+    transformedObs.performer = [
+    {
       reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`,
       identifier: [
         {
@@ -271,7 +272,8 @@ export class FhirTransformer {
           value: shrPractitionerId,
         },
       ],
-    };
+    },
+  ];
 
     return transformedObs;
   }

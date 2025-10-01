@@ -87,6 +87,7 @@ export class SHRService {
         patientUuid,
         formattedDate
       );
+      // get the practitioner and facilty from amrs using both location uuid and provider uuid
 
       const shrBundle = await this.transformer.transform(patientData);
       // console.log("shrBundle", JSON.stringify(shrBundle, null, 2));

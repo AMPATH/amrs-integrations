@@ -6,6 +6,7 @@ export interface AmrsProvider {
   location_name: string;
   provider_id: number;
   provider_names: string;
+  provider_uuid: string;
   national_id: string;
 }
 
@@ -59,6 +60,7 @@ export class AmrsProviderService {
       e.location_id,
       l.name AS location_name,
       ep.provider_id,
+      pr.uuid AS provider_uuid,
       CONCAT(pn.given_name, "  ", pn.middle_name, " ",  pn.family_name) AS provider_names,
       pa.value_reference AS national_id
     FROM amrs.encounter e 
@@ -71,7 +73,7 @@ export class AmrsProviderService {
     )
     WHERE 
       e.encounter_datetime BETWEEN DATE_SUB(NOW(), INTERVAL 12 MONTH) AND NOW()
-      AND pa.value_reference = ?  -- Changed from LIKE to = for exact match
+      AND pa.value_reference = ?
       AND pr.retired = 0
       AND (e.voided IS NULL OR e.voided = 0)
     GROUP BY pr.provider_id;

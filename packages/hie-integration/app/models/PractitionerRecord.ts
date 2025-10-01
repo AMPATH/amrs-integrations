@@ -19,14 +19,17 @@ export class PractitionerRecord {
   @Column({ type: 'varchar', length: 255, name: 'identification_number' })
   identificationNumber!: string;
 
+  @Column({ type: 'varchar', length: 255, name: 'amrs_provider_uuid' })
+  amrsProviderUuid!: string;
+
   @Column({ type: 'json', name: 'registry_data' })
   registryData!: any;
 
   @Column({ type: 'timestamp', name: 'last_synced_at' })
   lastSyncedAt!: Date;
 
-  @Column({ type: 'timestamp', name: 'valid_until', nullable: true })
-  validUntil!: Date | null;
+@Column({ type: 'timestamp', name: 'valid_until', nullable: true, default: null })
+validUntil!: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

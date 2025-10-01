@@ -1,11 +1,11 @@
 import { Server } from "@hapi/hapi";
 import { apiRoutes } from "./api/routes";
 import config from "@amrs-integrations/core";
-import { setConfiguration } from "redis-smq";
+import { Configuration } from "redis-smq";
 import PatientService from "./services/patient.service";
 import { processBatchUpdates } from "./models/batch-update";
 let redisConfig: any = config.redis;
-setConfiguration(redisConfig);
+Configuration.getSetConfig(redisConfig);
 const init = async () => {
   const server = new Server({
     port: config.devPort,

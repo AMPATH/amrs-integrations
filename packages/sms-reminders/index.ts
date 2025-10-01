@@ -1,9 +1,9 @@
 import { RetrieveAppointments, SendNotifications } from "./app/appointments";
 import config from "@amrs-integrations/core"
-import {setConfiguration} from "redis-smq"
+import {Configuration} from "redis-smq"
 import { SendSMS, UpdateDelivery } from "./app/sms";
 let redisConfig:any =config.redis
-setConfiguration(redisConfig)
+Configuration.getSetConfig(redisConfig)
 //Run producer and consumer
 let args = process.argv;
 switch (args[2]) {

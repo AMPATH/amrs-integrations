@@ -7,10 +7,12 @@ import {
 import { HieHttpClient } from "../../utils/http-client";
 import config from "../../config/env";
 import { logger } from "../../utils/logger";
+import { AmrsProviderService } from "../amrs/amrs-provider.service";
 
 export class PractitionerRegistryService {
   private repository: PractitionerRepository;
   private httpClient = new HieHttpClient(config.HIE.BASE_URL);
+  private amrsProviderService = new AmrsProviderService();
 
   constructor() {
     this.repository = new PractitionerRepository();
@@ -37,9 +39,27 @@ export class PractitionerRegistryService {
 
     // fetch from HIE
     try {
+      let providerUuid;
+      // first lets get the provider uuid if identifier is of type nation-id from amrs
+      if (identifier.type === IdentifierType.NATIONAL_ID) {
+        const result = await this.amrsProviderService.getProviderByNationalId(
+          identifier.value
+        );
+        // Workaround:
+        const provider = Array.isArray(result) ? result[3] : result;
+
+        if (provider) {
+          providerUuid = provider.provider_uuid;
+        }
+      }
       const registryData = await this.fetchPractitionerFromHie(identifier);
 
-      await this.repository.saveRecord(identifier, registryData, validityDays);
+      await this.repository.saveRecord(
+        identifier,
+        registryData,
+        validityDays,
+        providerUuid
+      );
 
       return registryData;
     } catch (error) {
@@ -87,7 +107,13 @@ export class PractitionerRegistryService {
         queryParams
       );
 
-      if (response.data.message.found === 0) {
+      const message = response.data.message as any;
+
+      if (message.error) {
+        throw new Error(message.error);
+      }
+
+      if (message.found === 0) {
         throw new Error("Practitioner not found in Practitioner Registry");
       }
 

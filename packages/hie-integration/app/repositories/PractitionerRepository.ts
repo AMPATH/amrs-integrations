@@ -25,7 +25,8 @@ export class PractitionerRepository {
   async saveRecord(
     identifier: Identifier,
     registryData: any,
-    validityDays: number = 7
+    validityDays: number = 7,
+    providerUuid: string
   ): Promise<PractitionerRecord> {
     const lastSyncedAt = new Date();
     const validUntil = new Date();
@@ -42,6 +43,7 @@ export class PractitionerRepository {
       existing.registryData = registryData;
       existing.lastSyncedAt = lastSyncedAt;
       existing.validUntil = validUntil;
+      existing.amrsProviderUuid = providerUuid;
       return this.repository.save(existing);
     }
 
@@ -51,6 +53,7 @@ export class PractitionerRepository {
       registryData,
       lastSyncedAt,
       validUntil,
+      amrsProviderUuid: providerUuid
     });
 
     return this.repository.save(record);

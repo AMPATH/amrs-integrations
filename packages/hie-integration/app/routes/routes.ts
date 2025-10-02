@@ -7,6 +7,7 @@ import {
   FhirBundle,
   IdentifierType,
   PatientSearchPayload,
+  FacilityFilterDto,
 } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
@@ -288,9 +289,14 @@ export const routes = (): ServerRoute[] => [
     options: {
       validate: {
         query: Joi.object({
-          facilityCode: Joi.string()
+          filterType: Joi.string()
             .required()
-            .description("Facility code as assigned in HIE (e.g. 24749)"),
+            .description("Filter type e.g facilityCode,registrationNumber"),
+          filterValue: Joi.string()
+            .required()
+            .description(
+              "Facility code e.g 24749 of registration number e.g GK-016503"
+            ),
         }),
       },
       tags: ["api", "hie", "facility-registry"],
@@ -298,15 +304,15 @@ export const routes = (): ServerRoute[] => [
       notes: "Proxies the HIE /v1/facility-search endpoint using facility_code",
     },
     handler: async (request, h) => {
-      const { facilityCode } = request.query as { facilityCode: string };
+      const facilitySearchDto = request.query as FacilityFilterDto;
       const service = new FacilityRegistryService();
 
       try {
-        const result = await service.searchFacilityByCode(facilityCode);
+        const result = await service.searchFacilityByCode(facilitySearchDto);
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `Facility search failed: ${facilityCode} - ${error.message}`
+          `Facility search failed: ${facilitySearchDto.filterValue} - ${error.message}`
         );
         return h
           .response({

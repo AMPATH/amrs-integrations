@@ -127,7 +127,6 @@ export enum IdentifierType {
   LICENSE_NO = "id",
 }
 
-
 export interface Identifier {
   type: IdentifierType;
   value: string;
@@ -143,15 +142,14 @@ export interface PatientSearchPayload {
 
 export interface PractitionerRegistryResponse {
   message: {
-    registrationNumber: number;   
-    found: number;              
-    isActive: boolean;            
-    name?: string;               
-    specialization?: string;     
-    licenseStatus?: string;      
+    registrationNumber: number;
+    found: number;
+    isActive: boolean;
+    name?: string;
+    specialization?: string;
+    licenseStatus?: string;
   };
 }
-
 
 export interface FacilitySearchResponse {
   message: {
@@ -162,4 +160,18 @@ export interface FacilitySearchResponse {
     operational_status: string | null;
     current_license_expiry_date: string;
   };
+}
+
+export enum FacilityFilterType {
+  facilityCode = "facilityCode",
+  registrationNumber = "registrationNumber",
+}
+
+export interface FacilityFilterDto {
+  filterType: FacilityFilterType;
+  filterValue: string;
+}
+export interface HieFacilityFilteSearchrDto {
+  registration_number?: string;
+  facility_code?: string;
 }

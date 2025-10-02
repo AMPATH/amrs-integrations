@@ -2,15 +2,17 @@ import { HieHttpClient } from "../../utils/http-client";
 import { logger } from "../../utils/logger";
 import config from "../../config/env";
 
+
 export class ShrFhirClient {
   private httpClient: HieHttpClient;
 
   constructor() {
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL);
+    this.httpClient = new HieHttpClient(config.HIE.OPENHIM_BASE_URL);
   }
 
   async postBundle(bundle: any): Promise<any> {
     try {
+      // Call OpenHIM kafka channel to post bundle to SHR
       const response = await this.httpClient.post("/v1/shr-med/bundle", bundle);
       logger.debug(
         { statusCode: response.status },

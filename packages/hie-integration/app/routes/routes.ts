@@ -11,6 +11,7 @@ import {
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
+import { kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -495,6 +496,31 @@ export const routes = (): ServerRoute[] => [
           service: "hie-integration",
         })
         .code(200);
+    },
+  },
+
+  // Kafka Health Check Endpoint
+  {
+    method: "GET",
+    path: "/hie/kafka/health",
+    options: {
+      tags: ["api", "monitoring", "kafka"],
+      description: "Kafka consumer health check",
+    },
+    handler: async (request, h) => {
+      try {
+        const healthStatus = await kafkaConsumerService.getHealthStatus();
+        return h.response(healthStatus).code(200);
+      } catch (error: any) {
+        logger.error(`Kafka health check failed: ${error.message}`);
+        return h
+          .response({
+            error: "Kafka health check failed",
+            details: error.message,
+            timestamp: new Date().toISOString(),
+          })
+          .code(500);
+      }
     },
   },
 ];

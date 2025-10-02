@@ -3,13 +3,14 @@ import hapiPino from 'hapi-pino';
 import { logger } from './utils/logger';
 import { routes } from './routes/routes';
 import { DatabaseManager } from './config/database';
+import { kafkaConsumerService } from './services/kafka/kafka-consumer.service';
 
 export const initServer = async () => {
   // Initialize database connections
   try {
     const dbManager = DatabaseManager.getInstance();
     await dbManager.initializeAll();
-    
+    await kafkaConsumerService.initialize();
     // Get server configuration from database manager
     const serverConfig = dbManager.getServerConfig();
     

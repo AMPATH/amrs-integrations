@@ -1,0 +1,256 @@
+import { Kafka, Producer, Consumer, EachMessagePayload, Admin } from 'kafkajs';
+import { logger } from './logger';
+import config from '../config/env';
+
+// Kafka event types
+export interface KafkaEvent {
+  id: string;
+  type: string;
+  timestamp: string;
+  source: string;
+  data: any;
+  metadata?: {
+    correlationId?: string;
+    userId?: string;
+    facilityId?: string;
+    [key: string]: any;
+  };
+}
+
+export interface KafkaMessage {
+  topic: string;
+  partition: number;
+  offset: string;
+  key?: string;
+  value: string;
+  headers?: Record<string, string>;
+  timestamp: string;
+}
+
+export interface KafkaProducerConfig {
+  transactionalId?: string;
+  maxInFlightRequests?: number;
+  idempotent?: boolean;
+  retry?: {
+    retries: number;
+    initialRetryTime: number;
+    maxRetryTime: number;
+  };
+}
+
+export interface KafkaConsumerConfig {
+  groupId: string;
+  sessionTimeout?: number;
+  heartbeatInterval?: number;
+  maxBytesPerPartition?: number;
+  maxBytes?: number;
+  maxWaitTimeInMs?: number;
+}
+
+export class KafkaService {
+  private kafka: Kafka;
+  private producer: Producer | null = null;
+  private consumers: Map<string, Consumer> = new Map();
+  private admin: Admin | null = null;
+  private isConnected = false;
+
+  constructor() {
+    this.kafka = new Kafka({
+      clientId: config.KAFKA.CLIENT_ID,
+      brokers: config.KAFKA.BROKERS,
+    });
+  }
+
+
+  /**
+   * Create and return an admin instance
+   */
+  async getAdmin(): Promise<Admin> {
+    if (!this.admin) {
+      this.admin = this.kafka.admin();
+      await this.admin.connect();
+    }
+    return this.admin;
+  }
+
+  /**
+   * Create a consumer for a specific topic
+   */
+  async createConsumer(
+    groupId: string,
+    consumerConfig: KafkaConsumerConfig = { groupId }
+  ): Promise<Consumer> {
+    const kafkaConfig = {
+      groupId,
+      sessionTimeout: consumerConfig.sessionTimeout || 30000,
+      heartbeatInterval: consumerConfig.heartbeatInterval || 3000,
+      maxBytesPerPartition: consumerConfig.maxBytesPerPartition || 1048576,
+      maxBytes: consumerConfig.maxBytes || 10485760,
+      maxWaitTimeInMs: consumerConfig.maxWaitTimeInMs || 5000
+    };
+
+    const consumer = this.kafka.consumer(kafkaConfig);
+    this.consumers.set(groupId, consumer);
+    
+    logger.info(`Created consumer for group: ${groupId}`, { kafkaConfig });
+    return consumer;
+  }
+
+  /**
+   * Subscribe to a topic and process messages
+   */
+  async subscribeToTopic(
+    topic: string,
+    groupId: string,
+    messageHandler: (payload: EachMessagePayload) => Promise<void>,
+    consumerConfig: KafkaConsumerConfig = { groupId }
+  ): Promise<void> {
+    try {
+      logger.info(`Attempting to subscribe to topic: ${topic} with group: ${groupId}`);
+      
+      const consumer = await this.createConsumer(groupId, consumerConfig);
+      await consumer.connect();
+      
+      // Set connection status
+      this.isConnected = true;
+      
+      await consumer.subscribe({ topic, fromBeginning: true });
+
+      await consumer.run({
+        eachMessage: async (payload: EachMessagePayload) => {
+          try {
+            logger.info(`Received message from topic ${topic}`, {
+              topic: payload.topic,
+              partition: payload.partition,
+              offset: payload.message.offset,
+              key: payload.message.key?.toString(),
+              valueLength: payload.message.value?.length || 0
+            });
+            await messageHandler(payload);
+          } catch (error) {
+            logger.error(`Error processing message from topic ${topic}:`, error);
+            // You might want to implement dead letter queue logic here
+          }
+        },
+      });
+
+      logger.info(`Successfully subscribed to topic ${topic} with group ${groupId}`);
+    } catch (error) {
+      logger.error(`Failed to subscribe to topic ${topic}:`, error);
+      this.isConnected = false;
+      throw error;
+    }
+  }
+
+ 
+  /**
+   * Validate Kafka connection
+   */
+  async validateConnection(): Promise<boolean> {
+    try {
+      const admin = await this.getAdmin();
+      const clusterInfo = await admin.describeCluster();
+      
+      logger.info('Kafka connection validated successfully', {
+        clusterId: clusterInfo.clusterId,
+        brokerCount: clusterInfo.brokers.length,
+        brokers: clusterInfo.brokers.map((b: any) => `${b.host}:${b.port}`)
+      });
+      
+      this.isConnected = true;
+      return true;
+    } catch (error) {
+      logger.error('Kafka connection validation failed:', error);
+      this.isConnected = false;
+      return false;
+    }
+  }
+
+  /**
+   * Get topic metadata
+   */
+  async getTopicMetadata(topic: string): Promise<any> {
+    try {
+      const admin = await this.getAdmin();
+      const metadata = await admin.fetchTopicMetadata({ topics: [topic] });
+      return metadata;
+    } catch (error) {
+      logger.error(`Failed to get metadata for topic ${topic}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Parse Kafka message payload
+   */
+  parseMessage(payload: EachMessagePayload): KafkaMessage {
+    const { topic, partition, message } = payload;
+    console.log('message');
+    console.log(message);
+    return {
+      topic,
+      partition,
+      offset: message.offset,
+      key: message.key?.toString(),
+      value: message.value?.toString() || '',
+      headers: message.headers ? Object.fromEntries(
+        Object.entries(message.headers).map(([key, value]) => [key, value?.toString() || ''])
+      ) : {},
+      timestamp: message.timestamp,
+    };
+  }
+
+  /**
+   * Parse Kafka event from message
+   */
+  parseEvent(payload: EachMessagePayload): KafkaEvent {
+    const message = this.parseMessage(payload);
+        try {
+      return JSON.parse(message.value);
+    } catch (error) {
+      logger.error('Failed to parse Kafka event:', error);
+      throw new Error('Invalid message format');
+    }
+  }
+
+  /**
+   * Disconnect all consumers and producer
+   */
+  async disconnect(): Promise<void> {
+    try {
+      // Disconnect all consumers
+      for (const [groupId, consumer] of this.consumers) {
+        await consumer.disconnect();
+        logger.info(`Disconnected consumer group: ${groupId}`);
+      }
+      this.consumers.clear();
+
+      // Disconnect admin
+      if (this.admin) {
+        await this.admin.disconnect();
+        this.admin = null;
+        logger.info('Disconnected admin client');
+      }
+
+      this.isConnected = false;
+      logger.info('Kafka service disconnected');
+    } catch (error) {
+      logger.error('Error disconnecting Kafka service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if Kafka service is connected
+   */
+  isServiceConnected(): boolean {
+    return this.isConnected;
+  }
+
+}
+
+// Singleton instance
+export const kafkaService = new KafkaService();
+
+
+export default kafkaService;

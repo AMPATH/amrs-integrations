@@ -1,39 +1,44 @@
-import { 
-  Entity, 
-  Column, 
-  PrimaryGeneratedColumn, 
-  CreateDateColumn, 
-  UpdateDateColumn, 
-  Index 
-} from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+} from "typeorm";
 
-@Entity('practitioner_records')
-@Index(['identificationType', 'identificationNumber'], { unique: true })
+@Entity("practitioner_records")
+@Index(["identificationType", "identificationNumber"], { unique: true })
 export class PractitionerRecord {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'varchar', length: 50, name: 'identification_type' })
+  @Column({ type: "varchar", length: 50, name: "identification_type" })
   identificationType!: string;
 
-  @Column({ type: 'varchar', length: 255, name: 'identification_number' })
+  @Column({ type: "varchar", length: 255, name: "identification_number" })
   identificationNumber!: string;
 
-  @Column({ type: 'varchar', length: 255, name: 'amrs_provider_uuid' })
+  @Column({ type: "varchar", length: 255, name: "amrs_provider_uuid" })
   amrsProviderUuid!: string;
 
-  @Column({ type: 'json', name: 'registry_data' })
+  @Column({ type: "json", name: "registry_data" })
   registryData!: any;
 
-  @Column({ type: 'timestamp', name: 'last_synced_at' })
+  @Column({ type: "timestamp", name: "last_synced_at" })
   lastSyncedAt!: Date;
 
-@Column({ type: 'timestamp', name: 'valid_until', nullable: true, default: null })
-validUntil!: Date | null;
+  @Column({
+    type: "timestamp",
+    name: "valid_until",
+    nullable: true,
+    default: null,
+  })
+  validUntil!: Date | null;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt!: Date;
 }

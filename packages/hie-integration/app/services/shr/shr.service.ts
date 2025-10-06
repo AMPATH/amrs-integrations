@@ -7,6 +7,7 @@ import { AmrsFhirClient } from "./amrs-fhir-client";
 import { ShrFhirClient } from "./shr-fhir-client";
 import { FhirTransformer } from "./fhir-transformer";
 import { IdMappings } from "./types";
+import { HieMappingService } from "../amrs/hie-mapping-service";
 
 export class SHRService {
   private httpClient = new HieHttpClient(config.HIE.BASE_URL);
@@ -14,21 +15,15 @@ export class SHRService {
   private amrsFhirClient: AmrsFhirClient;
   private shrFhirClient: ShrFhirClient;
   private transformer: FhirTransformer;
+  private mappingService: HieMappingService;
 
   constructor() {
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
     this.shrFhirClient = new ShrFhirClient();
-    // this.conceptService = new ConceptService();
+    this.mappingService = new HieMappingService();
 
-    // pROBALY we might NEED to implement this mapping service or not
-    const idMappings: IdMappings = {
-      patientMap: new Map(),
-      practitionerMap: new Map(),
-      organizationMap: new Map(),
-    };
-
-    this.transformer = new FhirTransformer();
+    this.transformer = new FhirTransformer(this.mappingService);
   }
 
   async fetchPatientFromSHR(cr_id: string): Promise<any> {

@@ -8,7 +8,8 @@ export interface PatientData {
   patient: any;
   encounters: any[];
   observations: any[];
-  observationsByEncounter: any[], // for rev
+  observationsByEncounter: Record<string, any[]>;
+  // observationsByEncounter: any[], // for rev
   medicationRequests: any[];
   dateContext: string;
 }

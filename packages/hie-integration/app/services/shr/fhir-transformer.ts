@@ -358,8 +358,8 @@ export class FhirTransformer {
   }
 
   private async getShrPatientId(amrsPatientUuid: string): Promise<string> {
-    // TODO: Implement patient ID mapping logic
-    // For now, return a placeholder or implement your patient mapping
+    // TODO: Implement patient CR mapping logic
+    // For now, return a placeholder
     return "CR7671914222027-5"; // This should come from your patient mapping service
   }
 

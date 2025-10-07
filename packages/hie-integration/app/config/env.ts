@@ -31,6 +31,10 @@ export default {
       "HIE_SHR_POST_BUNDLE_URL",
       "/v1/shr-med/bundle"
     ),
+    HAPI_POST_BUNDLE_URL: getEnv(
+      "HIE_HAPI_POST_BUNDLE_URL",
+      "/v1/hapi-med/bundle"
+    ),
     AGENT: process.env.HIE_AGENT,
     PRACTITIONER_REGISTRY_URL: getEnv("HIE_HWR_URL", "/v1/practitioner-search"),
     FACILITY_SEARCH_URL: getEnv(
@@ -55,8 +59,16 @@ export default {
     USERNAME: getEnv("AMRS_USERNAME"),
     PASSWORD: getEnv("AMRS_PASSWORD"),
   },
+  HAPI_FHIR: {
+    BASE_URL: getEnv(
+      "HAPI_FHIR_BASE_URL",
+      "http://10.50.80.115:5001/shr-med"
+    ),
+    USERNAME: getEnv("HAPI_FHIR_USERNAME"),
+    PASSWORD: getEnv("HAPI_FHIR_PASSWORD"),
+  },
   KAFKA: {
-    BROKERS: getEnv("KAFKA_BROKERS", "localhost:9092").split(","),
+    BROKERS: getEnv("KAFKA_BROKERS", "10.50.80.115:9092").split(","),
     CLIENT_ID: getEnv("KAFKA_CLIENT_ID", "  "),
     GROUP_ID: getEnv("KAFKA_GROUP_ID", "hie-integration-group"),
     TOPICS: {

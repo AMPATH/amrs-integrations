@@ -5,6 +5,7 @@ import { HieHttpClient } from "../../utils/http-client";
 import { VisitService } from "../amrs/visit-service";
 import { AmrsFhirClient } from "./amrs-fhir-client";
 import { ShrFhirClient } from "./shr-fhir-client";
+import { HapiFhirClient } from "./hapi-fhir-client";
 import { FhirTransformer } from "./fhir-transformer";
 import { IdMappings } from "./types";
 import { HieMappingService } from "../amrs/hie-mapping-service";
@@ -14,6 +15,7 @@ export class SHRService {
   private visitService: VisitService;
   private amrsFhirClient: AmrsFhirClient;
   private shrFhirClient: ShrFhirClient;
+  private hapiFhirClient: HapiFhirClient;
   private transformer: FhirTransformer;
   private mappingService: HieMappingService;
 
@@ -21,6 +23,7 @@ export class SHRService {
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
     this.shrFhirClient = new ShrFhirClient();
+    this.hapiFhirClient = new HapiFhirClient();
     this.mappingService = new HieMappingService();
 
     this.transformer = new FhirTransformer(this.mappingService);
@@ -207,6 +210,30 @@ export class SHRService {
     } catch (error: any) {
       logger.error(`HIE client registry request failed: ${error.message}`);
       throw new Error(error.response?.data);
+    }
+  }
+
+  async postBundleToHapi(bundle: FhirBundle<any>): Promise<any> {
+    try {
+      const response = await this.hapiFhirClient.postBundle(bundle);
+      logger.info(`Bundle posted to HAPI FHIR successfully`, { bundleId: bundle.id });
+      return response;
+    } catch (error: any) {
+      logger.error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
+      throw new Error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
+    }
+  }
+
+  async sendToDeadLetterQueue(deadLetterPayload: any): Promise<any> {
+    try {
+      const response = await this.httpClient.post("/kafka-dead-letter", deadLetterPayload);
+      logger.info(`Dead letter payload sent successfully`, { 
+        eventId: deadLetterPayload.originalEvent?.id 
+      });
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to send to dead letter queue: ${error.message}`);
+      throw new Error(`Failed to send to dead letter queue: ${error.message}`);
     }
   }
 

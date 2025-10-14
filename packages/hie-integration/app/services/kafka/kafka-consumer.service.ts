@@ -20,10 +20,11 @@ export class KafkaConsumerService {
   async initialize(): Promise<void> {
     try {
       logger.info('Initializing Kafka consumer service...');
-      
+      const facilityUuid = 'default';
+
       // Initialize SHR service
-      this.shrService = new SHRService();
-      
+      this.shrService = new SHRService(facilityUuid);
+
       // Validate Kafka connection first
       const isConnected = await kafkaService.validateConnection();
       if (!isConnected) {

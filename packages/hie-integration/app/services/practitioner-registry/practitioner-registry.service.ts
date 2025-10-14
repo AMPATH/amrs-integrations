@@ -11,10 +11,11 @@ import { AmrsProviderService } from "../amrs/amrs-provider.service";
 
 export class PractitionerRegistryService {
   private repository: PractitionerRepository;
-  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
+  private httpClient: HieHttpClient;
   private amrsProviderService = new AmrsProviderService();
 
-  constructor() {
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
     this.repository = new PractitionerRepository();
   }
 

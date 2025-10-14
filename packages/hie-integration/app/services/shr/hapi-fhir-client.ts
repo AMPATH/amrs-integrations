@@ -5,8 +5,8 @@ import config from "../../config/env";
 export class HapiFhirClient {
   private httpClient: HieHttpClient;
 
-  constructor() {
-    this.httpClient = new HieHttpClient(config.HAPI_FHIR.BASE_URL);
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HAPI_FHIR.BASE_URL, facilityUuid);
   }
 
   async postBundle(bundle: any): Promise<any> {

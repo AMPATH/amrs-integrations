@@ -6,8 +6,8 @@ import config from "../../config/env";
 export class ShrFhirClient {
   private httpClient: HieHttpClient;
 
-  constructor() {
-    this.httpClient = new HieHttpClient(config.HIE.OPENHIM_BASE_URL);
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, facilityUuid);
   }
 
   async postBundle(bundle: any): Promise<any> {

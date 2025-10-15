@@ -17,6 +17,9 @@ export default {
   },
   HIE: {
     OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "localhost:5001"),
+    OPENHIM_FHIR_ENDPOINT: getEnv("HIE_OPENHIM_FHIR_ENDPOINT", "/shr-bundle"),
+    OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "hie-user"),
+    OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "hie-password"),
     BASE_URL: getEnv("HIE_BASE_URL", "https://uat.dha.go.ke"),
     AUTH_URL: getEnv("HIE_AUTH_URL", "/v1/hie-auth"),
     CLIENT_REGISTRY_URL: getEnv(

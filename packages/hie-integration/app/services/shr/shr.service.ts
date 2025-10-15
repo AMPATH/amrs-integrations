@@ -132,9 +132,14 @@ export class SHRService {
         resource: resource
       };
 
-      // Add search information if it exists
-      if (entry.search) {
-        collectionEntry.search = entry.search;
+      // Add request information if it exists, otherwise use search as fallback
+      if (entry.request) {
+        collectionEntry.request = entry.request;
+      } else if (entry.search) {
+        collectionEntry.request = {
+          method: "POST",
+          url: resource.resourceType
+        };
       }
 
       uniqueEntries.set(resourceKey || fullUrl, collectionEntry);

@@ -12,10 +12,11 @@ import { Facility } from "../../models/Facility";
 import moment from "moment";
 
 export class FacilityRegistryService {
-  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
+  private httpClient: HieHttpClient;
   private repository: FacilityRepository;
 
-  constructor() {
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
     this.repository = new FacilityRepository();
   }
 

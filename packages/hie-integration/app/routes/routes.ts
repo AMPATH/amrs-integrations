@@ -13,6 +13,7 @@ import { PractitionerRegistryService } from "../services/practitioner-registry/p
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
 import { kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
+import { HieMappingService } from "../services/amrs/hie-mapping-service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -28,6 +29,10 @@ export const routes = (): ServerRoute[] => [
             .required()
             .valid(...Object.values(IdentifierType))
             .description("Identification Type"),
+          facilityUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Facility UUID")
         }),
       },
       tags: ["api", "hie", "client-registry"],
@@ -39,8 +44,9 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
+        facilityUuid,
       } = request.payload as PatientSearchPayload;
-      const service = new ClientRegistryService();
+      const service = new ClientRegistryService(facilityUuid);
 
       try {
         const result = await service.fetchPatientFromHie(
@@ -75,12 +81,13 @@ export const routes = (): ServerRoute[] => [
       description: "Validate OTP and search for patient",
     },
     handler: async (request, h) => {
-      const { sessionId, otp } = request.payload as {
+      const { sessionId, otp, facilityUuid } = request.payload as {
         sessionId: string;
         otp: string;
+        facilityUuid: string;
       };
 
-      const service = new ClientRegistryService();
+      const service = new ClientRegistryService(facilityUuid);
 
       try {
         const result = await service.validateOtp(sessionId, otp);
@@ -124,9 +131,10 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
+        facilityUuid,
       } = request.payload as PatientSearchPayload;
 
-      const service = new ClientRegistryService();
+      const service = new ClientRegistryService(facilityUuid);
 
       try {
         const result = await service.sendOtp(
@@ -171,6 +179,10 @@ export const routes = (): ServerRoute[] => [
           refresh: Joi.boolean()
             .default(false)
             .description("Force synchronization with HIE registry"),
+          facilityUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Facility UUID"),
         }),
       },
       tags: ["api", "hie", "practitioner-registry"],
@@ -179,13 +191,19 @@ export const routes = (): ServerRoute[] => [
         "Searches the national practitioner registry by ID, with local storage",
     },
     handler: async (request, h) => {
-      const { identifierValue, identifierType, refresh } = request.query as {
+      const {
+        identifierValue,
+        identifierType,
+        refresh,
+        facilityUuid,
+      } = request.query as {
         identifierValue: string;
         identifierType: IdentifierType;
         refresh: boolean;
+        facilityUuid: string;
       };
 
-      const service = new PractitionerRegistryService();
+      const service = new PractitionerRegistryService(facilityUuid);
 
       try {
         const result = await service.getPractitioner(
@@ -305,7 +323,9 @@ export const routes = (): ServerRoute[] => [
     },
     handler: async (request, h) => {
       const facilitySearchDto = request.query as FacilityFilterDto;
-      const service = new FacilityRegistryService();
+      const service = new FacilityRegistryService(
+        facilitySearchDto.facilityUuid
+      );
 
       try {
         const result = await service.searchFacilityByCode(facilitySearchDto);
@@ -317,6 +337,107 @@ export const routes = (): ServerRoute[] => [
         return h
           .response({
             error: "Facility search failed",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+
+  {
+    method: "POST",
+    path: "/hie/facility-credentials",
+    options: {
+      validate: {
+        payload: Joi.object({
+          location_uuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Facility location UUID"),
+          facility_name: Joi.string().required().description("Facility name"),
+          consumer_key: Joi.string().required().description("HIE Consumer Key"),
+          username: Joi.string().required().description("HIE Username"),
+          password: Joi.string().required().description("HIE Password"),
+          is_active: Joi.boolean()
+            .default(true)
+            .description("Whether credentials are active"),
+        }),
+      },
+      tags: ["api", "hie", "facility-credentials"],
+      description: "Save or update facility credentials for HIE authentication",
+      notes: "Stores facility credentials with encrypted password.",
+    },
+    handler: async (request, h) => {
+      const credentialsData = request.payload as any;
+      const service = new HieMappingService();
+
+      try {
+        const result = await service.saveCredentials(credentialsData);
+        return h
+          .response({
+            message: "Credentials saved successfully",
+            data: result,
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`Failed to save facility credentials: ${error.message}`);
+        return h
+          .response({
+            error: "Failed to save facility credentials",
+            details: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
+  {
+    method: "PUT",
+    path: "/hie/facility-credentials/{locationUuid}/status",
+    options: {
+      validate: {
+        params: Joi.object({
+          locationUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Facility location UUID"),
+        }),
+        payload: Joi.object({
+          is_active: Joi.boolean().required().description("Activation status"),
+        }),
+      },
+      tags: ["api", "hie", "facility-credentials"],
+      description: "Update facility credentials status",
+      notes: "Activate or deactivate facility credentials.",
+    },
+    handler: async (request, h) => {
+      const { locationUuid } = request.params;
+      const { is_active } = request.payload as { is_active: boolean };
+      const service = new HieMappingService();
+
+      try {
+        const result = await service.updateCredentialsStatus(
+          locationUuid,
+          is_active
+        );
+        if (!result) {
+          return h
+            .response({
+              error: "Credentials not found for the specified facility",
+            })
+            .code(404);
+        }
+        return h
+          .response({
+            message: `Credentials ${
+              is_active ? "activated" : "deactivated"
+            } successfully`,
+          })
+          .code(200);
+      } catch (error: any) {
+        logger.error(`Failed to update credentials status: ${error.message}`);
+        return h
+          .response({
+            error: "Failed to update credentials status",
             details: error.message,
           })
           .code(400);
@@ -340,9 +461,12 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id } = request.query as { cr_id: string };
+      const { cr_id, facilityUuid } = request.query as {
+        cr_id: string;
+        facilityUuid: string;
+      };
       try {
-        const service = new SHRService();
+        const service = new SHRService(facilityUuid);
         const data = await service.fetchPatientFromSHR(cr_id);
         return h.response(data).code(200);
       } catch (error: any) {
@@ -381,12 +505,13 @@ export const routes = (): ServerRoute[] => [
       notes: "Posts bundle to SHR",
     },
     handler: async (request, h) => {
+      const { facilityUuid } = request.query as { facilityUuid: string };
       const payload = request.payload as any;
       const bundle =
         payload && payload.bundle
           ? payload.bundle
           : (payload as FhirBundle<any>);
-      const service = new SHRService();
+      const service = new SHRService(facilityUuid);
       try {
         const data = await service.postBundleToSHR(bundle);
         return h.response(data).code(200);
@@ -422,10 +547,11 @@ export const routes = (): ServerRoute[] => [
         "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
     },
     handler: async (request, h) => {
+      const { facilityUuid } = request.query as { facilityUuid: string };
       const { date } = request.payload as { date?: string };
 
       try {
-        const service = new SHRService();
+        const service = new SHRService(facilityUuid);
         const jobDate = date ? new Date(date) : new Date();
         const result = await service.executeBatchJob(jobDate);
 
@@ -464,13 +590,14 @@ export const routes = (): ServerRoute[] => [
         "Generates a bundle for the specified patient without pushing to SHR, for testing purposes",
     },
     handler: async (request, h) => {
+      const { facilityUuid } = request.query as { facilityUuid: string };
       const { patientUuid, date } = request.payload as {
         patientUuid: string;
         date?: string;
       };
 
       try {
-        const service = new SHRService();
+        const service = new SHRService(facilityUuid);
         const result = await service.testPatientBundle(patientUuid, date);
 
         return h.response(result).code(200);

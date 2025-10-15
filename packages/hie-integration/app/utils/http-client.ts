@@ -6,11 +6,13 @@ export class HieHttpClient {
   private axiosInstance: AxiosInstance;
   private tokenService: TokenService;
   private baseURL: string;
+  private facilityUuid: string;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, facilityUuid: string) {
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
     this.baseURL = baseURL;
+    this.facilityUuid = facilityUuid;
 
     this.setupInterceptors();
   }
@@ -19,11 +21,17 @@ export class HieHttpClient {
     this.axiosInstance.interceptors.request.use(
       async (config) => {
         try {
-          const token = await this.tokenService.getAccessToken();
+          const token = await this.tokenService.getAccessToken(
+            this.facilityUuid
+          );
           config.headers.Authorization = `Bearer ${token}`;
           config.headers["Content-Type"] = "application/json";
           return config;
         } catch (error) {
+          logger.error(
+            `Failed to get token for facility ${this.facilityUuid}:`,
+            error
+          );
           return Promise.reject(error);
         }
       },
@@ -37,13 +45,19 @@ export class HieHttpClient {
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          this.tokenService.clearToken();
+          this.tokenService.clearToken(this.facilityUuid);
 
           try {
-            const token = await this.tokenService.getAccessToken();
+            const token = await this.tokenService.getAccessToken(
+              this.facilityUuid
+            );
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return this.axiosInstance(originalRequest);
           } catch (retryError) {
+            logger.error(
+              `Token refresh failed for facility ${this.facilityUuid}:`,
+              retryError
+            );
             return Promise.reject(retryError);
           }
         }
@@ -51,9 +65,9 @@ export class HieHttpClient {
         if (error.response) {
           if (error.response.status >= 400) {
             logger.error(
-              `HIE API Error: ${error.response.status} - ${JSON.stringify(
-                error.response.data
-              )}`
+              `HIE API Error for facility ${this.facilityUuid}: ${
+                error.response.status
+              } - ${JSON.stringify(error.response.data)}`
             );
           }
         }
@@ -77,6 +91,23 @@ export class HieHttpClient {
       timeout: 10000,
     });
   }
+
+  async put<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.put<T>(url, data, {
+      baseURL: this.baseURL,
+      timeout: 10000,
+    });
+  }
+
+  setFacility(facilityUuid: string): void {
+    this.facilityUuid = facilityUuid;
+  }
+
+  getCurrentFacility(): string {
+    return this.facilityUuid;
+  }
+
+  getBaseURL(): string {
+    return this.baseURL;
+  }
 }
-
-

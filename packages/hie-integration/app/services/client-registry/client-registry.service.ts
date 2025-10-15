@@ -7,8 +7,13 @@ import { decryptData } from "../../utils/descrypt-data";
 import { OtpService } from "./otp.service";
 
 export class ClientRegistryService {
-  private httpClient = new HieHttpClient(config.HIE.BASE_URL);
-  private otpService = new OtpService();
+  private httpClient: HieHttpClient;
+  private otpService: OtpService;
+
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
+    this.otpService = new OtpService(facilityUuid);
+  }
 
   async fetchPatientFromHie(
     identificationNumber: string,

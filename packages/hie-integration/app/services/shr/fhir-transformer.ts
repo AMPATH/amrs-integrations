@@ -3,25 +3,140 @@ import { logger } from "../../utils/logger";
 import { IdMappings, PatientData } from "./types";
 import { removeFields } from "../../utils/removeFields";
 import { ConceptMapper } from "./concept-mapper";
+import { HieMappingService } from "../amrs/hie-mapping-service";
+
+type EncounterMapping = {
+  practitionerId?: string;
+  facilityId?: string;
+};
 
 export class FhirTransformer {
   // private mappings: IdMappings;
   private conceptMapper: ConceptMapper;
+  private mappingService: HieMappingService;
   //  private conceptService: ConceptService;
 
-  constructor() {
+  constructor(mappingService: HieMappingService) {
     this.conceptMapper = new ConceptMapper();
+    this.mappingService = mappingService;
     // this.conceptService = conceptService;
   }
 
   async transform(patientData: PatientData): Promise<any> {
+    const { patient, encounters, observationsByEncounter } = patientData;
+
+    // Step 1: Extract unique practitioner and location UUIDs from encounters
     const {
+      practitionerUuids,
+      locationUuids,
+    } = this.extractUuidsFromEncounters(encounters);
+
+    // Step 2: Batch fetch all mappings in parallel
+    const [practitionerMap, facilityMap] = await Promise.all([
+      this.mappingService.getShrPractitionerIds(practitionerUuids),
+      this.mappingService.getShrFacilityIds(locationUuids),
+    ]);
+
+    // Step 3: Create encounter mapping for quick lookup
+    const encounterMappings = this.createEncounterMappings(
+      encounters,
+      practitionerMap,
+      facilityMap
+    );
+
+    // Step 4: Proceed with transformation
+    const bundle = await this.buildBundle(
       patient,
       encounters,
       observationsByEncounter,
-      dateContext,
-    } = patientData;
+      encounterMappings
+    );
 
+    return bundle;
+  }
+
+  private extractUuidsFromEncounters(
+    encounters: any[]
+  ): { practitionerUuids: string[]; locationUuids: string[] } {
+    const practitionerUuids = new Set<string>();
+    const locationUuids = new Set<string>();
+
+    for (const encounter of encounters) {
+      if (encounter.participant?.[0]?.individual?.reference) {
+        const practitionerUuid = this.extractReferenceId(
+          encounter.participant[0].individual,
+          "Practitioner"
+        );
+        practitionerUuids.add(practitionerUuid);
+      }
+
+      if (encounter.location?.[0]?.location?.reference) {
+        const locationUuid = this.extractReferenceId(
+          encounter.location[0].location,
+          "Location"
+        );
+        locationUuids.add(locationUuid);
+      }
+    }
+
+    return {
+      practitionerUuids: Array.from(practitionerUuids),
+      locationUuids: Array.from(locationUuids),
+    };
+  }
+
+  private createEncounterMappings(
+    encounters: any[],
+    practitionerMap: Map<string, string>,
+    facilityMap: Map<string, string>
+  ): Map<string, EncounterMapping> {
+    const mappings: Map<string, EncounterMapping> = new Map();
+
+    for (const encounter of encounters) {
+      const mapping: EncounterMapping = {};
+
+      if (encounter.participant?.[0]?.individual?.reference) {
+        const practitionerUuid = this.extractReferenceId(
+          encounter.participant[0].individual,
+          "Practitioner"
+        );
+        mapping.practitionerId = practitionerMap.get(practitionerUuid);
+
+        if (!mapping.practitionerId) {
+          logger.warn(
+            { encounterId: encounter.id, practitionerUuid },
+            "No SHR practitioner ID mapping found for encounter"
+          );
+        }
+      }
+
+      if (encounter.location?.[0]?.location?.reference) {
+        const locationUuid = this.extractReferenceId(
+          encounter.location[0].location,
+          "Location"
+        );
+        mapping.facilityId = facilityMap.get(locationUuid);
+
+        if (!mapping.facilityId) {
+          logger.warn(
+            { encounterId: encounter.id, locationUuid },
+            "No SHR facility ID mapping found for encounter"
+          );
+        }
+      }
+
+      mappings.set(encounter.id, mapping);
+    }
+
+    return mappings;
+  }
+
+  private async buildBundle(
+    patient: any,
+    encounters: any[],
+    observationsByEncounter: Record<string, any[]>,
+    encounterMappings: Map<string, EncounterMapping>
+  ): Promise<any> {
     const bundle: any = {
       resourceType: "Bundle",
       id: `batch-${uuidv4()}`,
@@ -33,33 +148,33 @@ export class FhirTransformer {
     const clinicalNotes: any[] = [];
     const drugObservations: any[] = [];
 
-
     for (const encounter of encounters) {
+      const mapping = encounterMappings.get(encounter.id);
+
       const transformedEncounter = await this.transformEncounter(
         encounter,
-        patient
+        patient,
+        mapping
       );
       this.addBundleEntry(bundle, transformedEncounter, "Encounter");
 
-      // Transform linked Observations
       const linkedObservations = observationsByEncounter[encounter.id] || [];
-      // const sampleObservations = linkedObservations.slice(0, 5);
-
       for (const observation of linkedObservations) {
         const obsType = this.conceptMapper.getObservationType(observation);
 
         switch (obsType) {
           case "drug":
-            drugObservations.push({ observation, encounter, patient });
+            drugObservations.push({ observation, encounter, patient, mapping });
             break;
           case "clinical-note":
-            clinicalNotes.push({ observation, encounter, patient });
+            clinicalNotes.push({ observation, encounter, patient, mapping });
             break;
           case "regular":
             const transformedObs = await this.transformObservation(
               observation,
               patient,
-              encounter
+              encounter,
+              mapping
             );
             this.addBundleEntry(bundle, transformedObs, "Observation");
             break;
@@ -67,13 +182,11 @@ export class FhirTransformer {
       }
     }
 
-    // Create Composition from clinical notes
     if (clinicalNotes.length > 0) {
       const composition = await this.createComposition(clinicalNotes, patient);
       this.addBundleEntry(bundle, composition, "Composition");
     }
 
-    // Create MedicationRequest from drug observations
     for (const drugData of drugObservations) {
       const medicationRequest = await this.createMedicationRequest(drugData);
       this.addBundleEntry(bundle, medicationRequest, "MedicationRequest");
@@ -125,13 +238,18 @@ export class FhirTransformer {
     return id;
   }
 
-  private async transformEncounter(encounter: any, patient: any): Promise<any> {
+  private async transformEncounter(
+    encounter: any,
+    patient: any,
+    mapping?: EncounterMapping 
+  ): Promise<any> {
     const transformedEncounter = { ...encounter };
 
+    // Remove unnecessary fields
     const fieldsToRemove = ["text", "partOf", "meta"];
-
     removeFields(transformedEncounter, fieldsToRemove);
 
+    // Set identifiers
     transformedEncounter.identifier = [
       {
         system: "http://fhir.openmrs.org",
@@ -139,14 +257,8 @@ export class FhirTransformer {
       },
     ];
 
-    // Transform patient reference - this is probably wrong since we can get CR_ID from patient resource
-    const shrPatientId = "CR7671914222027-5"; //this.mappings.patientMap.get(patient.id);
-    // if (!shrPatientId) {
-    //   throw new Error(
-    //     `No SHR patient ID mapping found for local ID: ${patient.id}`
-    //   );
-    // }
-
+    // Transform patient reference (you'll need to implement patient mapping logic)
+    const shrPatientId = await this.getShrPatientId(patient.id);
     transformedEncounter.subject = {
       reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
       identifier: {
@@ -155,73 +267,36 @@ export class FhirTransformer {
       },
     };
 
-    // Transform participant references
-    if (transformedEncounter.participant) {
+    // Transform practitioner references
+    if (transformedEncounter.participant && mapping?.practitionerId) {
       for (const participant of transformedEncounter.participant) {
-        if (participant.individual && participant.individual.reference) {
-          const localPractitionerId = this.extractReferenceId(
-            participant.individual,
-            "Practitioner"
-          );
-          const shrPractitionerId = "PUID-0155222-4";
-          // const shrPractitionerId = this.mappings.practitionerMap.get(
-          //   localPractitionerId
-          // );
-
-          // if (!shrPractitionerId) {
-          //   logger.warn(
-          //     { localPractitionerId },
-          //     "No SHR practitioner ID mapping found"
-          //   );
-          //   continue;
-          // }
-
-          participant.reference = `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`;
-          participant.individual = {
-            identifier: [
-              {
-                system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
-                value: shrPractitionerId,
-              },
-            ],
-          };
-        }
+        participant.reference = `https://hwr.kenya-hie.health/api/v4/Practitioner/${mapping.practitionerId}`;
+        participant.individual = {
+          identifier: [
+            {
+              system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
+              value: mapping.practitionerId,
+            },
+          ],
+        };
       }
     }
 
-    // Transform location array → serviceProvider
-    if (transformedEncounter.location) {
-      for (const loc of transformedEncounter.location) {
-        if (loc.location && loc.location.reference) {
-          const localLocId = this.extractReferenceId(loc.location, "Location");
-          const shrOrgId = "FID-45-107983-8";
-          // const shrOrgId = this.mappings.organizationMap.get(localLocId);
-
-          // if (!shrOrgId) {
-          //   logger.warn(
-          //     { localLocId },
-          //     "No SHR organization ID mapping found for location"
-          //   );
-          //   continue;
-          // }
-
-          transformedEncounter.serviceProvider = {
-            reference: `https://fr.kenya-hie.health/api/v4/Organization/${shrOrgId}`,
-            identifier: [
-              {
-                system: "https://fr.kenya-hie.health/api/v4/Organization",
-                value: shrOrgId,
-              },
-            ],
-          };
-
-          delete transformedEncounter.location;
-
-          break;
-        }
-      }
+    // Transform location to serviceProvider
+    if (mapping?.facilityId) {
+      transformedEncounter.serviceProvider = {
+        reference: `https://fr.kenya-hie.health/api/v4/Organization/${mapping.facilityId}`,
+        identifier: [
+          {
+            system: "https://fr.kenya-hie.health/api/v4/Organization",
+            value: mapping.facilityId,
+          },
+        ],
+      };
+      delete transformedEncounter.location;
     }
 
+    // Set encounter class
     transformedEncounter.class = {
       system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
       code: "OP",
@@ -234,7 +309,8 @@ export class FhirTransformer {
   private async transformObservation(
     observation: any,
     patient: any,
-    encounter: any
+    encounter: any,
+    mapping?: EncounterMapping 
   ): Promise<any> {
     const transformedObs = { ...observation };
 
@@ -246,8 +322,8 @@ export class FhirTransformer {
       "hasMember",
     ]);
 
-    const shrPatientId = "CR7671914222027-5"; // mapping logic
-
+    // Transform patient reference
+    const shrPatientId = await this.getShrPatientId(patient.id);
     transformedObs.subject = {
       reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
       type: "Patient",
@@ -263,20 +339,28 @@ export class FhirTransformer {
       reference: `urn:uuid:${encounter.id}`,
     };
 
-    const shrPractitionerId = "PUID-0155222-4"; // mapping logic
-    transformedObs.performer = [
-    {
-      reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${shrPractitionerId}`,
-      identifier: [
+    // Use the same practitioner as the parent encounter
+    if (mapping?.practitionerId) {
+      transformedObs.performer = [
         {
-          system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
-          value: shrPractitionerId,
+          reference: `https://hwr.kenya-hie.health/api/v4/Practitioner/${mapping.practitionerId}`,
+          identifier: [
+            {
+              system: "https://hwr.kenya-hie.health/api/v4/Practitioner",
+              value: mapping.practitionerId,
+            },
+          ],
         },
-      ],
-    },
-  ];
+      ];
+    }
 
     return transformedObs;
+  }
+
+  private async getShrPatientId(amrsPatientUuid: string): Promise<string> {
+    // TODO: Implement patient CR mapping logic
+    // For now, return a placeholder
+    return "CR7671914222027-5"; // This should come from your patient mapping service
   }
 
   private async createComposition(

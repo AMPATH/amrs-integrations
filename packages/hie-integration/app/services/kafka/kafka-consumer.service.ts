@@ -5,12 +5,14 @@ import {
   KafkaHealthStatus,
   ErrorEvent,
 } from '../../types/kafka.types';
+import { SHRService } from '../shr/shr.service';
 
 export class KafkaConsumerService {
   private isRunning = false;
   private consumers: Map<string, any> = new Map();
   private readonly maxRetries = 3;
   private readonly retryDelay = 1000; // 1 second
+  private shrService!: SHRService;
 
   /**
    * Initialize all Kafka consumers
@@ -18,7 +20,11 @@ export class KafkaConsumerService {
   async initialize(): Promise<void> {
     try {
       logger.info('Initializing Kafka consumer service...');
-      
+      const facilityUuid = 'default';
+
+      // Initialize SHR service
+      this.shrService = new SHRService(facilityUuid);
+
       // Validate Kafka connection first
       const isConnected = await kafkaService.validateConnection();
       if (!isConnected) {
@@ -117,23 +123,26 @@ export class KafkaConsumerService {
   }
 
   /**
-   * Handle FHIR events with retry logic
+   * Handle FHIR events with retry logic and transactional processing
    */
   private async handleFhirEvent(payload: any): Promise<void> {
     const startTime = Date.now();
     let retryCount = 0;
+    const event = kafkaService.parseEvent(payload) as any;
+    const eventId = event?.id || 'unknown';
 
     while (retryCount < this.maxRetries) {
       try {
         const message = kafkaService.parseMessage(payload);
-
-        const event = kafkaService.parseEvent(payload) as any;
         console.log('event');
         console.log(event.body);
-    
+
+        // Transactional processing: both operations must succeed
+        await this.processFhirEventTransactionally(event.body, eventId);
+        
         const processingTime = Date.now() - startTime;
         logger.info('FHIR event processed successfully', {
-          eventId: event.id,
+          eventId,
           processingTimeMs: processingTime,
         });
 
@@ -146,13 +155,14 @@ export class KafkaConsumerService {
           error: error instanceof Error ? error.message : String(error),
           retryCount,
           isLastRetry,
-          eventId: payload?.value ? JSON.parse(payload.value.toString())?.id : 'unknown',
+          eventId,
         });
 
         if (isLastRetry) {
-          // Log final failure and potentially send to dead letter queue
-          logger.error('Max retries exceeded for FHIR event', {
-            eventId: payload?.value ? JSON.parse(payload.value.toString())?.id : 'unknown',
+          // Send to dead letter queue on final failure
+          await this.sendToDeadLetterQueue(event, error);
+          logger.error('Max retries exceeded for FHIR event, sent to dead letter queue', {
+            eventId,
             finalError: error,
           });
           return;
@@ -161,6 +171,86 @@ export class KafkaConsumerService {
         // Wait before retry with exponential backoff
         await this.delay(this.retryDelay * Math.pow(2, retryCount - 1));
       }
+    }
+  }
+
+  /**
+   * Process FHIR event transactionally - both SHR and HAPI must succeed
+   */
+  private async processFhirEventTransactionally(bundle: any, eventId: string): Promise<void> {
+    let shrSuccess = false;
+    let hapiSuccess = false;
+    let shrError: Error | null = null;
+    let hapiError: Error | null = null;
+
+    try {
+      // Try SHR first
+      await this.shrService.postBundleToSHR(bundle);
+      shrSuccess = true;
+      logger.debug('SHR post successful', { eventId });
+    } catch (error) {
+      shrError = error as Error;
+      logger.error('SHR post failed', { eventId, error: shrError.message });
+    }
+
+    try {
+      // Try HAPI
+      await this.shrService.postBundleToHapi(bundle);
+      hapiSuccess = true;
+      logger.debug('HAPI post successful', { eventId });
+    } catch (error) {
+      hapiError = error as Error;
+      logger.error('HAPI post failed', { eventId, error: hapiError.message });
+    }
+
+    // If both failed, throw error
+    if (!shrSuccess && !hapiSuccess) {
+      throw new Error(`Both SHR and HAPI failed. SHR: ${shrError?.message}, HAPI: ${hapiError?.message}`);
+    }
+
+    // If only one failed, log warning but continue
+    if (!shrSuccess || !hapiSuccess) {
+      logger.warn('Partial success in FHIR event processing', {
+        eventId,
+        shrSuccess,
+        hapiSuccess,
+        shrError: shrError?.message,
+        hapiError: hapiError?.message
+      });
+    }
+  }
+
+  /**
+   * Send failed event to dead letter queue
+   */
+  private async sendToDeadLetterQueue(event: any, error: any): Promise<void> {
+    try {
+      const deadLetterPayload = {
+        originalEvent: event,
+        error: {
+          message: error instanceof Error ? error.message : String(error),
+          timestamp: new Date().toISOString(),
+          retryCount: this.maxRetries
+        },
+        metadata: {
+          service: 'hie-integration',
+          version: '1.0.0'
+        }
+      };
+
+      // Send to HAPI dead letter endpoint
+      await this.shrService.sendToDeadLetterQueue(deadLetterPayload);
+      
+      logger.info('Event sent to dead letter queue', {
+        eventId: event.id,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    } catch (dlqError) {
+      logger.error('Failed to send event to dead letter queue', {
+        eventId: event.id,
+        originalError: error instanceof Error ? error.message : String(error),
+        dlqError: dlqError instanceof Error ? dlqError.message : String(dlqError)
+      });
     }
   }
 

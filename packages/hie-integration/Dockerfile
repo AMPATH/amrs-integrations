@@ -1,4 +1,4 @@
-FROM node:16-alpine AS build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN yarn install --frozen-lockfile
 
 RUN yarn build
 
-FROM node:16-alpine AS runtime
+FROM node:20-alpine AS runtime
 
 WORKDIR /app
 

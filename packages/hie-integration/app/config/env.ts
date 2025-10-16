@@ -13,13 +13,19 @@ const getEnv = (key: string, defaultValue?: string): string => {
 export default {
   SERVER: {
     PORT: parseInt(getEnv("PORT", "3000")),
+    HOST: getEnv("HOST", "localhost"),
     ENV: getEnv("NODE_ENV", "development"),
   },
+  MEDIATOR: {
+    HOST: getEnv("MEDIATOR_HOST", getEnv("HOST", "localhost")),
+    PORT: parseInt(getEnv("MEDIATOR_PORT", getEnv("PORT", "3000"))),
+  },
   HIE: {
-    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "localhost:5001"),
+    OPENHIM_API_URL: getEnv("HIE_OPENHIM_API_URL", "https://localhost:8080"),
+    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "http://localhost:5001"),
     OPENHIM_FHIR_ENDPOINT: getEnv("HIE_OPENHIM_FHIR_ENDPOINT", "/shr-bundle"),
-    OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "hie-user"),
-    OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "hie-password"),
+    OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "root@openhim.org"),
+    OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "openhim-password"),
     BASE_URL: getEnv("HIE_BASE_URL", "https://uat.dha.go.ke"),
     AUTH_URL: getEnv("HIE_AUTH_URL", "/v1/hie-auth"),
     CLIENT_REGISTRY_URL: getEnv(

@@ -16,7 +16,7 @@ export default {
     ENV: getEnv("NODE_ENV", "development"),
   },
   HIE: {
-    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "localhost:5001"),
+    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "http://10.50.80.115:5001"),
     OPENHIM_FHIR_ENDPOINT: getEnv("HIE_OPENHIM_FHIR_ENDPOINT", "/shr-bundle"),
     OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "hie-user"),
     OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "hie-password"),
@@ -29,7 +29,7 @@ export default {
     SHR_FETCH_URL: getEnv("HIE_SHR_FETCH_URL", "/v1/shr/summary"),
     SHR_POST_BUNDLE_URL: getEnv(
       "HIE_SHR_POST_BUNDLE_URL",
-      "/v1/shr-med/bundle"
+      "/shr/hie"
     ),
     HAPI_POST_BUNDLE_URL: getEnv(
       "HIE_HAPI_POST_BUNDLE_URL",
@@ -62,17 +62,17 @@ export default {
   HAPI_FHIR: {
     BASE_URL: getEnv(
       "HAPI_FHIR_BASE_URL",
-      "http://10.50.80.115:5001/shr-med"
+      "http://10.50.80.115:5001/shr-bundle"
     ),
-    USERNAME: getEnv("HAPI_FHIR_USERNAME"),
-    PASSWORD: getEnv("HAPI_FHIR_PASSWORD"),
+    USERNAME: getEnv("HAPI_FHIR_USERNAME",""),
+    PASSWORD: getEnv("HAPI_FHIR_PASSWORD",""),
   },
   KAFKA: {
     BROKERS: getEnv("KAFKA_BROKERS", "10.50.80.115:9092").split(","),
-    CLIENT_ID: getEnv("KAFKA_CLIENT_ID", "  "),
+    CLIENT_ID: getEnv("KAFKA_CLIENT_ID", "hie-integration"),
     GROUP_ID: getEnv("KAFKA_GROUP_ID", "hie-integration-group"),
     TOPICS: {
-      FHIR_EVENTS: getEnv("KAFKA_FHIR_EVENTS_TOPIC", "fhir-events"),
+      FHIR_EVENTS: getEnv("KAFKA_FHIR_EVENTS_TOPIC", "fhir-bundles"),
     },
   },
 };

@@ -23,7 +23,7 @@ export class VisitService {
       INNER JOIN patient pat ON v.patient_id = pat.patient_id
       INNER JOIN person p ON pat.patient_id = p.person_id
       WHERE v.date_stopped IS NOT NULL
-      AND DATE(v.date_stopped) = ?
+      AND DATE(v.date_started) = ?
       AND v.voided = 0
       ORDER BY v.date_stopped
     `;

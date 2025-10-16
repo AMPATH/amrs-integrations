@@ -106,21 +106,45 @@ export class TokenService {
       `${credentials.username}:${credentials.password}`
     ).toString("base64");
 
-    const response = await axios.get(
-      `${config.HIE.BASE_URL}${config.HIE.AUTH_URL}`,
-      {
-        params: {
-          key: credentials.consumer_key
-        },
-        headers: {
-          Authorization: `Basic ${authCredentials}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 5000,
-      }
-    );
+    const authUrl = `${config.HIE.BASE_URL}${config.HIE.AUTH_URL}`;
+    logger.debug('Attempting authentication', {
+      url: authUrl,
+      consumerKey: credentials.consumer_key,
+      facilityUuid: credentials.location_uuid
+    });
 
-    return response.data;
+    try {
+      const response = await axios.get(
+        authUrl,
+        {
+          params: {
+            key: credentials.consumer_key
+          },
+          headers: {
+            Authorization: `Basic ${authCredentials}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,
+        }
+      );
+
+      logger.debug('Authentication successful', {
+        status: response.status,
+        facilityUuid: credentials.location_uuid
+      });
+
+      return response.data;
+    } catch (error: any) {
+      logger.error('Authentication failed', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: authUrl,
+        consumerKey: credentials.consumer_key,
+        facilityUuid: credentials.location_uuid
+      });
+      throw error;
+    }
   }
 
   clearToken(locationUuid: string): void {

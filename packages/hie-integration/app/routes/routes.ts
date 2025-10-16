@@ -12,7 +12,7 @@ import {
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
-import { kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
+import { KafkaConsumerService, kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
 import { HieMappingService } from "../services/amrs/hie-mapping-service";
 
 export const routes = (): ServerRoute[] => [
@@ -454,6 +454,9 @@ export const routes = (): ServerRoute[] => [
           cr_id: Joi.string()
             .required()
             .description("Client Registry ID (CRXXXXX)"),
+          facilityUuid: Joi.string()
+            .required()
+            .description("Facility UUID"),
         }),
       },
       tags: ["api", "shr"],
@@ -461,10 +464,7 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id, facilityUuid } = request.query as {
-        cr_id: string;
-        facilityUuid: string;
-      };
+      const { cr_id, facilityUuid } = request.query as { cr_id: string; facilityUuid: string };
       try {
         const service = new SHRService(facilityUuid);
         const data = await service.fetchPatientFromSHR(cr_id);
@@ -547,11 +547,10 @@ export const routes = (): ServerRoute[] => [
         "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
     },
     handler: async (request, h) => {
-      const { facilityUuid } = request.query as { facilityUuid: string };
       const { date } = request.payload as { date?: string };
 
       try {
-        const service = new SHRService(facilityUuid);
+        const service = new KafkaConsumerService();
         const jobDate = date ? new Date(date) : new Date();
         const result = await service.executeBatchJob(jobDate);
 
@@ -656,4 +655,29 @@ export const routes = (): ServerRoute[] => [
       }
     },
   },
+
+  // Kafka Consumer Status Endpoint
+  {
+    method: "GET",
+    path: "/hie/kafka/status",
+    options: {
+      tags: ["api", "monitoring", "kafka"],
+      description: "Detailed Kafka consumer status",
+    },
+    handler: async (request, h) => {
+      try {
+        const status = await kafkaConsumerService.getConsumerStatus();
+        return h.response(status).code(200);
+      } catch (error: any) {
+        logger.error(`Kafka status check failed: ${error.message}`);
+        return h
+          .response({
+            error: "Kafka status check failed",
+            details: error.message,
+            timestamp: new Date().toISOString(),
+          })
+          .code(500);
+      }
+    },
+  }
 ];

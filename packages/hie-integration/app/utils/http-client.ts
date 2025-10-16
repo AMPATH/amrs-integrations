@@ -9,6 +9,7 @@ export class HieHttpClient {
   private facilityUuid: string;
 
   constructor(baseURL: string, facilityUuid: string) {
+    logger.debug('HieHttpClient initialized', { facilityUuid, baseURL });
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
     this.baseURL = baseURL;

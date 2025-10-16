@@ -12,6 +12,7 @@ import { HieMappingService } from "../amrs/hie-mapping-service";
 
 export class SHRService {
   private httpClient: HieHttpClient;
+  private openHIM: HieHttpClient;
   private visitService: VisitService;
   private amrsFhirClient: AmrsFhirClient;
   private shrFhirClient: ShrFhirClient;
@@ -20,7 +21,9 @@ export class SHRService {
   private mappingService: HieMappingService;
 
   constructor(facilityUuid: string) {
+    logger.info('Initializing SHRService', { facilityUuid });
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
+    this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, facilityUuid);
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
     this.shrFhirClient = new ShrFhirClient(facilityUuid);
@@ -209,8 +212,14 @@ export class SHRService {
       );
       return response.data || [];
     } catch (error: any) {
-      logger.error(`HIE client registry request failed: ${error.message}`);
-      throw new Error(error.response?.data);
+      logger.error(`HIE client registry request failed: ${error.message}`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: config.HIE.SHR_POST_BUNDLE_URL,
+        bundleId: bundle.id
+      });
+      throw new Error(error.response?.data || error.message);
     }
   }
 
@@ -224,6 +233,79 @@ export class SHRService {
     } catch (error: any) {
       logger.error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
       throw new Error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
+    }
+  }
+
+  async postBundleToExternalHapi(bundle: FhirBundle<any>): Promise<any> {
+    try {
+      // Use ShrFhirClient which is already configured for OpenHIM
+      const response = await this.shrFhirClient.postBundle(bundle);
+      
+      logger.info(`[EXTERNAL SHR] ✓ Bundle posted to OpenHIM successfully`, {
+        bundleId: (bundle as any).id,
+        route: config.HIE.OPENHIM_FHIR_ENDPOINT,
+      });
+      return response;
+    } catch (error: any) {
+      const errorDetails = {
+        bundleId: (bundle as any).id,
+        baseUrl: config.HIE.OPENHIM_BASE_URL,
+        path: config.HIE.OPENHIM_FHIR_ENDPOINT,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: JSON.stringify(error.response?.data),
+        errorMessage: error.message,
+        errorCode: error.code,
+      };
+      
+      logger.error(`[EXTERNAL SHR] ✗ Failed to post bundle to OpenHIM`, errorDetails);
+      throw error;
+    }
+  }
+
+  async postBundleToShrHieWithToken(bundle: FhirBundle<any>): Promise<any> {
+    try {
+      const fullUrl = `${this.openHIM.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`;
+      logger.info(`[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`, {
+        fullUrl,
+        baseUrl: this.openHIM
+        
+        
+        
+        .getBaseURL(),
+        path: config.HIE.SHR_POST_BUNDLE_URL,
+        bundleId: (bundle as any).id,
+        bundleType: bundle.resourceType,
+        entryCount: bundle.entry?.length || 0,
+      });
+      
+      // Use HIE HTTP client which handles token authentication
+      const response = await this.openHIM.post<any>(
+        config.HIE.SHR_POST_BUNDLE_URL,
+        bundle
+      );
+      
+      logger.info(`[HIE SHR] ✓ Bundle posted to /shr/hie successfully`, {
+        bundleId: (bundle as any).id,
+        status: response.status,
+        fullUrl,
+      });
+      return response.data;
+    } catch (error: any) {
+      const errorDetails = {
+        bundleId: (bundle as any).id,
+        fullUrl: `${this.httpClient.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`,
+        baseUrl: this.httpClient.getBaseURL(),
+        path: config.HIE.SHR_POST_BUNDLE_URL,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: JSON.stringify(error.response?.data),
+        errorMessage: error.message,
+        errorCode: error.code,
+      };
+      
+      logger.error(`[HIE SHR] ✗ Failed to post bundle to /shr/hie`, errorDetails);
+      throw new Error(`Failed to post bundle to HIE SHR: ${error.message}`);
     }
   }
 
@@ -265,12 +347,7 @@ export class SHRService {
       // get the practitioner and facilty from amrs using both location uuid and provider uuid
 
       const shrBundle = await this.transformer.transform(patientData);
-      // console.log("shrBundle", JSON.stringify(shrBundle, null, 2));
-
       return shrBundle;
-      // const response = await this.shrFhirClient.postBundle(shrBundle);
-      // console.log("-------------------------------");
-      // console.log("response", JSON.stringify(response, null, 2));
 
       // logger.info(
       //   {
@@ -296,58 +373,7 @@ export class SHRService {
     }
   }
 
-  async executeBatchJob(
-    jobDate: Date = new Date()
-  ): Promise<{ success: boolean; processedPatients: number }> {
-    // await this.conceptService.initializeConceptCache();
 
-    const processingDate = new Date(jobDate);
-    processingDate.setDate(processingDate.getDate() - 1); // def yesterday
-    const dateString = processingDate.toISOString().split("T")[0];
-
-    logger.info({ date: dateString }, "Starting SHR batch job for date");
-
-    try {
-      // 1. Get patient IDs from AMRS
-      const patientVisitMap = await this.visitService.findClosedVisitsForDate(
-        dateString
-      );
-      const patientUuids = Array.from(patientVisitMap.keys());
-
-      // Initialize transformer with concept service
-      // const transformer = new FhirTransformer(this.conceptService);
-
-      logger.info(
-        { count: patientUuids.length },
-        `Processing data for ${patientUuids.length} patients`
-      );
-
-      // 2. Process each patient
-      for (const patientUuid of patientUuids) {
-        try {
-          const patientData = await this.amrsFhirClient.getPatientDataForDate(
-            patientUuid,
-            dateString
-          );
-          const shrBundle = await this.transformer.transform(patientData);
-          const response = await this.shrFhirClient.postBundle(shrBundle);
-          this.validateBundleResponse(response, patientUuid);
-        } catch (patientError) {
-          logger.error(
-            { error: patientError, patientUuid, date: dateString },
-            `Failed to process patient ${patientUuid} for date ${dateString}`
-          );
-          // TODO: Implement retry mechanism or store somwheere
-        }
-      }
-
-      logger.info("SHR Batch Job completed successfully");
-      return { success: true, processedPatients: patientUuids.length };
-    } catch (error) {
-      logger.fatal({ error }, "SHR Batch Job failed catastrophically");
-      throw error;
-    }
-  }
 
   private async processPatientForDate(
     patientUuid: string,

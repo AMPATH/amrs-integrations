@@ -71,7 +71,7 @@ export class HieMappingService {
   ): Promise<Map<string, string>> {
     if (amrsLocationUuids.length === 0) return new Map();
 
-    const hieDataSource = this.dbManager.getDataSource("hie");
+    const hieDataSource = this.dbManager.getDataSource("primary");
     const placeholders = amrsLocationUuids.map(() => "?").join(",");
 
     const query = `
@@ -95,7 +95,61 @@ export class HieMappingService {
       throw error;
     }
   }
+  async getShrFacilityIdbyFID(
+    fid: string
+  ): Promise<string> {
+    const hieDataSource = this.dbManager.getDataSource("hie");
 
+    const query = `
+      SELECT fl.location_uuid, fl.facility_code as fid
+      FROM facility_locations fl
+      WHERE fl.facility_code=?
+    `;
+
+    try {
+      const results = await hieDataSource.query(query, [fid]);
+      
+      if (!results || results.length === 0) {
+        throw new Error(`No facility found for FID: ${fid}`);
+      }
+      
+      return results[0].location_uuid;
+    } catch (error) {
+      logger.error(
+        { error, fid },
+        "Failed to fetch SHR Facility ID"
+      );
+      throw error;
+    }
+  }
+
+  async hasActiveCredentials(facilityId: string): Promise<boolean> {
+    const hieDataSource = this.dbManager.getDataSource("hie");
+
+    const query = `
+      SELECT COUNT(*) as count
+      FROM facility_credentials fc
+      WHERE fc.location_uuid = ? AND fc.is_active = 1
+    `;
+
+    try {
+      logger.debug('Checking credentials for facility', { facilityId });
+      const results = await hieDataSource.query(query, [facilityId]);
+      const hasCredentials = results[0].count > 0;
+      logger.debug('Credentials check result', {
+        facilityId,
+        hasCredentials,
+        count: results[0].count
+      });
+      return hasCredentials;
+    } catch (error) {
+      logger.error(
+        { error, facilityId },
+        "Failed to check active credentials"
+      );
+      return false;
+    }
+  }
   async saveCredentials(
     credentials: FacilityCredentialsData
   ): Promise<FacilityCredentialsRecord> {

@@ -76,7 +76,6 @@ export const initServer = async () => {
 
     return server;
   } catch (error) {
-    console.log("error", error)
     logger.error('Failed to initialize server:', error);
     process.exit(1);
   }

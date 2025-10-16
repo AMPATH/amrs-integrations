@@ -36,6 +36,7 @@ export interface KafkaHealthStatus {
   brokers: string[];
   topics: string[];
   consumerGroups: string[];
+  isRunning?: boolean;
   lastError?: string;
   timestamp: string;
 }

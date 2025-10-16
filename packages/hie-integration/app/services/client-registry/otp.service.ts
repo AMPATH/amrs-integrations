@@ -15,8 +15,8 @@ export class OtpService {
   private httpClient: HieHttpClient;
   private readonly SESSION_TIMEOUT_SECONDS = 15 * 60; // 15 minutes
 
-  constructor(facilityUuid: string) {
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
+  constructor(locationUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
   }
 
   async sendOtp(

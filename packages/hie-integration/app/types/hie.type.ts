@@ -138,7 +138,7 @@ export interface PatientSearchPayload {
   sessionId?: string;
   otp?: string;
   skipOtp?: boolean;
-  facilityUuid: string;
+  locationUuid: string;
 }
 
 export interface PractitionerRegistryResponse {
@@ -171,7 +171,7 @@ export enum FacilityFilterType {
 export interface FacilityFilterDto {
   filterType: FacilityFilterType;
   filterValue: string;
-  facilityUuid: string;
+  locationUuid: string;
 }
 export interface HieFacilityFilteSearchrDto {
   registration_number?: string;

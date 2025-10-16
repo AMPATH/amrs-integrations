@@ -6,13 +6,14 @@ export class HieHttpClient {
   private axiosInstance: AxiosInstance;
   private tokenService: TokenService;
   private baseURL: string;
-  private facilityUuid: string;
+  private locationUuid: string;
+  private facilityUuid: string = "";
 
-  constructor(baseURL: string, facilityUuid: string) {
+  constructor(baseURL: string, locationUuid: string) {
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
     this.baseURL = baseURL;
-    this.facilityUuid = facilityUuid;
+    this.locationUuid = locationUuid;
 
     this.setupInterceptors();
   }
@@ -22,14 +23,14 @@ export class HieHttpClient {
       async (config) => {
         try {
           const token = await this.tokenService.getAccessToken(
-            this.facilityUuid
+            this.locationUuid
           );
           config.headers.Authorization = `Bearer ${token}`;
           config.headers["Content-Type"] = "application/json";
           return config;
         } catch (error) {
           logger.error(
-            `Failed to get token for facility ${this.facilityUuid}:`,
+            `Failed to get token for facility ${this.locationUuid}:`,
             error
           );
           return Promise.reject(error);
@@ -45,17 +46,17 @@ export class HieHttpClient {
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          this.tokenService.clearToken(this.facilityUuid);
+          // this.tokenService.clearToken(this.facilityUuid);
 
           try {
             const token = await this.tokenService.getAccessToken(
-              this.facilityUuid
+              this.locationUuid
             );
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return this.axiosInstance(originalRequest);
           } catch (retryError) {
             logger.error(
-              `Token refresh failed for facility ${this.facilityUuid}:`,
+              `Token refresh failed for facility ${this.locationUuid}:`,
               retryError
             );
             return Promise.reject(retryError);
@@ -65,7 +66,7 @@ export class HieHttpClient {
         if (error.response) {
           if (error.response.status >= 400) {
             logger.error(
-              `HIE API Error for facility ${this.facilityUuid}: ${
+              `HIE API Error for facility ${this.locationUuid}: ${
                 error.response.status
               } - ${JSON.stringify(error.response.data)}`
             );

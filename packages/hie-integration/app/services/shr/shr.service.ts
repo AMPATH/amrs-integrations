@@ -30,7 +30,7 @@ export class SHRService {
     this.transformer = new FhirTransformer(this.mappingService);
   }
 
-  async fetchPatientFromSHR(cr_id: string): Promise<any> {
+  async fetchSHR(cr_id: string): Promise<any> {
     try {
       const response = await this.httpClient.get<FhirBundle<any>>(
         config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
@@ -46,17 +46,6 @@ export class SHRService {
 
       // Transform searchset to collection bundle
       const collectionBundle = this.transformToCollectionBundle(response.data);
-      
-      // Post the collection bundle to OpenHIM before returning
-      try {
-        logger.debug(`Posting transformed bundle for patient ${cr_id} to OpenHIM`);
-        await this.postBundleToOpenHIM(collectionBundle);
-        logger.debug(`Successfully posted bundle for patient ${cr_id} to OpenHIM`);
-      } catch (openHimError: any) {
-        logger.error(`Failed to post bundle to OpenHIM for patient ${cr_id}: ${openHimError.message}`);
-        // Continue execution - don't fail the entire operation if OpenHIM post fails
-        // The collection bundle will still be returned for other uses
-      }
       
       return collectionBundle;
     } catch (error: any) {

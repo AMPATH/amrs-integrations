@@ -13,13 +13,19 @@ const getEnv = (key: string, defaultValue?: string): string => {
 export default {
   SERVER: {
     PORT: parseInt(getEnv("PORT", "3000")),
+    HOST: getEnv("HOST", "localhost"),
     ENV: getEnv("NODE_ENV", "development"),
   },
+  MEDIATOR: {
+    HOST: getEnv("MEDIATOR_HOST", getEnv("HOST", "localhost")),
+    PORT: parseInt(getEnv("MEDIATOR_PORT", getEnv("PORT", "3000"))),
+  },
   HIE: {
-    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "http://10.50.80.115:5001"),
+    OPENHIM_API_URL: getEnv("HIE_OPENHIM_API_URL", "https://localhost:8080"),
+    OPENHIM_BASE_URL: getEnv("HIE_OPENHIM_BASE_URL", "http://localhost:5001"),
     OPENHIM_FHIR_ENDPOINT: getEnv("HIE_OPENHIM_FHIR_ENDPOINT", "/shr-bundle"),
-    OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "hie-user"),
-    OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "hie-password"),
+    OPENHIM_USERNAME: getEnv("HIE_OPENHIM_USERNAME", "root@openhim.org"),
+    OPENHIM_PASSWORD: getEnv("HIE_OPENHIM_PASSWORD", "openhim-password"),
     BASE_URL: getEnv("HIE_BASE_URL", "https://uat.dha.go.ke"),
     AUTH_URL: getEnv("HIE_AUTH_URL", "/v1/hie-auth"),
     CLIENT_REGISTRY_URL: getEnv(
@@ -27,10 +33,7 @@ export default {
       "/v3/client-registry/fetch-client"
     ),
     SHR_FETCH_URL: getEnv("HIE_SHR_FETCH_URL", "/v1/shr/summary"), // v1/international-patient-summary
-    SHR_POST_BUNDLE_URL: getEnv(
-      "HIE_SHR_POST_BUNDLE_URL",
-      "/shr/hie"
-    ),
+    SHR_POST_BUNDLE_URL: getEnv("HIE_SHR_POST_BUNDLE_URL", "/shr/hie"),
     HAPI_POST_BUNDLE_URL: getEnv(
       "HIE_HAPI_POST_BUNDLE_URL",
       "/v1/hapi-med/bundle"
@@ -64,8 +67,8 @@ export default {
       "HAPI_FHIR_BASE_URL",
       "http://10.50.80.115:5001/shr-bundle"
     ),
-    USERNAME: getEnv("HAPI_FHIR_USERNAME",""),
-    PASSWORD: getEnv("HAPI_FHIR_PASSWORD",""),
+    USERNAME: getEnv("HAPI_FHIR_USERNAME", ""),
+    PASSWORD: getEnv("HAPI_FHIR_PASSWORD", ""),
   },
   KAFKA: {
     BROKERS: getEnv("KAFKA_BROKERS", "10.50.80.115:9092").split(","),

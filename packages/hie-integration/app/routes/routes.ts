@@ -12,7 +12,7 @@ import {
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
-import { kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
+import { KafkaConsumerService, kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
 import { HieMappingService } from "../services/amrs/hie-mapping-service";
 
 export const routes = (): ServerRoute[] => [
@@ -547,11 +547,10 @@ export const routes = (): ServerRoute[] => [
         "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
     },
     handler: async (request, h) => {
-      const { facilityUuid } = request.query as { facilityUuid: string };
       const { date } = request.payload as { date?: string };
 
       try {
-        const service = new SHRService(facilityUuid);
+        const service = new KafkaConsumerService();
         const jobDate = date ? new Date(date) : new Date();
         const result = await service.executeBatchJob(jobDate);
 

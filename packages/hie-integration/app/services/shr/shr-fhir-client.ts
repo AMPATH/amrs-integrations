@@ -13,7 +13,7 @@ export class ShrFhirClient {
   async postBundle(bundle: any): Promise<any> {
     try {
       // Call OpenHIM kafka channel to post bundle to SHR
-      const response = await this.httpClient.post("/v1/shr-med/bundle", bundle);
+      const response = await this.httpClient.post("/v1/shr", bundle);
       logger.debug(
         { statusCode: response.status },
         "SHR Bundle POST successful"

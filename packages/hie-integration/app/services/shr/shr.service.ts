@@ -296,58 +296,7 @@ export class SHRService {
     }
   }
 
-  async executeBatchJob(
-    jobDate: Date = new Date()
-  ): Promise<{ success: boolean; processedPatients: number }> {
-    // await this.conceptService.initializeConceptCache();
 
-    const processingDate = new Date(jobDate);
-    processingDate.setDate(processingDate.getDate() - 1); // def yesterday
-    const dateString = processingDate.toISOString().split("T")[0];
-
-    logger.info({ date: dateString }, "Starting SHR batch job for date");
-
-    try {
-      // 1. Get patient IDs from AMRS
-      const patientVisitMap = await this.visitService.findClosedVisitsForDate(
-        dateString
-      );
-      const patientUuids = Array.from(patientVisitMap.keys());
-
-      // Initialize transformer with concept service
-      // const transformer = new FhirTransformer(this.conceptService);
-
-      logger.info(
-        { count: patientUuids.length },
-        `Processing data for ${patientUuids.length} patients`
-      );
-
-      // 2. Process each patient
-      for (const patientUuid of patientUuids) {
-        try {
-          const patientData = await this.amrsFhirClient.getPatientDataForDate(
-            patientUuid,
-            dateString
-          );
-          const shrBundle = await this.transformer.transform(patientData);
-          const response = await this.shrFhirClient.postBundle(shrBundle);
-          this.validateBundleResponse(response, patientUuid);
-        } catch (patientError) {
-          logger.error(
-            { error: patientError, patientUuid, date: dateString },
-            `Failed to process patient ${patientUuid} for date ${dateString}`
-          );
-          // TODO: Implement retry mechanism or store somwheere
-        }
-      }
-
-      logger.info("SHR Batch Job completed successfully");
-      return { success: true, processedPatients: patientUuids.length };
-    } catch (error) {
-      logger.fatal({ error }, "SHR Batch Job failed catastrophically");
-      throw error;
-    }
-  }
 
   private async processPatientForDate(
     patientUuid: string,

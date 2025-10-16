@@ -64,15 +64,15 @@ export default {
       "HAPI_FHIR_BASE_URL",
       "http://10.50.80.115:5001/shr-med"
     ),
-    USERNAME: getEnv("HAPI_FHIR_USERNAME"),
-    PASSWORD: getEnv("HAPI_FHIR_PASSWORD"),
+    USERNAME: getEnv("HAPI_FHIR_USERNAME",""),
+    PASSWORD: getEnv("HAPI_FHIR_PASSWORD",""),
   },
   KAFKA: {
     BROKERS: getEnv("KAFKA_BROKERS", "10.50.80.115:9092").split(","),
-    CLIENT_ID: getEnv("KAFKA_CLIENT_ID", "  "),
+    CLIENT_ID: getEnv("KAFKA_CLIENT_ID", "hie-integration"),
     GROUP_ID: getEnv("KAFKA_GROUP_ID", "hie-integration-group"),
     TOPICS: {
-      FHIR_EVENTS: getEnv("KAFKA_FHIR_EVENTS_TOPIC", "fhir-events"),
+      FHIR_EVENTS: getEnv("KAFKA_FHIR_EVENTS_TOPIC", "fhir-bundle"),
     },
   },
 };

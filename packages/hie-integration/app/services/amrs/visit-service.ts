@@ -25,6 +25,7 @@ export class VisitService {
       WHERE v.date_stopped IS NOT NULL
       AND DATE(v.date_stopped) = ?
       AND v.voided = 0
+      AND v.location_id = 195
       ORDER BY v.date_stopped
     `;
 

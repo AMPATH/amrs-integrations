@@ -95,7 +95,32 @@ export class HieMappingService {
       throw error;
     }
   }
+  async getShrFacilityIdbyFID(
+    fid: string
+  ): Promise<string> {
 
+
+    const hieDataSource = this.dbManager.getDataSource("hie");
+
+
+    const query = `
+      SELECT fl.location_uuid, fl.facility_code as fid
+      FROM facility_locations fl
+      WHERE fl.facility_code=?
+    `;
+
+    try {
+      const results = await hieDataSource.query(query, [fid]);
+    
+      return results.location_uuid;
+    } catch (error) {
+      logger.error(
+        { error, uuids: fid },
+        "Failed to batch fetch SHR Facility IDs"
+      );
+      throw error;
+    }
+  }
   async saveCredentials(
     credentials: FacilityCredentialsData
   ): Promise<FacilityCredentialsRecord> {

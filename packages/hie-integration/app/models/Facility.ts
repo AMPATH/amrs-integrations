@@ -11,11 +11,7 @@ import {
 @Entity("facilities")
 @Index(["facility_code", "registration_number"], { unique: true })
 export class Facility {
-  @PrimaryColumn({ unique: true })
-  @Generated("uuid")
-  uuid!: string;
-
-  @Column({ unique: true })
+  @PrimaryColumn()
   id!: string;
 
   @Column({ type: "varchar", length: 255 })
@@ -39,7 +35,7 @@ export class Facility {
   @Column({ type: "varchar", length: 30, nullable: true })
   facility_owner!: string;
 
-  @Column({ type: "varchar", length: 30, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   facility_type!: string;
 
   @Column({ type: "varchar", length: 255, nullable: true })

@@ -10,9 +10,9 @@ export class ClientRegistryService {
   private httpClient: HieHttpClient;
   private otpService: OtpService;
 
-  constructor(facilityUuid: string) {
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
-    this.otpService = new OtpService(facilityUuid);
+  constructor(locationUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
+    this.otpService = new OtpService(locationUuid);
   }
 
   async fetchPatientFromHie(

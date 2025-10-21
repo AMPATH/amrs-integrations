@@ -1,9 +1,11 @@
-import Hapi from "@hapi/hapi";
-import hapiPino from "hapi-pino";
-import { logger } from "./utils/logger";
-import { routes } from "./routes/routes";
-import { DatabaseManager } from "./config/database";
-import { kafkaConsumerService } from "./services/kafka/kafka-consumer.service";
+import Hapi from '@hapi/hapi';
+import hapiPino from 'hapi-pino';
+import { logger } from './utils/logger';
+import { routes } from './routes/routes';
+import { DatabaseManager } from './config/database';
+import { kafkaConsumerService } from './services/kafka/kafka-consumer.service';
+import { MediatorUtils } from './utils/mediator';
+import { getMediatorConfig } from './config/mediator';
 
 export const initServer = async () => {
   // Initialize database connections
@@ -11,6 +13,10 @@ export const initServer = async () => {
     const dbManager = DatabaseManager.getInstance();
     await dbManager.initializeAll();
     await kafkaConsumerService.initialize();
+    
+    // Initialize mediator
+    // move this to after server starts
+    
     // Get server configuration from database manager
     const serverConfig = dbManager.getServerConfig();
 
@@ -91,6 +97,10 @@ export const startServer = async () => {
   const server = await initServer();
   await server.start();
   server.logger.info(`Server running on ${server.info.uri}`);
+  await MediatorUtils.initialize(getMediatorConfig());
+  // Activate mediator heartbeat after server starts
+  MediatorUtils.activateHeartbeat();
+  
   return server;
 };
 

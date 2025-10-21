@@ -75,6 +75,7 @@ export const routes = (): ServerRoute[] => [
         payload: Joi.object({
           sessionId: Joi.string().required(),
           otp: Joi.string().required(),
+          locationUuid: Joi.string().required(),
         }),
       },
       tags: ["api", "hie", "client-registry", "otp"],
@@ -122,6 +123,7 @@ export const routes = (): ServerRoute[] => [
           identificationType: Joi.string()
             .valid(...Object.values(IdentifierType))
             .default("National ID"),
+          locationUuid: Joi.string().required(),
         }),
       },
       tags: ["api", "hie", "client-registry", "otp"],
@@ -315,6 +317,7 @@ export const routes = (): ServerRoute[] => [
             .description(
               "Facility code e.g 24749 of registration number e.g GK-016503"
             ),
+          locationUuid: Joi.string().required().description("Location uuid"),
         }),
       },
       tags: ["api", "hie", "facility-registry"],
@@ -350,11 +353,7 @@ export const routes = (): ServerRoute[] => [
     options: {
       validate: {
         payload: Joi.object({
-          location_uuid: Joi.string()
-            .uuid()
-            .required()
-            .description("Facility location UUID"),
-          facility_name: Joi.string().required().description("Facility name"),
+          facility_code: Joi.string().required().description("Facility Code"),
           consumer_key: Joi.string().required().description("HIE Consumer Key"),
           username: Joi.string().required().description("HIE Username"),
           password: Joi.string().required().description("HIE Password"),
@@ -464,7 +463,10 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id, facilityUuid } = request.query as { cr_id: string; facilityUuid: string };
+      const { cr_id, facilityUuid } = request.query as {
+        cr_id: string;
+        facilityUuid: string;
+      };
       try {
         const service = new SHRService(facilityUuid);
         const data = await service.fetchPatientFromSHR(cr_id);
@@ -547,6 +549,7 @@ export const routes = (): ServerRoute[] => [
         "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
     },
     handler: async (request, h) => {
+      const { facilityUuid } = request.query as { facilityUuid: string };
       const { date } = request.payload as { date?: string };
 
       try {

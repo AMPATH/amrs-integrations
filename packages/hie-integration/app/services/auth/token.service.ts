@@ -2,10 +2,13 @@ import { cache } from "../../utils/cache.util";
 import { logger } from "../../utils/logger";
 import axios from "axios";
 import config from "../../config/env";
-import { FacilityCredentials, HieMappingService } from "../amrs/hie-mapping-service";
+import {
+  FacilityCredentials,
+  HieMappingService,
+} from "../amrs/hie-mapping-service";
 
 const TOKEN_CACHE_PREFIX = "hie_access_token";
-const TOKEN_TTL = 15; // 15 seconds 
+const TOKEN_TTL = 15; // 15 seconds
 const CREDENTIALS_CACHE_PREFIX = "facility_credentials";
 const CREDENTIALS_TTL = 30 * 60;
 
@@ -23,68 +26,82 @@ export class TokenService {
     this.hieMappingService = new HieMappingService();
   }
 
-  private getTokenCacheKey(locationUuid: string): string {
-    return `${TOKEN_CACHE_PREFIX}_${locationUuid}`;
+  private getTokenCacheKey(facilityCode: string): string {
+    return `${TOKEN_CACHE_PREFIX}_${facilityCode}`;
   }
 
-  private getCredentialsCacheKey(locationUuid: string): string {
-    return `${CREDENTIALS_CACHE_PREFIX}_${locationUuid}`;
+  private getCredentialsCacheKey(facilityCode: string): string {
+    return `${CREDENTIALS_CACHE_PREFIX}_${facilityCode}`;
   }
 
   async getAccessToken(locationUuid: string): Promise<string> {
-    const cacheKey = this.getTokenCacheKey(locationUuid);
+    // get facility code from location uuid
+    const facilityCode = await this.hieMappingService.getFacilityCodeUsingLocationUuid(
+      locationUuid
+    );
+    console.log({ facilityCode });
+    if (!facilityCode) {
+      throw new Error(`Facility code for location ${locationUuid} not found`);
+    }
+    const cacheKey = this.getTokenCacheKey(facilityCode);
 
     const cachedToken = cache.get<string>(cacheKey);
     if (cachedToken) {
-      logger.debug(`Using cached token for facility: ${locationUuid}`);
+      logger.debug(`Using cached token for facility: ${facilityCode}`);
       return cachedToken;
     }
 
-    if (this.refreshingFlags.get(locationUuid)) {
+    if (this.refreshingFlags.get(facilityCode)) {
       return new Promise((resolve, reject) => {
-        const queue = this.refreshQueues.get(locationUuid) || [];
+        const queue = this.refreshQueues.get(facilityCode) || [];
         queue.push({ resolve, reject });
-        this.refreshQueues.set(locationUuid, queue);
+        this.refreshQueues.set(facilityCode, queue);
       });
     }
 
-    this.refreshingFlags.set(locationUuid, true);
+    this.refreshingFlags.set(facilityCode, true);
 
     try {
-      const credentials = await this.getCachedFacilityCredentials(locationUuid);
+      const credentials = await this.getCachedFacilityCredentials(facilityCode);
       if (!credentials) {
-        throw new Error(`No active credentials found for facility: ${locationUuid}`);
+        throw new Error(
+          `No active credentials found for facility: ${facilityCode}`
+        );
       }
 
       const token = await this.fetchNewToken(credentials);
 
       cache.set(cacheKey, token, TOKEN_TTL);
 
-      const queue = this.refreshQueues.get(locationUuid) || [];
+      const queue = this.refreshQueues.get(facilityCode) || [];
       queue.forEach(({ resolve }) => resolve(token));
 
-      this.refreshQueues.delete(locationUuid);
-      this.refreshingFlags.set(locationUuid, false);
+      this.refreshQueues.delete(facilityCode);
+      this.refreshingFlags.set(facilityCode, false);
 
-      logger.info(`Successfully obtained token for facility: ${locationUuid}`);
+      logger.info(`Successfully obtained token for facility: ${facilityCode}`);
       return token;
-
     } catch (error: any) {
-      const queue = this.refreshQueues.get(locationUuid) || [];
+      const queue = this.refreshQueues.get(facilityCode) || [];
       queue.forEach(({ reject }) => reject(error));
 
-      this.refreshQueues.delete(locationUuid);
-      this.refreshingFlags.set(locationUuid, false);
+      this.refreshQueues.delete(facilityCode);
+      this.refreshingFlags.set(facilityCode, false);
 
-      logger.error(`HIE authentication failed for facility ${locationUuid}: ${error.message}`);
+      logger.error(
+        `HIE authentication failed for facility ${facilityCode}: ${error.message}`
+      );
       throw new Error(
-        `HIE authentication failed for facility ${locationUuid}: ${error.response?.data || error.message
+        `HIE authentication failed for facility ${facilityCode}: ${
+          error.response?.data || error.message
         }`
       );
     }
   }
 
-  private async getCachedFacilityCredentials(locationUuid: string): Promise<FacilityCredentials | null> {
+  private async getCachedFacilityCredentials(
+    locationUuid: string
+  ): Promise<FacilityCredentials | null> {
     const cacheKey = this.getCredentialsCacheKey(locationUuid);
 
     const cached = cache.get<FacilityCredentials>(cacheKey);
@@ -93,7 +110,9 @@ export class TokenService {
     }
 
     // Fetch from HieMappingService
-    const credentials = await this.hieMappingService.getFacilityCredentials(locationUuid);
+    const credentials = await this.hieMappingService.getFacilityCredentials(
+      locationUuid
+    );
     if (credentials) {
       cache.set(cacheKey, credentials, CREDENTIALS_TTL);
     }
@@ -101,61 +120,39 @@ export class TokenService {
     return credentials;
   }
 
-  private async fetchNewToken(credentials: FacilityCredentials): Promise<string> {
+  private async fetchNewToken(
+    credentials: FacilityCredentials
+  ): Promise<string> {
     const authCredentials = Buffer.from(
       `${credentials.username}:${credentials.password}`
     ).toString("base64");
 
-    const authUrl = `${config.HIE.BASE_URL}${config.HIE.AUTH_URL}`;
-    logger.debug('Attempting authentication', {
-      url: authUrl,
-      consumerKey: credentials.consumer_key,
-      facilityUuid: credentials.location_uuid
-    });
+    const response = await axios.get(
+      `${config.HIE.BASE_URL}${config.HIE.AUTH_URL}`,
+      {
+        params: {
+          key: credentials.consumer_key,
+        },
+        headers: {
+          Authorization: `Basic ${authCredentials}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 5000,
+      }
+    );
 
-    try {
-      const response = await axios.get(
-        authUrl,
-        {
-          params: {
-            key: credentials.consumer_key
-          },
-          headers: {
-            Authorization: `Basic ${authCredentials}`,
-            "Content-Type": "application/json",
-          },
-          timeout: 5000,
-        }
-      );
-
-      logger.debug('Authentication successful', {
-        status: response.status,
-        facilityUuid: credentials.location_uuid
-      });
-
-      return response.data;
-    } catch (error: any) {
-      logger.error('Authentication failed', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        url: authUrl,
-        consumerKey: credentials.consumer_key,
-        facilityUuid: credentials.location_uuid
-      });
-      throw error;
-    }
+    return response.data;
   }
 
-  clearToken(locationUuid: string): void {
-    const cacheKey = this.getTokenCacheKey(locationUuid);
+  clearToken(facilityCode: string): void {
+    const cacheKey = this.getTokenCacheKey(facilityCode);
     cache.del(cacheKey);
-    logger.debug(`Cleared token for facility: ${locationUuid}`);
+    logger.debug(`Cleared token for facility: ${facilityCode}`);
   }
 
-  clearCredentialsCache(locationUuid: string): void {
-    const cacheKey = this.getCredentialsCacheKey(locationUuid);
+  clearCredentialsCache(facilityCode: string): void {
+    const cacheKey = this.getCredentialsCacheKey(facilityCode);
     cache.del(cacheKey);
-    logger.debug(`Cleared credentials cache for facility: ${locationUuid}`);
+    logger.debug(`Cleared credentials cache for facility: ${facilityCode}`);
   }
 }

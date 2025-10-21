@@ -35,6 +35,10 @@ export default {
       "HIE_HAPI_POST_BUNDLE_URL",
       "/v1/hapi-med/bundle"
     ),
+    HAPI_POST_BUNDLE_URL: getEnv(
+      "HIE_HAPI_POST_BUNDLE_URL",
+      "/v1/hapi-med/bundle"
+    ),
     AGENT: process.env.HIE_AGENT,
     PRACTITIONER_REGISTRY_URL: getEnv("HIE_HWR_URL", "/v1/practitioner-search"),
     FACILITY_SEARCH_URL: getEnv(

@@ -107,7 +107,7 @@ export class FacilityRegistryService {
     if (
       facilityFilterDto.filterType === FacilityFilterType.registrationNumber
     ) {
-      filter["facility_code"] = facilityFilterDto.filterValue;
+      filter["registration_number"] = facilityFilterDto.filterValue;
     }
     return filter;
   }

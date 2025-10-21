@@ -31,10 +31,10 @@ export const routes = (): ServerRoute[] => [
             .required()
             .valid(...Object.values(IdentifierType))
             .description("Identification Type"),
-          facilityUuid: Joi.string()
+          locationUuid: Joi.string()
             .uuid()
             .required()
-            .description("Facility UUID")
+            .description("Location UUID"),
         }),
       },
       tags: ["api", "hie", "client-registry"],
@@ -46,9 +46,9 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
-        facilityUuid,
+        locationUuid,
       } = request.payload as PatientSearchPayload;
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.fetchPatientFromHie(
@@ -77,19 +77,20 @@ export const routes = (): ServerRoute[] => [
         payload: Joi.object({
           sessionId: Joi.string().required(),
           otp: Joi.string().required(),
+          locationUuid: Joi.string().required(),
         }),
       },
       tags: ["api", "hie", "client-registry", "otp"],
       description: "Validate OTP and search for patient",
     },
     handler: async (request, h) => {
-      const { sessionId, otp, facilityUuid } = request.payload as {
+      const { sessionId, otp, locationUuid } = request.payload as {
         sessionId: string;
         otp: string;
-        facilityUuid: string;
+        locationUuid: string;
       };
 
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.validateOtp(sessionId, otp);
@@ -124,6 +125,7 @@ export const routes = (): ServerRoute[] => [
           identificationType: Joi.string()
             .valid(...Object.values(IdentifierType))
             .default("National ID"),
+          locationUuid: Joi.string().required(),
         }),
       },
       tags: ["api", "hie", "client-registry", "otp"],
@@ -133,10 +135,10 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
-        facilityUuid,
+        locationUuid,
       } = request.payload as PatientSearchPayload;
 
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.sendOtp(
@@ -181,10 +183,10 @@ export const routes = (): ServerRoute[] => [
           refresh: Joi.boolean()
             .default(false)
             .description("Force synchronization with HIE registry"),
-          facilityUuid: Joi.string()
+          locationUuid: Joi.string()
             .uuid()
             .required()
-            .description("Facility UUID"),
+            .description("Location UUID"),
         }),
       },
       tags: ["api", "hie", "practitioner-registry"],
@@ -197,15 +199,15 @@ export const routes = (): ServerRoute[] => [
         identifierValue,
         identifierType,
         refresh,
-        facilityUuid,
+        locationUuid,
       } = request.query as {
         identifierValue: string;
         identifierType: IdentifierType;
         refresh: boolean;
-        facilityUuid: string;
+        locationUuid: string;
       };
 
-      const service = new PractitionerRegistryService(facilityUuid);
+      const service = new PractitionerRegistryService(locationUuid);
 
       try {
         const result = await service.getPractitioner(
@@ -317,6 +319,7 @@ export const routes = (): ServerRoute[] => [
             .description(
               "Facility code e.g 24749 of registration number e.g GK-016503"
             ),
+          locationUuid: Joi.string().required().description("Location uuid"),
         }),
       },
       tags: ["api", "hie", "facility-registry"],
@@ -326,7 +329,7 @@ export const routes = (): ServerRoute[] => [
     handler: async (request, h) => {
       const facilitySearchDto = request.query as FacilityFilterDto;
       const service = new FacilityRegistryService(
-        facilitySearchDto.facilityUuid
+        facilitySearchDto.locationUuid
       );
 
       try {
@@ -352,11 +355,7 @@ export const routes = (): ServerRoute[] => [
     options: {
       validate: {
         payload: Joi.object({
-          location_uuid: Joi.string()
-            .uuid()
-            .required()
-            .description("Facility location UUID"),
-          facility_name: Joi.string().required().description("Facility name"),
+          facility_code: Joi.string().required().description("Facility Code"),
           consumer_key: Joi.string().required().description("HIE Consumer Key"),
           username: Joi.string().required().description("HIE Username"),
           password: Joi.string().required().description("HIE Password"),

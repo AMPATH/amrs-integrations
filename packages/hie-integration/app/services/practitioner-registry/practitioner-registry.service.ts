@@ -14,8 +14,8 @@ export class PractitionerRegistryService {
   private httpClient: HieHttpClient;
   private amrsProviderService = new AmrsProviderService();
 
-  constructor(facilityUuid: string) {
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
+  constructor(locationUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
     this.repository = new PractitionerRepository();
   }
 

@@ -12,8 +12,7 @@ export interface FacilityCredentials {
 }
 
 export interface FacilityCredentialsData {
-  location_uuid: string;
-  facility_name: string;
+  facility_code: string;
   consumer_key: string;
   username: string;
   password: string;
@@ -71,7 +70,7 @@ export class HieMappingService {
   ): Promise<Map<string, string>> {
     if (amrsLocationUuids.length === 0) return new Map();
 
-    const hieDataSource = this.dbManager.getDataSource("hie");
+    const hieDataSource = this.dbManager.getDataSource("primary");
     const placeholders = amrsLocationUuids.map(() => "?").join(",");
 
     const query = `
@@ -98,15 +97,15 @@ export class HieMappingService {
 
   async saveCredentials(
     credentials: FacilityCredentialsData
-  ): Promise<FacilityCredentialsRecord> {
+  ): Promise<FacilityCredentialsRecord | null> {
     const hieDataSource = this.dbManager.getDataSource("primary");
 
     const isDuplicate = await this.checkForDuplicateLocation(
-      credentials.location_uuid
+      credentials.facility_code
     );
     if (isDuplicate) {
       throw new Error(
-        `Credentials for location ${credentials.location_uuid} already exist.`
+        `Credentials for location ${credentials.facility_code} already exist.`
       );
     }
 
@@ -115,10 +114,10 @@ export class HieMappingService {
 
     const query = `
       INSERT INTO facility_credentials 
-        (location_uuid, facility_name, consumer_key, username, password, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        (facility_code, consumer_key, username, password, is_active, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, NOW(), NOW())
       ON DUPLICATE KEY UPDATE
-        facility_name = VALUES(facility_name),
+        facility_code = VALUES(facility_code),
         consumer_key = VALUES(consumer_key),
         username = VALUES(username),
         password = VALUES(password),
@@ -128,35 +127,34 @@ export class HieMappingService {
 
     try {
       await hieDataSource.query(query, [
-        credentials.location_uuid,
-        credentials.facility_name,
+        credentials.facility_code,
         credentials.consumer_key,
         credentials.username,
         encryptedPassword,
         credentials.is_active ?? true,
       ]);
 
-      return this.getFacilityCredentials(credentials.location_uuid) as Promise<
-        FacilityCredentialsRecord
-      >;
-    } catch (error) {
+      return this.getFacilityCredentials(
+        credentials.facility_code
+      ) as Promise<FacilityCredentialsRecord | null>;
+    } catch (error: any) {
       logger.error("Failed to save facility credentials:", error);
-      throw new Error("Failed to save facility credentials");
+      throw new Error(`Failed to save facility credentials ${error.message}`);
     }
   }
 
   async getFacilityCredentials(
-    locationUuid: string
+    facilityCode: string
   ): Promise<FacilityCredentials | null> {
     const hieDataSource = this.dbManager.getDataSource("primary");
     const query = `
-      SELECT location_uuid, facility_name, consumer_key, username, password, is_active
+      SELECT facility_code, consumer_key, username, password, is_active
       FROM facility_credentials 
-      WHERE location_uuid = ? AND is_active = true
+      WHERE facility_code = ? AND is_active = true
     `;
 
     try {
-      const results = await hieDataSource.query(query, [locationUuid]);
+      const results = await hieDataSource.query(query, [facilityCode]);
       if (results.length === 0) {
         return null;
       }
@@ -166,7 +164,7 @@ export class HieMappingService {
       record.password = decrypt(record.password);
       return record;
     } catch (error) {
-      logger.error(`Error fetching credentials for ${locationUuid}:`, error);
+      logger.error(`Error fetching credentials for ${facilityCode}:`, error);
       throw error;
     }
   }
@@ -174,7 +172,7 @@ export class HieMappingService {
   async getAllActiveFacilities(): Promise<FacilityCredentials[]> {
     const hieDataSource = this.dbManager.getDataSource("primary");
     const query = `
-      SELECT location_uuid, facility_name, consumer_key, username, is_active, password
+      SELECT facility_code, consumer_key, username, is_active, password
       FROM facility_credentials 
       WHERE is_active = true
       ORDER BY facility_name
@@ -213,11 +211,22 @@ export class HieMappingService {
   }
 
   private async checkForDuplicateLocation(
-    locationUuid: string
+    facilityCode: string
   ): Promise<boolean> {
     const hieDataSource = this.dbManager.getDataSource("primary");
-    const query = `SELECT location_uuid FROM facility_credentials WHERE location_uuid = ?`;
-    const results = await hieDataSource.query(query, [locationUuid]);
+    const query = `SELECT facility_code FROM facility_credentials WHERE facility_code = ?`;
+    const results = await hieDataSource.query(query, [facilityCode]);
     return results.length > 0;
+  }
+  public async getFacilityCodeUsingLocationUuid(locationUuid: string) {
+    if (!locationUuid) {
+      return null;
+    }
+    const facilityMap = await this.getShrFacilityIds([locationUuid]);
+    if (facilityMap.has(locationUuid)) {
+      return facilityMap.get(locationUuid);
+    } else {
+      return null;
+    }
   }
 }

@@ -5,16 +5,16 @@ import {
   UpdateDateColumn,
   PrimaryColumn,
   Index,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 
 @Entity("facility_credentials")
-@Index(["location_uuid"], { unique: true })
 export class FacilityCredentials {
-  @PrimaryColumn({ type: "varchar", length: 36 })
-  location_uuid!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-  @Column({ type: "varchar", length: 255 })
-  facility_name!: string;
+  @Column({ type: "varchar", length: 30, unique: true })
+  facility_code!: string;
 
   @Column({ type: "varchar", length: 255 })
   consumer_key!: string;

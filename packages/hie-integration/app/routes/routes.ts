@@ -12,8 +12,13 @@ import {
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
 import { SHRService } from "../services/shr/shr.service";
-import { KafkaConsumerService, kafkaConsumerService } from "../services/kafka/kafka-consumer.service";
+import {
+  KafkaConsumerService,
+  kafkaConsumerService,
+} from "../services/kafka/kafka-consumer.service";
 import { HieMappingService } from "../services/amrs/hie-mapping-service";
+import { MediatorUtils } from "../utils/mediator";
+import config from "../config/env";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -446,7 +451,7 @@ export const routes = (): ServerRoute[] => [
   // SHR Fetch Endpoint
   {
     method: "GET",
-    path: "/v1/shr/summary",
+    path: "/hie/v1/shr/summary",
     options: {
       validate: {
         query: Joi.object({
@@ -454,8 +459,9 @@ export const routes = (): ServerRoute[] => [
             .required()
             .description("Client Registry ID (CRXXXXX)"),
           locationUuid: Joi.string()
+            .uuid()
             .required()
-            .description("Facility UUID"),
+            .description("Location UUID"),
         }),
       },
       tags: ["api", "shr"],
@@ -467,18 +473,123 @@ export const routes = (): ServerRoute[] => [
         cr_id: string;
         locationUuid: string;
       };
+      const startTime = new Date();
+      const orchestrations = [];
+
       try {
         const service = new SHRService(locationUuid);
-        const data = await service.fetchPatientFromSHR(cr_id);
-        return h.response(data).code(200);
+
+        // Create orchestration for SHR fetch
+        const shrRequestStart = new Date().toISOString();
+        const data = await service.fetchSHR(cr_id);
+        const shrRequestEnd = new Date().toISOString();
+
+        // Log the SHR orchestration
+        const shrOrchestration = MediatorUtils.createOrchestration(
+          "SHR Summary Fetch",
+          "GET",
+          `${request.server.info.uri}/v1/shr/summary?cr_id=${cr_id}`,
+          null,
+          200,
+          data,
+          {},
+          { "Content-Type": "application/json" }
+        );
+        orchestrations.push(shrOrchestration);
+
+        // Second orchestration to post to OpenHIM FHIR endpoint
+        try {
+          logger.debug(
+            `Posting transformed bundle for patient ${cr_id} to OpenHIM`
+          );
+          const openHimRequestStart = new Date().toISOString();
+          const openHimResponse = await service.postBundleToOpenHIM(data);
+          const openHimRequestEnd = new Date().toISOString();
+
+          // Log the OpenHIM orchestration
+          const openHimOrchestration = MediatorUtils.createOrchestration(
+            "OpenHIM FHIR Bundle Post",
+            "POST",
+            `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`,
+            data,
+            200,
+            openHimResponse,
+            {},
+            { "Content-Type": "application/fhir+json" }
+          );
+          orchestrations.push(openHimOrchestration);
+
+          logger.debug(
+            `Successfully posted bundle for patient ${cr_id} to OpenHIM`
+          );
+        } catch (openHimError: any) {
+          logger.error(
+            `Failed to post bundle to OpenHIM for patient ${cr_id}: ${openHimError.message}`
+          );
+
+          // Log the failed OpenHIM orchestration
+          const openHimErrorOrchestration = MediatorUtils.createOrchestration(
+            "OpenHIM FHIR Bundle Post - Error",
+            "POST",
+            `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`,
+            data,
+            500,
+            { error: openHimError.message },
+            {},
+            { "Content-Type": "application/fhir+json" }
+          );
+          orchestrations.push(openHimErrorOrchestration);
+
+          // Continue execution - don't fail the entire operation if OpenHIM post fails
+        }
+
+        // Create mediator response
+        const mediatorResponse = MediatorUtils.createMediatorResponse(
+          request,
+          200,
+          data,
+          orchestrations,
+          {
+            cr_id: cr_id,
+            timestamp: new Date().toISOString(),
+            processingTime: Date.now() - startTime.getTime(),
+          }
+        );
+
+        return MediatorUtils.sendMediatorResponse(h, mediatorResponse);
       } catch (error: any) {
         logger.error(`SHR summary fetch failed: ${cr_id} - ${error.message}`);
-        return h
-          .response({
+
+        // Create orchestration for the failed request
+        const errorOrchestration = MediatorUtils.createOrchestration(
+          "SHR Summary Fetch - Error",
+          "GET",
+          `${request.server.info.uri}/v1/shr/summary?cr_id=${cr_id}`,
+          null,
+          500,
+          { error: error.message },
+          {},
+          { "Content-Type": "application/json" }
+        );
+        orchestrations.push(errorOrchestration);
+
+        const mediatorResponse = MediatorUtils.createMediatorResponse(
+          request,
+          400,
+          {
             error: "SHR summary fetch failed",
             details: error.message,
-          })
-          .code(400);
+          },
+          orchestrations,
+          {
+            cr_id: cr_id,
+            timestamp: new Date().toISOString(),
+            processingTime: Date.now() - startTime.getTime(),
+            error: true,
+          }
+        );
+
+        return MediatorUtils.sendMediatorResponse(h, mediatorResponse);
       }
     },
   },
@@ -681,5 +792,5 @@ export const routes = (): ServerRoute[] => [
           .code(500);
       }
     },
-  }
+  },
 ];

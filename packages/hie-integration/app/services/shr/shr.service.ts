@@ -20,25 +20,26 @@ export class SHRService {
   private transformer: FhirTransformer;
   private mappingService: HieMappingService;
 
-  constructor(facilityUuid: string) {
-    logger.info('Initializing SHRService', { facilityUuid });
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
-    this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, facilityUuid);
+  constructor(locationUuid: string) {
+    logger.info("Initializing SHRService", { locationUuid });
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
+    this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, locationUuid);
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
-    this.shrFhirClient = new ShrFhirClient(facilityUuid);
-    this.hapiFhirClient = new HapiFhirClient(facilityUuid);
+    this.shrFhirClient = new ShrFhirClient(locationUuid);
+    this.hapiFhirClient = new HapiFhirClient(locationUuid);
     this.mappingService = new HieMappingService();
 
     this.transformer = new FhirTransformer(this.mappingService);
   }
 
-  async fetchPatientFromSHR(cr_id: string): Promise<any> {
+  async fetchSHR(cr_id: string): Promise<any> {
     try {
       const response = await this.httpClient.get<FhirBundle<any>>(
         config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
       );
-      
+
       if (
         !response.data ||
         !response.data.entry ||
@@ -49,18 +50,7 @@ export class SHRService {
 
       // Transform searchset to collection bundle
       const collectionBundle = this.transformToCollectionBundle(response.data);
-      
-      // Post the collection bundle to OpenHIM before returning
-      try {
-        logger.debug(`Posting transformed bundle for patient ${cr_id} to OpenHIM`);
-        await this.postBundleToOpenHIM(collectionBundle);
-        logger.debug(`Successfully posted bundle for patient ${cr_id} to OpenHIM`);
-      } catch (openHimError: any) {
-        logger.error(`Failed to post bundle to OpenHIM for patient ${cr_id}: ${openHimError.message}`);
-        // Continue execution - don't fail the entire operation if OpenHIM post fails
-        // The collection bundle will still be returned for other uses
-      }
-      
+
       return collectionBundle;
     } catch (error: any) {
       logger.error(`HIE client registry request failed: ${error.message}`);
@@ -78,13 +68,20 @@ export class SHRService {
       return searchsetBundle;
     }
 
-    logger.debug(`Transforming searchset bundle with ${searchsetBundle.entry.length} entries to collection bundle`);
+    logger.debug(
+      `Transforming searchset bundle with ${searchsetBundle.entry.length} entries to collection bundle`
+    );
 
     // For collection bundle, we keep the original structure but clean up entries
     const validEntries = searchsetBundle.entry.filter((entry: any) => {
       const resource = entry.resource;
-      if (!resource?.resourceType || !this.isValidFhirResourceType(resource.resourceType)) {
-        logger.debug(`Skipping invalid resource type: ${resource?.resourceType}`);
+      if (
+        !resource?.resourceType ||
+        !this.isValidFhirResourceType(resource.resourceType)
+      ) {
+        logger.debug(
+          `Skipping invalid resource type: ${resource?.resourceType}`
+        );
         return false;
       }
       return true;
@@ -100,8 +97,12 @@ export class SHRService {
       const originalId = resource.id;
 
       // Create a unique key for this resource to avoid duplicates
-      let resourceKey = '';
-      if (resource.identifier && Array.isArray(resource.identifier) && resource.identifier.length > 0) {
+      let resourceKey = "";
+      if (
+        resource.identifier &&
+        Array.isArray(resource.identifier) &&
+        resource.identifier.length > 0
+      ) {
         const primaryIdentifier = resource.identifier[0];
         if (primaryIdentifier.system && primaryIdentifier.value) {
           resourceKey = `${resourceType}|${primaryIdentifier.system}|${primaryIdentifier.value}`;
@@ -131,7 +132,7 @@ export class SHRService {
 
       const collectionEntry: any = {
         fullUrl: fullUrl,
-        resource: resource
+        resource: resource,
       };
 
       // Add request information if it exists, otherwise use search as fallback
@@ -140,7 +141,7 @@ export class SHRService {
       } else if (entry.search) {
         collectionEntry.request = {
           method: "POST",
-          url: resource.resourceType
+          url: resource.resourceType,
         };
       }
 
@@ -152,54 +153,86 @@ export class SHRService {
       resourceType: "Bundle",
       type: "collection",
       timestamp: new Date().toISOString(),
-      entry: Array.from(uniqueEntries.values())
+      entry: Array.from(uniqueEntries.values()),
     };
 
-    logger.debug(`Created collection bundle with ${collectionBundle.entry.length} unique entries`);
-    
+    logger.debug(
+      `Created collection bundle with ${collectionBundle.entry.length} unique entries`
+    );
+
     return collectionBundle;
   }
 
   private isValidFhirResourceType(resourceType: string): boolean {
     const validResourceTypes = [
-      'Patient', 'Practitioner', 'Organization', 'Location', 'HealthcareService',
-      'Encounter', 'Condition', 'Procedure', 'Observation', 'DiagnosticReport',
-      'ServiceRequest', 'MedicationRequest', 'MedicationDispense', 'MedicationStatement',
-      'AllergyIntolerance', 'CarePlan', 'Goal', 'Immunization', 'Coverage',
-      'Claim', 'Composition', 'DocumentReference', 'Binary', 'Bundle',
-      'EpisodeOfCare', 'Device', 'Specimen', 'Media', 'Group'
+      "Patient",
+      "Practitioner",
+      "Organization",
+      "Location",
+      "HealthcareService",
+      "Encounter",
+      "Condition",
+      "Procedure",
+      "Observation",
+      "DiagnosticReport",
+      "ServiceRequest",
+      "MedicationRequest",
+      "MedicationDispense",
+      "MedicationStatement",
+      "AllergyIntolerance",
+      "CarePlan",
+      "Goal",
+      "Immunization",
+      "Coverage",
+      "Claim",
+      "Composition",
+      "DocumentReference",
+      "Binary",
+      "Bundle",
+      "EpisodeOfCare",
+      "Device",
+      "Specimen",
+      "Media",
+      "Group",
     ];
-    
+
     return validResourceTypes.includes(resourceType);
   }
 
   async postBundleToOpenHIM(bundle: any): Promise<any> {
     try {
       const openHimUrl = `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`;
-      
-      logger.debug(`Posting transaction bundle to OpenHIM FHIR endpoint: ${openHimUrl}`);
-      
+
+      logger.debug(
+        `Posting transaction bundle to OpenHIM FHIR endpoint: ${openHimUrl}`
+      );
+
       // Use fetch for OpenHIM with custom headers
       const authHeaders = {
-        'Authorization': `Basic ${Buffer.from(`${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`).toString('base64')}`,
-        'Content-Type': 'application/fhir+json',
-        'Accept': 'application/fhir+json'
+        Authorization: `Basic ${Buffer.from(
+          `${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`
+        ).toString("base64")}`,
+        "Content-Type": "application/fhir+json",
+        Accept: "application/fhir+json",
       };
 
       const response = await fetch(openHimUrl, {
-        method: 'POST',
+        method: "POST",
         headers: authHeaders,
-        body: JSON.stringify(bundle)
+        body: JSON.stringify(bundle),
       });
 
-      logger.debug(`Successfully posted bundle to OpenHIM. Response status: ${response.status}`);
-      
+      logger.debug(
+        `Successfully posted bundle to OpenHIM. Response status: ${response.status}`
+      );
+
       return await response.json();
     } catch (error: any) {
       logger.error(`Failed to post bundle to OpenHIM: ${error.message}`);
-      const details = error.response?.data?.issue?.[0]?.diagnostics || 
-                    JSON.stringify(error.response?.data) || 
-                    error.message;
+      const details =
+        error.response?.data?.issue?.[0]?.diagnostics ||
+        JSON.stringify(error.response?.data) ||
+        error.message;
       throw new Error(`Failed to post bundle to OpenHIM: ${details}`);
     }
   }
@@ -217,7 +250,7 @@ export class SHRService {
         statusText: error.response?.statusText,
         data: error.response?.data,
         url: config.HIE.SHR_POST_BUNDLE_URL,
-        bundleId: bundle.id
+        bundleId: bundle.id,
       });
       throw new Error(error.response?.data || error.message);
     }
@@ -240,7 +273,7 @@ export class SHRService {
     try {
       // Use ShrFhirClient which is already configured for OpenHIM
       const response = await this.shrFhirClient.postBundle(bundle);
-      
+
       logger.info(`[EXTERNAL SHR] ✓ Bundle posted to OpenHIM successfully`, {
         bundleId: (bundle as any).id,
         route: config.HIE.OPENHIM_FHIR_ENDPOINT,
@@ -257,34 +290,38 @@ export class SHRService {
         errorMessage: error.message,
         errorCode: error.code,
       };
-      
-      logger.error(`[EXTERNAL SHR] ✗ Failed to post bundle to OpenHIM`, errorDetails);
+
+      logger.error(
+        `[EXTERNAL SHR] ✗ Failed to post bundle to OpenHIM`,
+        errorDetails
+      );
       throw error;
     }
   }
 
   async postBundleToShrHieWithToken(bundle: FhirBundle<any>): Promise<any> {
     try {
-      const fullUrl = `${this.openHIM.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`;
-      logger.info(`[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`, {
-        fullUrl,
-        baseUrl: this.openHIM
-        
-        
-        
-        .getBaseURL(),
-        path: config.HIE.SHR_POST_BUNDLE_URL,
-        bundleId: (bundle as any).id,
-        bundleType: bundle.resourceType,
-        entryCount: bundle.entry?.length || 0,
-      });
-      
+      const fullUrl = `${this.openHIM.getBaseURL()}${
+        config.HIE.SHR_POST_BUNDLE_URL
+      }`;
+      logger.info(
+        `[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`,
+        {
+          fullUrl,
+          baseUrl: this.openHIM.getBaseURL(),
+          path: config.HIE.SHR_POST_BUNDLE_URL,
+          bundleId: (bundle as any).id,
+          bundleType: bundle.resourceType,
+          entryCount: bundle.entry?.length || 0,
+        }
+      );
+
       // Use HIE HTTP client which handles token authentication
       const response = await this.openHIM.post<any>(
         config.HIE.SHR_POST_BUNDLE_URL,
         bundle
       );
-      
+
       logger.info(`[HIE SHR] ✓ Bundle posted to /shr/hie successfully`, {
         bundleId: (bundle as any).id,
         status: response.status,
@@ -294,7 +331,9 @@ export class SHRService {
     } catch (error: any) {
       const errorDetails = {
         bundleId: (bundle as any).id,
-        fullUrl: `${this.httpClient.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`,
+        fullUrl: `${this.httpClient.getBaseURL()}${
+          config.HIE.SHR_POST_BUNDLE_URL
+        }`,
         baseUrl: this.httpClient.getBaseURL(),
         path: config.HIE.SHR_POST_BUNDLE_URL,
         status: error.response?.status,
@@ -303,8 +342,11 @@ export class SHRService {
         errorMessage: error.message,
         errorCode: error.code,
       };
-      
-      logger.error(`[HIE SHR] ✗ Failed to post bundle to /shr/hie`, errorDetails);
+
+      logger.error(
+        `[HIE SHR] ✗ Failed to post bundle to /shr/hie`,
+        errorDetails
+      );
       throw new Error(`Failed to post bundle to HIE SHR: ${error.message}`);
     }
   }
@@ -372,8 +414,6 @@ export class SHRService {
       throw error;
     }
   }
-
-
 
   private async processPatientForDate(
     patientUuid: string,

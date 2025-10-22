@@ -20,14 +20,19 @@ export class SHRService {
   private transformer: FhirTransformer;
   private mappingService: HieMappingService;
 
+<<<<<<< HEAD
   constructor(facilityUuid: string) {
     logger.info('Initializing SHRService', { facilityUuid });
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
     this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, facilityUuid);
+=======
+  constructor(locationUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
+>>>>>>> 89b3fd8 ((fix) Change shr summary request params from facilityUuid to location uuid)
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
-    this.shrFhirClient = new ShrFhirClient(facilityUuid);
-    this.hapiFhirClient = new HapiFhirClient(facilityUuid);
+    this.shrFhirClient = new ShrFhirClient(locationUuid);
+    this.hapiFhirClient = new HapiFhirClient(locationUuid);
     this.mappingService = new HieMappingService();
 
     this.transformer = new FhirTransformer(this.mappingService);
@@ -38,7 +43,7 @@ export class SHRService {
       const response = await this.httpClient.get<FhirBundle<any>>(
         config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
       );
-      
+
       if (
         !response.data ||
         !response.data.entry ||
@@ -49,7 +54,7 @@ export class SHRService {
 
       // Transform searchset to collection bundle
       const collectionBundle = this.transformToCollectionBundle(response.data);
-      
+
       return collectionBundle;
     } catch (error: any) {
       logger.error(`HIE client registry request failed: ${error.message}`);
@@ -67,13 +72,20 @@ export class SHRService {
       return searchsetBundle;
     }
 
-    logger.debug(`Transforming searchset bundle with ${searchsetBundle.entry.length} entries to collection bundle`);
+    logger.debug(
+      `Transforming searchset bundle with ${searchsetBundle.entry.length} entries to collection bundle`
+    );
 
     // For collection bundle, we keep the original structure but clean up entries
     const validEntries = searchsetBundle.entry.filter((entry: any) => {
       const resource = entry.resource;
-      if (!resource?.resourceType || !this.isValidFhirResourceType(resource.resourceType)) {
-        logger.debug(`Skipping invalid resource type: ${resource?.resourceType}`);
+      if (
+        !resource?.resourceType ||
+        !this.isValidFhirResourceType(resource.resourceType)
+      ) {
+        logger.debug(
+          `Skipping invalid resource type: ${resource?.resourceType}`
+        );
         return false;
       }
       return true;
@@ -89,8 +101,12 @@ export class SHRService {
       const originalId = resource.id;
 
       // Create a unique key for this resource to avoid duplicates
-      let resourceKey = '';
-      if (resource.identifier && Array.isArray(resource.identifier) && resource.identifier.length > 0) {
+      let resourceKey = "";
+      if (
+        resource.identifier &&
+        Array.isArray(resource.identifier) &&
+        resource.identifier.length > 0
+      ) {
         const primaryIdentifier = resource.identifier[0];
         if (primaryIdentifier.system && primaryIdentifier.value) {
           resourceKey = `${resourceType}|${primaryIdentifier.system}|${primaryIdentifier.value}`;
@@ -120,7 +136,7 @@ export class SHRService {
 
       const collectionEntry: any = {
         fullUrl: fullUrl,
-        resource: resource
+        resource: resource,
       };
 
       // Add request information if it exists, otherwise use search as fallback
@@ -129,7 +145,7 @@ export class SHRService {
       } else if (entry.search) {
         collectionEntry.request = {
           method: "POST",
-          url: resource.resourceType
+          url: resource.resourceType,
         };
       }
 
@@ -141,54 +157,86 @@ export class SHRService {
       resourceType: "Bundle",
       type: "collection",
       timestamp: new Date().toISOString(),
-      entry: Array.from(uniqueEntries.values())
+      entry: Array.from(uniqueEntries.values()),
     };
 
-    logger.debug(`Created collection bundle with ${collectionBundle.entry.length} unique entries`);
-    
+    logger.debug(
+      `Created collection bundle with ${collectionBundle.entry.length} unique entries`
+    );
+
     return collectionBundle;
   }
 
   private isValidFhirResourceType(resourceType: string): boolean {
     const validResourceTypes = [
-      'Patient', 'Practitioner', 'Organization', 'Location', 'HealthcareService',
-      'Encounter', 'Condition', 'Procedure', 'Observation', 'DiagnosticReport',
-      'ServiceRequest', 'MedicationRequest', 'MedicationDispense', 'MedicationStatement',
-      'AllergyIntolerance', 'CarePlan', 'Goal', 'Immunization', 'Coverage',
-      'Claim', 'Composition', 'DocumentReference', 'Binary', 'Bundle',
-      'EpisodeOfCare', 'Device', 'Specimen', 'Media', 'Group'
+      "Patient",
+      "Practitioner",
+      "Organization",
+      "Location",
+      "HealthcareService",
+      "Encounter",
+      "Condition",
+      "Procedure",
+      "Observation",
+      "DiagnosticReport",
+      "ServiceRequest",
+      "MedicationRequest",
+      "MedicationDispense",
+      "MedicationStatement",
+      "AllergyIntolerance",
+      "CarePlan",
+      "Goal",
+      "Immunization",
+      "Coverage",
+      "Claim",
+      "Composition",
+      "DocumentReference",
+      "Binary",
+      "Bundle",
+      "EpisodeOfCare",
+      "Device",
+      "Specimen",
+      "Media",
+      "Group",
     ];
-    
+
     return validResourceTypes.includes(resourceType);
   }
 
   async postBundleToOpenHIM(bundle: any): Promise<any> {
     try {
       const openHimUrl = `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`;
-      
-      logger.debug(`Posting transaction bundle to OpenHIM FHIR endpoint: ${openHimUrl}`);
-      
+
+      logger.debug(
+        `Posting transaction bundle to OpenHIM FHIR endpoint: ${openHimUrl}`
+      );
+
       // Use fetch for OpenHIM with custom headers
       const authHeaders = {
-        'Authorization': `Basic ${Buffer.from(`${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`).toString('base64')}`,
-        'Content-Type': 'application/fhir+json',
-        'Accept': 'application/fhir+json'
+        Authorization: `Basic ${Buffer.from(
+          `${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`
+        ).toString("base64")}`,
+        "Content-Type": "application/fhir+json",
+        Accept: "application/fhir+json",
       };
 
       const response = await fetch(openHimUrl, {
-        method: 'POST',
+        method: "POST",
         headers: authHeaders,
-        body: JSON.stringify(bundle)
+        body: JSON.stringify(bundle),
       });
 
-      logger.debug(`Successfully posted bundle to OpenHIM. Response status: ${response.status}`);
-      
+      logger.debug(
+        `Successfully posted bundle to OpenHIM. Response status: ${response.status}`
+      );
+
       return await response.json();
     } catch (error: any) {
       logger.error(`Failed to post bundle to OpenHIM: ${error.message}`);
-      const details = error.response?.data?.issue?.[0]?.diagnostics || 
-                    JSON.stringify(error.response?.data) || 
-                    error.message;
+      const details =
+        error.response?.data?.issue?.[0]?.diagnostics ||
+        JSON.stringify(error.response?.data) ||
+        error.message;
       throw new Error(`Failed to post bundle to OpenHIM: ${details}`);
     }
   }

@@ -458,7 +458,14 @@ export const routes = (): ServerRoute[] => [
           cr_id: Joi.string()
             .required()
             .description("Client Registry ID (CRXXXXX)"),
+<<<<<<< HEAD
           locationUuid: Joi.string().required().description("Facility UUID"),
+=======
+          locationUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Location UUID"),
+>>>>>>> 89b3fd8 ((fix) Change shr summary request params from facilityUuid to location uuid)
         }),
       },
       tags: ["api", "shr"],

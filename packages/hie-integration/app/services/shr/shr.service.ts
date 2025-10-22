@@ -20,15 +20,11 @@ export class SHRService {
   private transformer: FhirTransformer;
   private mappingService: HieMappingService;
 
-<<<<<<< HEAD
-  constructor(facilityUuid: string) {
-    logger.info('Initializing SHRService', { facilityUuid });
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
-    this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, facilityUuid);
-=======
   constructor(locationUuid: string) {
+    logger.info("Initializing SHRService", { locationUuid });
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
->>>>>>> 89b3fd8 ((fix) Change shr summary request params from facilityUuid to location uuid)
+    this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, locationUuid);
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
     this.visitService = new VisitService();
     this.amrsFhirClient = new AmrsFhirClient();
     this.shrFhirClient = new ShrFhirClient(locationUuid);
@@ -254,7 +250,7 @@ export class SHRService {
         statusText: error.response?.statusText,
         data: error.response?.data,
         url: config.HIE.SHR_POST_BUNDLE_URL,
-        bundleId: bundle.id
+        bundleId: bundle.id,
       });
       throw new Error(error.response?.data || error.message);
     }
@@ -277,7 +273,7 @@ export class SHRService {
     try {
       // Use ShrFhirClient which is already configured for OpenHIM
       const response = await this.shrFhirClient.postBundle(bundle);
-      
+
       logger.info(`[EXTERNAL SHR] ✓ Bundle posted to OpenHIM successfully`, {
         bundleId: (bundle as any).id,
         route: config.HIE.OPENHIM_FHIR_ENDPOINT,
@@ -294,34 +290,38 @@ export class SHRService {
         errorMessage: error.message,
         errorCode: error.code,
       };
-      
-      logger.error(`[EXTERNAL SHR] ✗ Failed to post bundle to OpenHIM`, errorDetails);
+
+      logger.error(
+        `[EXTERNAL SHR] ✗ Failed to post bundle to OpenHIM`,
+        errorDetails
+      );
       throw error;
     }
   }
 
   async postBundleToShrHieWithToken(bundle: FhirBundle<any>): Promise<any> {
     try {
-      const fullUrl = `${this.openHIM.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`;
-      logger.info(`[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`, {
-        fullUrl,
-        baseUrl: this.openHIM
-        
-        
-        
-        .getBaseURL(),
-        path: config.HIE.SHR_POST_BUNDLE_URL,
-        bundleId: (bundle as any).id,
-        bundleType: bundle.resourceType,
-        entryCount: bundle.entry?.length || 0,
-      });
-      
+      const fullUrl = `${this.openHIM.getBaseURL()}${
+        config.HIE.SHR_POST_BUNDLE_URL
+      }`;
+      logger.info(
+        `[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`,
+        {
+          fullUrl,
+          baseUrl: this.openHIM.getBaseURL(),
+          path: config.HIE.SHR_POST_BUNDLE_URL,
+          bundleId: (bundle as any).id,
+          bundleType: bundle.resourceType,
+          entryCount: bundle.entry?.length || 0,
+        }
+      );
+
       // Use HIE HTTP client which handles token authentication
       const response = await this.openHIM.post<any>(
         config.HIE.SHR_POST_BUNDLE_URL,
         bundle
       );
-      
+
       logger.info(`[HIE SHR] ✓ Bundle posted to /shr/hie successfully`, {
         bundleId: (bundle as any).id,
         status: response.status,
@@ -331,7 +331,9 @@ export class SHRService {
     } catch (error: any) {
       const errorDetails = {
         bundleId: (bundle as any).id,
-        fullUrl: `${this.httpClient.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL}`,
+        fullUrl: `${this.httpClient.getBaseURL()}${
+          config.HIE.SHR_POST_BUNDLE_URL
+        }`,
         baseUrl: this.httpClient.getBaseURL(),
         path: config.HIE.SHR_POST_BUNDLE_URL,
         status: error.response?.status,
@@ -340,8 +342,11 @@ export class SHRService {
         errorMessage: error.message,
         errorCode: error.code,
       };
-      
-      logger.error(`[HIE SHR] ✗ Failed to post bundle to /shr/hie`, errorDetails);
+
+      logger.error(
+        `[HIE SHR] ✗ Failed to post bundle to /shr/hie`,
+        errorDetails
+      );
       throw new Error(`Failed to post bundle to HIE SHR: ${error.message}`);
     }
   }
@@ -409,8 +414,6 @@ export class SHRService {
       throw error;
     }
   }
-
-
 
   private async processPatientForDate(
     patientUuid: string,

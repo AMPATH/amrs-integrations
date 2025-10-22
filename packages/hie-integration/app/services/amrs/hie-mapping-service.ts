@@ -164,11 +164,7 @@ export class HieMappingService {
       record.password = decrypt(record.password);
       return record;
     } catch (error) {
-<<<<<<< HEAD
-      logger.error(`Error fetching credentials for ${locationUuid}:`, error);
-=======
       logger.error(`Error fetching credentials for ${facilityCode}:`, error);
->>>>>>> upstream/main
       throw error;
     }
   }
@@ -176,11 +172,7 @@ export class HieMappingService {
   async getAllActiveFacilities(): Promise<FacilityCredentials[]> {
     const hieDataSource = this.dbManager.getDataSource("primary");
     const query = `
-<<<<<<< HEAD
-      SELECT location_uuid, facility_name, consumer_key, username, is_active, password
-=======
       SELECT facility_code, consumer_key, username, is_active, password
->>>>>>> upstream/main
       FROM facility_credentials 
       WHERE is_active = true
       ORDER BY facility_name

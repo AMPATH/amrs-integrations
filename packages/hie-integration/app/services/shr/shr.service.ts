@@ -325,35 +325,6 @@ export class SHRService {
     }
   }
 
-  async postBundleToHapi(bundle: FhirBundle<any>): Promise<any> {
-    try {
-      const response = await this.hapiFhirClient.postBundle(bundle);
-      logger.info(`Bundle posted to HAPI FHIR successfully`, {
-        bundleId: bundle.id,
-      });
-      return response;
-    } catch (error: any) {
-      logger.error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
-      throw new Error(`Failed to post bundle to HAPI FHIR: ${error.message}`);
-    }
-  }
-
-  async sendToDeadLetterQueue(deadLetterPayload: any): Promise<any> {
-    try {
-      const response = await this.httpClient.post(
-        "/kafka-dead-letter",
-        deadLetterPayload
-      );
-      logger.info(`Dead letter payload sent successfully`, {
-        eventId: deadLetterPayload.originalEvent?.id,
-      });
-      return response.data;
-    } catch (error: any) {
-      logger.error(`Failed to send to dead letter queue: ${error.message}`);
-      throw new Error(`Failed to send to dead letter queue: ${error.message}`);
-    }
-  }
-
   async testPatientBundle(
     patientUuid: string,
     dateString?: string

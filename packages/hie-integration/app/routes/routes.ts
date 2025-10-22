@@ -29,10 +29,10 @@ export const routes = (): ServerRoute[] => [
             .required()
             .valid(...Object.values(IdentifierType))
             .description("Identification Type"),
-          facilityUuid: Joi.string()
+          locationUuid: Joi.string()
             .uuid()
             .required()
-            .description("Facility UUID")
+            .description("Location UUID"),
         }),
       },
       tags: ["api", "hie", "client-registry"],
@@ -44,9 +44,9 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
-        facilityUuid,
+        locationUuid,
       } = request.payload as PatientSearchPayload;
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.fetchPatientFromHie(
@@ -82,13 +82,13 @@ export const routes = (): ServerRoute[] => [
       description: "Validate OTP and search for patient",
     },
     handler: async (request, h) => {
-      const { sessionId, otp, facilityUuid } = request.payload as {
+      const { sessionId, otp, locationUuid } = request.payload as {
         sessionId: string;
         otp: string;
-        facilityUuid: string;
+        locationUuid: string;
       };
 
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.validateOtp(sessionId, otp);
@@ -133,10 +133,10 @@ export const routes = (): ServerRoute[] => [
       const {
         identificationNumber,
         identificationType,
-        facilityUuid,
+        locationUuid,
       } = request.payload as PatientSearchPayload;
 
-      const service = new ClientRegistryService(facilityUuid);
+      const service = new ClientRegistryService(locationUuid);
 
       try {
         const result = await service.sendOtp(
@@ -181,10 +181,10 @@ export const routes = (): ServerRoute[] => [
           refresh: Joi.boolean()
             .default(false)
             .description("Force synchronization with HIE registry"),
-          facilityUuid: Joi.string()
+          locationUuid: Joi.string()
             .uuid()
             .required()
-            .description("Facility UUID"),
+            .description("Location UUID"),
         }),
       },
       tags: ["api", "hie", "practitioner-registry"],
@@ -197,15 +197,15 @@ export const routes = (): ServerRoute[] => [
         identifierValue,
         identifierType,
         refresh,
-        facilityUuid,
+        locationUuid,
       } = request.query as {
         identifierValue: string;
         identifierType: IdentifierType;
         refresh: boolean;
-        facilityUuid: string;
+        locationUuid: string;
       };
 
-      const service = new PractitionerRegistryService(facilityUuid);
+      const service = new PractitionerRegistryService(locationUuid);
 
       try {
         const result = await service.getPractitioner(
@@ -327,7 +327,7 @@ export const routes = (): ServerRoute[] => [
     handler: async (request, h) => {
       const facilitySearchDto = request.query as FacilityFilterDto;
       const service = new FacilityRegistryService(
-        facilitySearchDto.facilityUuid
+        facilitySearchDto.locationUuid
       );
 
       try {
@@ -453,7 +453,7 @@ export const routes = (): ServerRoute[] => [
           cr_id: Joi.string()
             .required()
             .description("Client Registry ID (CRXXXXX)"),
-          facilityUuid: Joi.string()
+          locationUuid: Joi.string()
             .required()
             .description("Facility UUID"),
         }),
@@ -463,12 +463,12 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id, facilityUuid } = request.query as {
+      const { cr_id, locationUuid } = request.query as {
         cr_id: string;
-        facilityUuid: string;
+        locationUuid: string;
       };
       try {
-        const service = new SHRService(facilityUuid);
+        const service = new SHRService(locationUuid);
         const data = await service.fetchPatientFromSHR(cr_id);
         return h.response(data).code(200);
       } catch (error: any) {
@@ -507,13 +507,13 @@ export const routes = (): ServerRoute[] => [
       notes: "Posts bundle to SHR",
     },
     handler: async (request, h) => {
-      const { facilityUuid } = request.query as { facilityUuid: string };
+      const { locationUuid } = request.query as { locationUuid: string };
       const payload = request.payload as any;
       const bundle =
         payload && payload.bundle
           ? payload.bundle
           : (payload as FhirBundle<any>);
-      const service = new SHRService(facilityUuid);
+      const service = new SHRService(locationUuid);
       try {
         const data = await service.postBundleToSHR(bundle);
         return h.response(data).code(200);
@@ -549,7 +549,6 @@ export const routes = (): ServerRoute[] => [
         "Processes all closed visits for the specified date (defaults to yesterday) and pushes them to SHR",
     },
     handler: async (request, h) => {
-      const { facilityUuid } = request.query as { facilityUuid: string };
       const { date } = request.payload as { date?: string };
 
       try {
@@ -592,14 +591,14 @@ export const routes = (): ServerRoute[] => [
         "Generates a bundle for the specified patient without pushing to SHR, for testing purposes",
     },
     handler: async (request, h) => {
-      const { facilityUuid } = request.query as { facilityUuid: string };
+      const { locationUuid } = request.query as { locationUuid: string };
       const { patientUuid, date } = request.payload as {
         patientUuid: string;
         date?: string;
       };
 
       try {
-        const service = new SHRService(facilityUuid);
+        const service = new SHRService(locationUuid);
         const result = await service.testPatientBundle(patientUuid, date);
 
         return h.response(result).code(200);

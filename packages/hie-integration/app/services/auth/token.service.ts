@@ -137,7 +137,7 @@ export class TokenService {
           Authorization: `Basic ${authCredentials}`,
           "Content-Type": "application/json",
         },
-        timeout: 5000,
+        timeout: 20000,
       }
     );
 

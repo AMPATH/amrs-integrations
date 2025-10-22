@@ -53,12 +53,14 @@ export class KafkaService {
   private consumers: Map<string, Consumer> = new Map();
   private admin: Admin | null = null;
   private isConnected = false;
+  private kafkaConfig: { clientId: string; brokers: string[] };
 
   constructor() {
-    this.kafka = new Kafka({
+    this.kafkaConfig = {
       clientId: config.KAFKA.CLIENT_ID,
       brokers: config.KAFKA.BROKERS,
-    });
+    };
+    this.kafka = new Kafka(this.kafkaConfig);
   }
 
 
@@ -106,9 +108,32 @@ export class KafkaService {
     consumerConfig: KafkaConsumerConfig = { groupId }
   ): Promise<void> {
     try {
-      logger.info(`Attempting to subscribe to topic: ${topic} with group: ${groupId}`);
+      logger.info(`Attempting to subscribe to topic: ${topic} with group: ${groupId}`, {
+        brokers: this.kafkaConfig.brokers,
+        clientId: this.kafkaConfig.clientId
+      });
       
       const consumer = await this.createConsumer(groupId, consumerConfig);
+      
+      // Add error handlers
+      consumer.on('consumer.connect', () => {
+        logger.info(`Consumer connected for topic: ${topic}, group: ${groupId}`);
+      });
+      
+      consumer.on('consumer.disconnect', () => {
+        logger.warn(`Consumer disconnected for topic: ${topic}, group: ${groupId}`);
+        this.isConnected = false;
+      });
+      
+      consumer.on('consumer.stop', () => {
+        logger.info(`Consumer stopped for topic: ${topic}, group: ${groupId}`);
+      });
+      
+      consumer.on('consumer.crash', (error) => {
+        logger.error(`Consumer crashed for topic: ${topic}, group: ${groupId}:`, error);
+        this.isConnected = false;
+      });
+      
       await consumer.connect();
       
       // Set connection status
@@ -124,11 +149,18 @@ export class KafkaService {
               partition: payload.partition,
               offset: payload.message.offset,
               key: payload.message.key?.toString(),
-              valueLength: payload.message.value?.length || 0
+              valueLength: payload.message.value?.length || 0,
+              timestamp: payload.message.timestamp
             });
             await messageHandler(payload);
           } catch (error) {
-            logger.error(`Error processing message from topic ${topic}:`, error);
+            logger.error(`Error processing message from topic ${topic}:`, {
+              error: error instanceof Error ? error.message : String(error),
+              topic: payload.topic,
+              partition: payload.partition,
+              offset: payload.message.offset,
+              stack: error instanceof Error ? error.stack : undefined
+            });
             // You might want to implement dead letter queue logic here
           }
         },
@@ -136,7 +168,13 @@ export class KafkaService {
 
       logger.info(`Successfully subscribed to topic ${topic} with group ${groupId}`);
     } catch (error) {
-      logger.error(`Failed to subscribe to topic ${topic}:`, error);
+      logger.error(`Failed to subscribe to topic ${topic}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        topic,
+        groupId,
+        brokers: this.kafkaConfig.brokers,
+        stack: error instanceof Error ? error.stack : undefined
+      });
       this.isConnected = false;
       throw error;
     }
@@ -185,8 +223,6 @@ export class KafkaService {
    */
   parseMessage(payload: EachMessagePayload): KafkaMessage {
     const { topic, partition, message } = payload;
-    console.log('message');
-    console.log(message);
     return {
       topic,
       partition,
@@ -205,10 +241,26 @@ export class KafkaService {
    */
   parseEvent(payload: EachMessagePayload): KafkaEvent {
     const message = this.parseMessage(payload);
-        try {
-      return JSON.parse(message.value);
+    logger.debug('Parsing Kafka event', {
+      topic: message.topic,
+      valueLength: message.value.length,
+      valuePreview: message.value.substring(0, 200) + (message.value.length > 200 ? '...' : '')
+    });
+    
+    try {
+      const parsed = JSON.parse(message.value);
+      logger.debug('Successfully parsed Kafka event', {
+        eventId: parsed.id,
+        eventType: parsed.type,
+        hasBody: !!parsed.body
+      });
+      return parsed;
     } catch (error) {
-      logger.error('Failed to parse Kafka event:', error);
+      logger.error('Failed to parse Kafka event:', {
+        error: error instanceof Error ? error.message : String(error),
+        value: message.value,
+        valueLength: message.value.length
+      });
       throw new Error('Invalid message format');
     }
   }

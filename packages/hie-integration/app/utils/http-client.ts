@@ -6,14 +6,14 @@ export class HieHttpClient {
   private axiosInstance: AxiosInstance;
   private tokenService: TokenService;
   private baseURL: string;
-  private locationUuid: string;
-  private facilityUuid: string = "";
+  private facilityUuid: string;
 
-  constructor(baseURL: string, locationUuid: string) {
+  constructor(baseURL: string, facilityUuid: string) {
+    logger.debug('HieHttpClient initialized', { facilityUuid, baseURL });
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
     this.baseURL = baseURL;
-    this.locationUuid = locationUuid;
+    this.facilityUuid = facilityUuid;
 
     this.setupInterceptors();
   }
@@ -23,14 +23,14 @@ export class HieHttpClient {
       async (config) => {
         try {
           const token = await this.tokenService.getAccessToken(
-            this.locationUuid
+            this.facilityUuid
           );
           config.headers.Authorization = `Bearer ${token}`;
           config.headers["Content-Type"] = "application/json";
           return config;
         } catch (error) {
           logger.error(
-            `Failed to get token for facility ${this.locationUuid}:`,
+            `Failed to get token for facility ${this.facilityUuid}:`,
             error
           );
           return Promise.reject(error);
@@ -46,17 +46,17 @@ export class HieHttpClient {
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          // this.tokenService.clearToken(this.facilityUuid);
+          this.tokenService.clearToken(this.facilityUuid);
 
           try {
             const token = await this.tokenService.getAccessToken(
-              this.locationUuid
+              this.facilityUuid
             );
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return this.axiosInstance(originalRequest);
           } catch (retryError) {
             logger.error(
-              `Token refresh failed for facility ${this.locationUuid}:`,
+              `Token refresh failed for facility ${this.facilityUuid}:`,
               retryError
             );
             return Promise.reject(retryError);
@@ -66,7 +66,7 @@ export class HieHttpClient {
         if (error.response) {
           if (error.response.status >= 400) {
             logger.error(
-              `HIE API Error for facility ${this.locationUuid}: ${
+              `HIE API Error for facility ${this.facilityUuid}: ${
                 error.response.status
               } - ${JSON.stringify(error.response.data)}`
             );

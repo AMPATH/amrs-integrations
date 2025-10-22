@@ -15,8 +15,8 @@ export class FacilityRegistryService {
   private httpClient: HieHttpClient;
   private repository: FacilityRepository;
 
-  constructor(locationUuid: string) {
-    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
+  constructor(facilityUuid: string) {
+    this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
     this.repository = new FacilityRepository();
   }
 

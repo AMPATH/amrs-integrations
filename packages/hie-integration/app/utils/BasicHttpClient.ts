@@ -4,12 +4,18 @@ export class BasicHttpClient {
   private axiosInstance: AxiosInstance;
   private baseURL: string;
 
-  constructor(baseURL: string, username: string, password: string) {
-    this.axiosInstance = axios.create({
+  constructor(baseURL: string, username?: string, password?: string) {
+    const config: any = {
       baseURL,
-      auth: { username, password },
       headers: { "Content-Type": "application/json" },
-    });
+    };
+    
+    // Only add auth if username and password are provided
+    if (username && password) {
+      config.auth = { username, password };
+    }
+    
+    this.axiosInstance = axios.create(config);
     this.baseURL = baseURL;
   }
 
@@ -19,5 +25,9 @@ export class BasicHttpClient {
 
   post<T>(url: string, data?: any) {
     return this.axiosInstance.post<T>(url, data);
+  }
+  
+  getBaseURL(): string {
+    return this.baseURL;
   }
 }

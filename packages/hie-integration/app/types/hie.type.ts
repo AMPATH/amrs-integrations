@@ -110,6 +110,10 @@ export interface FhirBundle<T> {
   }>;
 }
 
+export interface EncodedFhirResponse {
+  data: string; // base64-encoded FHIR bundle
+}
+
 export type EncryptedClientResp = {
   message: {
     total: number;

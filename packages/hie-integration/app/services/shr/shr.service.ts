@@ -1,5 +1,9 @@
 import config from "../../config/env";
-import { FhirBundle, EncryptedClientResp } from "../../types/hie.type";
+import {
+  FhirBundle,
+  EncryptedClientResp,
+  EncodedFhirResponse,
+} from "../../types/hie.type";
 import { logger } from "../../utils/logger";
 import { HieHttpClient } from "../../utils/http-client";
 import { VisitService } from "../amrs/visit-service";
@@ -9,6 +13,7 @@ import { HapiFhirClient } from "./hapi-fhir-client";
 import { FhirTransformer } from "./fhir-transformer";
 import { IdMappings } from "./types";
 import { HieMappingService } from "../amrs/hie-mapping-service";
+import { decryptData } from "../../utils/descrypt-data";
 
 export class SHRService {
   private httpClient: HieHttpClient;
@@ -36,20 +41,18 @@ export class SHRService {
 
   async fetchSHR(cr_id: string): Promise<any> {
     try {
-      const response = await this.httpClient.get<FhirBundle<any>>(
+      const response = await this.httpClient.get<EncodedFhirResponse>(
         config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
       );
 
-      if (
-        !response.data ||
-        !response.data.entry ||
-        response.data.entry.length === 0
-      ) {
+      if (!response.data?.data) {
         throw new Error("Patient not found in HIE registry");
       }
 
+      const shrData = decryptData(response.data.data);
+
       // Transform searchset to collection bundle
-      const collectionBundle = this.transformToCollectionBundle(response.data);
+      const collectionBundle = this.transformToCollectionBundle(shrData);
 
       return collectionBundle;
     } catch (error: any) {

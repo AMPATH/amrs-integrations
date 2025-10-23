@@ -32,7 +32,7 @@ export default {
       "HIE_CLIENT_REGISTRY_URL",
       "/v3/client-registry/fetch-client"
     ),
-    SHR_FETCH_URL: getEnv("HIE_SHR_FETCH_URL", "/v1/shr/summary"), // v1/international-patient-summary
+    SHR_FETCH_URL: getEnv("HIE_SHR_FETCH_URL", "/v1/international-patient-summary"),
     SHR_POST_BUNDLE_URL: getEnv("HIE_SHR_POST_BUNDLE_URL", "/shr/hie"),
     HAPI_POST_BUNDLE_URL: getEnv(
       "HIE_HAPI_POST_BUNDLE_URL",

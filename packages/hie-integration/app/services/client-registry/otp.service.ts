@@ -79,7 +79,7 @@ export class OtpService {
     }
 
     try {
-      const agent = this.hieMappingService.getAgentUsingLocationUuid(
+      const agent = await this.hieMappingService.getAgentUsingLocationUuid(
         locationUuid
       );
       if (!agent) {

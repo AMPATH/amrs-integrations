@@ -25,6 +25,12 @@ export class FacilityCredentials {
   @Column({ type: "varchar", length: 255 })
   password!: string;
 
+  @Column({ type: "varchar", length: 255 })
+  agent!: string;
+
+  @Column({ type: "blob", nullable: true })
+  pk!: string;
+
   @Column({ type: "boolean", default: true })
   is_active!: boolean;
 

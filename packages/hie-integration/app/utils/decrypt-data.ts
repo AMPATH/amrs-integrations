@@ -27,8 +27,11 @@ function decryptWithAES(
 }
 
 // Main execution
-export function decryptData(combinedBase64: string): any {
-  const productionPrivateKey = getPrivateKey();
+export async function decryptData(
+  combinedBase64: string,
+  facilityCode: string
+): Promise<any> {
+  const productionPrivateKey = await getPrivateKey(facilityCode);
   // Decode and split the combined string
   const combinedString = Buffer.from(combinedBase64, "base64").toString("utf8");
   const [

@@ -56,7 +56,8 @@ export const routes = (): ServerRoute[] => [
       try {
         const result = await service.fetchPatientFromHie(
           identificationNumber,
-          identificationType
+          identificationType,
+          locationUuid
         );
         return h.response(result).code(200);
       } catch (error: any) {
@@ -96,7 +97,7 @@ export const routes = (): ServerRoute[] => [
       const service = new ClientRegistryService(locationUuid);
 
       try {
-        const result = await service.validateOtp(sessionId, otp);
+        const result = await service.validateOtp(sessionId, otp, locationUuid);
 
         return h
           .response({
@@ -362,6 +363,7 @@ export const routes = (): ServerRoute[] => [
           consumer_key: Joi.string().required().description("HIE Consumer Key"),
           username: Joi.string().required().description("HIE Username"),
           password: Joi.string().required().description("HIE Password"),
+          agent: Joi.string().required().description("HIE Agent"),
           is_active: Joi.boolean()
             .default(true)
             .description("Whether credentials are active"),
@@ -481,7 +483,7 @@ export const routes = (): ServerRoute[] => [
 
         // Create orchestration for SHR fetch
         const shrRequestStart = new Date().toISOString();
-        const data = await service.fetchSHR(cr_id);
+        const data = await service.fetchSHR(cr_id, locationUuid);
         const shrRequestEnd = new Date().toISOString();
 
         // Log the SHR orchestration

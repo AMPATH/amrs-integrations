@@ -2,7 +2,8 @@ import { HieHttpClient } from "../../utils/http-client";
 import config from "../../config/env";
 import { logger } from "../../utils/logger";
 import { cache } from "../../utils/cache.util";
-import { decryptData } from "../../utils/descrypt-data";
+import { decryptData } from "../../utils/decrypt-data";
+import { HieMappingService } from "../amrs/hie-mapping-service";
 
 interface OtpSession {
   otpRecord: string;
@@ -14,9 +15,11 @@ interface OtpSession {
 export class OtpService {
   private httpClient: HieHttpClient;
   private readonly SESSION_TIMEOUT_SECONDS = 15 * 60; // 15 minutes
+  private hieMappingService: HieMappingService;
 
   constructor(facilityUuid: string) {
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, facilityUuid);
+    this.hieMappingService = new HieMappingService();
   }
 
   async sendOtp(
@@ -60,7 +63,8 @@ export class OtpService {
 
   async validateOtp(
     sessionId: string,
-    otp: string
+    otp: string,
+    locationUuid: string
   ): Promise<{
     status: "valid" | "invalid";
     identificationNumber?: string;
@@ -75,15 +79,28 @@ export class OtpService {
     }
 
     try {
+      const agent = this.hieMappingService.getAgentUsingLocationUuid(
+        locationUuid
+      );
+      if (!agent) {
+        logger.error(`Agent for location ${locationUuid} not found!`);
+        throw new Error(`Agent for location ${locationUuid} not found!`);
+      }
       const response = await this.httpClient.post<{
         message: string;
       }>("/validate-custom-otp", {
-        agent: config.HIE.AGENT,
+        agent: agent,
         otp_record: session.otpRecord,
         otp,
       });
-
-      const decrypted = decryptData(response.data.message);
+      const faciliyCode = await this.hieMappingService.getFacilityCodeUsingLocationUuid(
+        locationUuid
+      );
+      if (!faciliyCode) {
+        logger.error(`Facilty code for location ${locationUuid} not found`);
+        throw new Error(`Facilty code for location ${locationUuid} not found`);
+      }
+      const decrypted = await decryptData(response.data.message, faciliyCode);
 
       const status = decrypted.status ?? "invalid";
 

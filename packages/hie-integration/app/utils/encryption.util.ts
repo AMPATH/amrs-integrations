@@ -2,9 +2,7 @@ import crypto from "crypto";
 import { logger } from "./logger";
 
 const algorithm = "aes-256-gcm";
-const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY ||
-  "2ea83f73b8c970305550561aa9df4915379840ae69536e157c9d5647fd0e37ec";
+const ENCRYPTION_KEY = process.env.HIE_ENCRYPTION_KEY || "";
 
 const getEncryptionKey = (): Buffer => {
   const keyBuffer = Buffer.from(ENCRYPTION_KEY, "hex");

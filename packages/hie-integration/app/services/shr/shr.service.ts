@@ -13,7 +13,7 @@ import { HapiFhirClient } from "./hapi-fhir-client";
 import { FhirTransformer } from "./fhir-transformer";
 import { IdMappings } from "./types";
 import { HieMappingService } from "../amrs/hie-mapping-service";
-import { decryptData } from "../../utils/descrypt-data";
+import { decryptData } from "../../utils/decrypt-data";
 
 export class SHRService {
   private httpClient: HieHttpClient;
@@ -39,7 +39,7 @@ export class SHRService {
     this.transformer = new FhirTransformer(this.mappingService);
   }
 
-  async fetchSHR(cr_id: string): Promise<any> {
+  async fetchSHR(cr_id: string, location_uuid: string): Promise<any> {
     try {
       const response = await this.httpClient.get<EncodedFhirResponse>(
         config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
@@ -48,8 +48,10 @@ export class SHRService {
       if (!response.data?.data) {
         throw new Error("Patient not found in HIE registry");
       }
-
-      const shrData = decryptData(response.data.data);
+      const facilityCode = await this.mappingService.getFacilityCodeUsingLocationUuid(
+        location_uuid
+      );
+      const shrData = decryptData(response.data.data, facilityCode ?? "");
 
       // Transform searchset to collection bundle
       const collectionBundle = this.transformToCollectionBundle(shrData);

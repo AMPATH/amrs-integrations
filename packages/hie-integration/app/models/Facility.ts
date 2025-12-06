@@ -23,7 +23,7 @@ export class Facility {
   @Column({ type: "varchar", length: 30 })
   facility_code!: string;
 
-  @Column({ type: "varchar", length: 30, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   regulator!: string;
 
   @Column({ type: "varchar", length: 30, nullable: true })
@@ -32,7 +32,7 @@ export class Facility {
   @Column({ type: "varchar", length: 30, nullable: true })
   facility_category!: string;
 
-  @Column({ type: "varchar", length: 30, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   facility_owner!: string;
 
   @Column({ type: "varchar", length: 255, nullable: true })
@@ -41,10 +41,10 @@ export class Facility {
   @Column({ type: "varchar", length: 255, nullable: true })
   county!: string;
 
-  @Column({ type: "varchar", length: 30, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   sub_county!: string;
 
-  @Column({ type: "varchar", length: 30, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   ward!: string;
 
   @Column({ type: "boolean", nullable: true })

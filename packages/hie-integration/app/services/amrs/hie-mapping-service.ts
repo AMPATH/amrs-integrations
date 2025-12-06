@@ -1,6 +1,7 @@
 import { DatabaseManager } from "../../config/database";
 import { decrypt, encrypt } from "../../utils/encryption.util";
 import { logger } from "../../utils/logger";
+import { PKEncryption } from "../../utils/pk-encryption";
 
 export interface FacilityCredentials {
   location_uuid: string;
@@ -16,6 +17,7 @@ export interface FacilityCredentialsData {
   consumer_key: string;
   username: string;
   password: string;
+  agent: string;
   is_active?: boolean;
 }
 
@@ -99,7 +101,7 @@ export class HieMappingService {
     credentials: FacilityCredentialsData
   ): Promise<FacilityCredentialsRecord | null> {
     const hieDataSource = this.dbManager.getDataSource("primary");
-
+    const pKEncryption = new PKEncryption();
     const isDuplicate = await this.checkForDuplicateLocation(
       credentials.facility_code
     );
@@ -111,17 +113,20 @@ export class HieMappingService {
 
     // Encrypt password before saving
     const encryptedPassword = encrypt(credentials.password);
+    const encryptedPk = pKEncryption.encryptText() ?? null;
 
     const query = `
       INSERT INTO facility_credentials 
-        (facility_code, consumer_key, username, password, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+        (facility_code, consumer_key, username, password, is_active, pk, agent, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       ON DUPLICATE KEY UPDATE
         facility_code = VALUES(facility_code),
         consumer_key = VALUES(consumer_key),
         username = VALUES(username),
         password = VALUES(password),
         is_active = VALUES(is_active),
+        pk=VALUES(pk),
+        agent=VALUES(agent),
         updated_at = NOW()
     `;
 
@@ -132,6 +137,8 @@ export class HieMappingService {
         credentials.username,
         encryptedPassword,
         credentials.is_active ?? true,
+        encryptedPk,
+        credentials.agent,
       ]);
 
       return this.getFacilityCredentials(
@@ -227,6 +234,31 @@ export class HieMappingService {
       return facilityMap.get(locationUuid);
     } else {
       return null;
+    }
+  }
+  public async getAgentUsingLocationUuid(
+    locationUuid: string
+  ): Promise<string> {
+    const hieDataSource = this.dbManager.getDataSource("primary");
+    const query = `SELECT fc.agent 
+    FROM 
+    hie.facility_credentials fc
+        JOIN
+    facility_locations fl ON (fc.facility_code = fl.facility_code)
+    WHERE
+    fl.location_uuid = ?;
+    `;
+
+    try {
+      const results = await hieDataSource.query(query, [locationUuid]);
+      if (results.length === 0) {
+        throw new Error(`Agent for the facility ${locationUuid} not found`);
+      } else {
+        return results[0].agent ?? "";
+      }
+    } catch (error) {
+      logger.error("Error fetching all active facilities:", error);
+      throw error;
     }
   }
 }

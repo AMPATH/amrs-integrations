@@ -434,9 +434,8 @@ export const routes = (): ServerRoute[] => [
         }
         return h
           .response({
-            message: `Credentials ${
-              is_active ? "activated" : "deactivated"
-            } successfully`,
+            message: `Credentials ${is_active ? "activated" : "deactivated"
+              } successfully`,
           })
           .code(200);
       } catch (error: any) {
@@ -464,6 +463,10 @@ export const routes = (): ServerRoute[] => [
             .uuid()
             .required()
             .description("Location UUID"),
+          resources: Joi.string().optional(),
+          sort: Joi.string().valid("asc", "desc").optional(),
+          count: Joi.number().integer().min(1).optional(),
+          offset: Joi.number().integer().min(0).optional(),
         }),
       },
       tags: ["api", "shr"],
@@ -471,9 +474,13 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id, locationUuid } = request.query as {
+      const { cr_id, locationUuid, resources, sort, count, offset } = request.query as {
         cr_id: string;
         locationUuid: string;
+        resources?: string;
+        sort?: string;
+        count?: number;
+        offset?: number;
       };
       const startTime = new Date();
       const orchestrations = [];
@@ -483,7 +490,12 @@ export const routes = (): ServerRoute[] => [
 
         // Create orchestration for SHR fetch
         const shrRequestStart = new Date().toISOString();
-        const data = await service.fetchSHR(cr_id, locationUuid);
+        const data = await service.fetchSHR(cr_id, locationUuid, {
+          resources,
+          sort,
+          count,
+          _offset: offset,
+        });
         const shrRequestEnd = new Date().toISOString();
 
         // Log the SHR orchestration

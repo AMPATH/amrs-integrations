@@ -39,10 +39,35 @@ export class SHRService {
     this.transformer = new FhirTransformer(this.mappingService);
   }
 
-  async fetchSHR(cr_id: string, location_uuid: string): Promise<any> {
+  async fetchSHR(
+    cr_id: string,
+    location_uuid: string,
+    options: {
+      resources?: string;
+      sort?: string;
+      count?: number;
+      _offset?: number;
+    } = {}
+  ): Promise<any> {
     try {
+      const {
+        resources = "Observation,MedicationRequest,Encounter,MedicationStatement,MedicationDispense,ServiceRequest",
+        sort = "desc",
+        count = 20,
+        _offset = 0,
+      } = options;
+
+      const params = {
+        cr_id,
+        resources,
+        sort,
+        count,
+        _offset,
+      };
+
       const response = await this.httpClient.get<EncodedFhirResponse>(
-        config.HIE.SHR_FETCH_URL + "?cr_id=" + cr_id
+        "/v1/international-patient-summary-by-resource",
+        params
       );
 
       if (!response.data?.data) {
@@ -306,9 +331,8 @@ export class SHRService {
 
   async postBundleToShrHieWithToken(bundle: FhirBundle<any>): Promise<any> {
     try {
-      const fullUrl = `${this.openHIM.getBaseURL()}${
-        config.HIE.SHR_POST_BUNDLE_URL
-      }`;
+      const fullUrl = `${this.openHIM.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL
+        }`;
       logger.info(
         `[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`,
         {
@@ -336,9 +360,8 @@ export class SHRService {
     } catch (error: any) {
       const errorDetails = {
         bundleId: (bundle as any).id,
-        fullUrl: `${this.httpClient.getBaseURL()}${
-          config.HIE.SHR_POST_BUNDLE_URL
-        }`,
+        fullUrl: `${this.httpClient.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL
+          }`,
         baseUrl: this.httpClient.getBaseURL(),
         path: config.HIE.SHR_POST_BUNDLE_URL,
         status: error.response?.status,

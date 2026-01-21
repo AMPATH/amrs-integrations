@@ -1,7 +1,10 @@
-version: '3'
+version: "3"
 services:
   registry:
-    image: 'ampathke/amrs-eid:eid-cd4'
+    image: "ampathke/amrs-eid:eid-cd4"
     restart: always
-    volumes: 
-        - ./.env:/packages/eid/.env
+    ports:
+      - 8018:3010
+    volumes:
+      - ./.env:/opt/eid/.env
+    container_name: eid_registry_1

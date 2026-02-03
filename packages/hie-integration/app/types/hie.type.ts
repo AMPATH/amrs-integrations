@@ -129,6 +129,7 @@ export enum IdentifierType {
   REFUGEE_ID = "Refugee ID",
   REGISTRATION_NUMBER = "registration_number",
   LICENSE_NO = "id",
+  BIRTH_CERTIFICATE = "Birth Certificate",
 }
 
 export interface Identifier {
@@ -180,4 +181,78 @@ export interface FacilityFilterDto {
 export interface HieFacilityFilteSearchrDto {
   registration_number?: string;
   facility_code?: string;
+}
+
+export type BeneficiaryTokenResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type EligibilityFilterDto = {
+  requestIdType: string;
+  requestIdNumber: string;
+  locationUuid: string;
+};
+
+export type EligibilityDto = {
+  requestIdType: string;
+  requestIdNumber: string;
+};
+
+export type EligibilityResponse = {
+  requestIdType: number;
+  requestIdNumber: string;
+  memberCrNumber: string;
+  fullName: string;
+  schemes: Scheme[];
+};
+
+export type Scheme = {
+  memberType: "BENEFICIARY" | string;
+  coverageType: "SHIF" | string;
+  policy: Policy;
+  coverage: Coverage;
+  principalContributor: PrincipalContributor;
+};
+
+export type Policy = {
+  startDate: string;
+  endDate: string;
+  number: string;
+};
+
+export type Coverage = {
+  startDate: string;
+  endDate: string;
+  message: string;
+  reason: string;
+  possibleSolution: string | null;
+  status: string;
+};
+
+export type PrincipalContributor = {
+  idNumber: string;
+  name: string;
+  crNumber: string;
+  relationship: string;
+  employmentType: string;
+  employerDetails: EmployerDetails;
+};
+
+export type EmployerDetails = {
+  name: string;
+  jobGroup: string;
+};
+
+export enum RequestIdTypes {
+  BirthCertificate = 2,
+  CrId = 3,
+  NationalId = 4,
+  Refugee = 5,
+  TemporaryId = 6,
+  TempDependantId = 7,
+  MandateNo = 8,
+  Passport = 9,
+  BirthCertificate2 = 10,
+  HouseholdNumber = 11,
 }

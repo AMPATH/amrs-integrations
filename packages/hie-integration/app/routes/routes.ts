@@ -19,6 +19,7 @@ import {
 import { HieMappingService } from "../services/amrs/hie-mapping-service";
 import { MediatorUtils } from "../utils/mediator";
 import config from "../config/env";
+import { EligibilityService } from "../services/eligibility/eligibility.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -28,7 +29,7 @@ export const routes = (): ServerRoute[] => [
       validate: {
         payload: Joi.object({
           identificationNumber: Joi.required().description(
-            "Identification number"
+            "Identification number",
           ),
           identificationType: Joi.string()
             .required()
@@ -57,12 +58,12 @@ export const routes = (): ServerRoute[] => [
         const result = await service.fetchPatientFromHie(
           identificationNumber,
           identificationType,
-          locationUuid
+          locationUuid,
         );
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `Patient sync failed: ${identificationNumber} - ${error.message}`
+          `Patient sync failed: ${identificationNumber} - ${error.message}`,
         );
         return h
           .response({
@@ -147,7 +148,7 @@ export const routes = (): ServerRoute[] => [
       try {
         const result = await service.sendOtp(
           identificationNumber,
-          identificationType
+          identificationType,
         );
 
         return h
@@ -177,7 +178,7 @@ export const routes = (): ServerRoute[] => [
           identifierValue: Joi.string()
             .required()
             .description(
-              "Identifier value (e.g. National ID, Passport number)"
+              "Identifier value (e.g. National ID, Passport number)",
             ),
           identifierType: Joi.string()
             .required()
@@ -216,13 +217,13 @@ export const routes = (): ServerRoute[] => [
       try {
         const result = await service.getPractitioner(
           { type: identifierType, value: identifierValue },
-          { refresh }
+          { refresh },
         );
 
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `Practitioner search failed: ${identifierValue} - ${error.message}`
+          `Practitioner search failed: ${identifierValue} - ${error.message}`,
         );
 
         return h
@@ -283,7 +284,7 @@ export const routes = (): ServerRoute[] => [
           nationalId: Joi.string()
             .required()
             .description(
-              "National ID to search for (supports partial matching)"
+              "National ID to search for (supports partial matching)",
             ),
         }),
       },
@@ -298,7 +299,7 @@ export const routes = (): ServerRoute[] => [
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `AMRS providers fetch by national ID failed: ${error.message}`
+          `AMRS providers fetch by national ID failed: ${error.message}`,
         );
         return h
           .response({
@@ -321,7 +322,7 @@ export const routes = (): ServerRoute[] => [
           filterValue: Joi.string()
             .required()
             .description(
-              "Facility code e.g 24749 of registration number e.g GK-016503"
+              "Facility code e.g 24749 of registration number e.g GK-016503",
             ),
           locationUuid: Joi.string().required().description("Location uuid"),
         }),
@@ -333,7 +334,7 @@ export const routes = (): ServerRoute[] => [
     handler: async (request, h) => {
       const facilitySearchDto = request.query as FacilityFilterDto;
       const service = new FacilityRegistryService(
-        facilitySearchDto.locationUuid
+        facilitySearchDto.locationUuid,
       );
 
       try {
@@ -341,7 +342,7 @@ export const routes = (): ServerRoute[] => [
         return h.response(result).code(200);
       } catch (error: any) {
         logger.error(
-          `Facility search failed: ${facilitySearchDto.filterValue} - ${error.message}`
+          `Facility search failed: ${facilitySearchDto.filterValue} - ${error.message}`,
         );
         return h
           .response({
@@ -423,7 +424,7 @@ export const routes = (): ServerRoute[] => [
       try {
         const result = await service.updateCredentialsStatus(
           locationUuid,
-          is_active
+          is_active,
         );
         if (!result) {
           return h
@@ -434,8 +435,9 @@ export const routes = (): ServerRoute[] => [
         }
         return h
           .response({
-            message: `Credentials ${is_active ? "activated" : "deactivated"
-              } successfully`,
+            message: `Credentials ${
+              is_active ? "activated" : "deactivated"
+            } successfully`,
           })
           .code(200);
       } catch (error: any) {
@@ -474,7 +476,14 @@ export const routes = (): ServerRoute[] => [
       notes: "Retrieves summary data from SHR using the provided CR ID",
     },
     handler: async (request, h) => {
-      const { cr_id, locationUuid, resources, sort, count, offset } = request.query as {
+      const {
+        cr_id,
+        locationUuid,
+        resources,
+        sort,
+        count,
+        offset,
+      } = request.query as {
         cr_id: string;
         locationUuid: string;
         resources?: string;
@@ -507,14 +516,14 @@ export const routes = (): ServerRoute[] => [
           200,
           data,
           {},
-          { "Content-Type": "application/json" }
+          { "Content-Type": "application/json" },
         );
         orchestrations.push(shrOrchestration);
 
         // Second orchestration to post to OpenHIM FHIR endpoint
         try {
           logger.debug(
-            `Posting transformed bundle for patient ${cr_id} to OpenHIM`
+            `Posting transformed bundle for patient ${cr_id} to OpenHIM`,
           );
           const openHimRequestStart = new Date().toISOString();
           const openHimResponse = await service.postBundleToOpenHIM(data);
@@ -529,16 +538,16 @@ export const routes = (): ServerRoute[] => [
             200,
             openHimResponse,
             {},
-            { "Content-Type": "application/fhir+json" }
+            { "Content-Type": "application/fhir+json" },
           );
           orchestrations.push(openHimOrchestration);
 
           logger.debug(
-            `Successfully posted bundle for patient ${cr_id} to OpenHIM`
+            `Successfully posted bundle for patient ${cr_id} to OpenHIM`,
           );
         } catch (openHimError: any) {
           logger.error(
-            `Failed to post bundle to OpenHIM for patient ${cr_id}: ${openHimError.message}`
+            `Failed to post bundle to OpenHIM for patient ${cr_id}: ${openHimError.message}`,
           );
 
           // Log the failed OpenHIM orchestration
@@ -550,7 +559,7 @@ export const routes = (): ServerRoute[] => [
             500,
             { error: openHimError.message },
             {},
-            { "Content-Type": "application/fhir+json" }
+            { "Content-Type": "application/fhir+json" },
           );
           orchestrations.push(openHimErrorOrchestration);
 
@@ -567,7 +576,7 @@ export const routes = (): ServerRoute[] => [
             cr_id: cr_id,
             timestamp: new Date().toISOString(),
             processingTime: Date.now() - startTime.getTime(),
-          }
+          },
         );
 
         return MediatorUtils.sendMediatorResponse(h, mediatorResponse);
@@ -583,7 +592,7 @@ export const routes = (): ServerRoute[] => [
           500,
           { error: error.message },
           {},
-          { "Content-Type": "application/json" }
+          { "Content-Type": "application/json" },
         );
         orchestrations.push(errorOrchestration);
 
@@ -600,7 +609,7 @@ export const routes = (): ServerRoute[] => [
             timestamp: new Date().toISOString(),
             processingTime: Date.now() - startTime.getTime(),
             error: true,
-          }
+          },
         );
 
         return MediatorUtils.sendMediatorResponse(h, mediatorResponse);
@@ -622,7 +631,7 @@ export const routes = (): ServerRoute[] => [
               Joi.object({
                 fullUrl: Joi.string().optional(),
                 resource: Joi.object().required(),
-              }).unknown(true)
+              }).unknown(true),
             )
             .required(),
         }).unknown(true),
@@ -664,7 +673,7 @@ export const routes = (): ServerRoute[] => [
           date: Joi.string()
             .optional()
             .description(
-              "Date to process (YYYY-MM-DD format), defaults to yesterday"
+              "Date to process (YYYY-MM-DD format), defaults to yesterday",
             ),
         }),
       },
@@ -706,7 +715,7 @@ export const routes = (): ServerRoute[] => [
           date: Joi.string()
             .optional()
             .description(
-              "Date to use for testing (YYYY-MM-DD format), defaults to yesterday"
+              "Date to use for testing (YYYY-MM-DD format), defaults to yesterday",
             ),
         }),
       },
@@ -804,6 +813,45 @@ export const routes = (): ServerRoute[] => [
             timestamp: new Date().toISOString(),
           })
           .code(500);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/eligibility",
+    options: {
+      validate: {
+        payload: Joi.object({
+          locationUuid: Joi.string()
+            .required()
+            .description("user Location UUID"),
+          requestIdNumber: Joi.string()
+            .optional()
+            .description("Document Number e.g CR / ID / Alien ID"),
+          requestIdType: Joi.string()
+            .optional()
+            .description("Document Type identifier"),
+        }),
+      },
+      tags: ["api", "eligibility"],
+      description: "Client Eligibility status",
+    },
+    handler: async (request, h) => {
+      const {
+        locationUuid,
+        requestIdType,
+        requestIdNumber,
+      } = request.payload as any;
+      const eligibilityService = new EligibilityService(locationUuid);
+      try {
+        const resp = await eligibilityService.getClientEligibility({
+          locationUuid,
+          requestIdNumber,
+          requestIdType,
+        });
+        return h.response(resp).code(200);
+      } catch (error) {
+        return h.response("An error occurred").code(500);
       }
     },
   },

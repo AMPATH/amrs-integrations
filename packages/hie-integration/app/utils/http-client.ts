@@ -7,14 +7,21 @@ export class HieHttpClient {
   private tokenService: TokenService;
   private baseURL: string;
   private facilityUuid: string;
+  private extraHeaders: Record<string, string> | undefined;
 
-  constructor(baseURL: string, facilityUuid: string) {
-    logger.debug('HieHttpClient initialized', { facilityUuid, baseURL });
+  constructor(
+    baseURL: string,
+    facilityUuid: string,
+    extraHeaders?: Record<string, string>,
+  ) {
+    logger.debug("HieHttpClient initialized", { facilityUuid, baseURL });
     this.tokenService = new TokenService();
     this.axiosInstance = axios.create();
     this.baseURL = baseURL;
     this.facilityUuid = facilityUuid;
-
+    if (extraHeaders) {
+      this.extraHeaders = extraHeaders;
+    }
     this.setupInterceptors();
   }
 
@@ -23,20 +30,34 @@ export class HieHttpClient {
       async (config) => {
         try {
           const token = await this.tokenService.getAccessToken(
-            this.facilityUuid
+            this.facilityUuid,
           );
           config.headers.Authorization = `Bearer ${token}`;
           config.headers["Content-Type"] = "application/json";
+          if (
+            this.extraHeaders !== undefined &&
+            Object.keys(this.extraHeaders).length > 0
+          ) {
+            Object.keys(this.extraHeaders).forEach((key) => {
+              if (this.extraHeaders) {
+                const val = this.extraHeaders[key] ?? null;
+                if (val) {
+                  config.headers[key] = val;
+                }
+              }
+            });
+          }
+          logger.debug("HieHttpClient config", config);
           return config;
         } catch (error) {
           logger.error(
             `Failed to get token for facility ${this.facilityUuid}:`,
-            error
+            error,
           );
           return Promise.reject(error);
         }
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     this.axiosInstance.interceptors.response.use(
@@ -50,14 +71,14 @@ export class HieHttpClient {
 
           try {
             const token = await this.tokenService.getAccessToken(
-              this.facilityUuid
+              this.facilityUuid,
             );
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return this.axiosInstance(originalRequest);
           } catch (retryError) {
             logger.error(
               `Token refresh failed for facility ${this.facilityUuid}:`,
-              retryError
+              retryError,
             );
             return Promise.reject(retryError);
           }
@@ -68,13 +89,13 @@ export class HieHttpClient {
             logger.error(
               `HIE API Error for facility ${this.facilityUuid}: ${
                 error.response.status
-              } - ${JSON.stringify(error.response.data)}`
+              } - ${JSON.stringify(error.response.data)}`,
             );
           }
         }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 

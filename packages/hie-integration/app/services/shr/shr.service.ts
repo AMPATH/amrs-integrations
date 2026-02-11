@@ -1,3 +1,4 @@
+import axios from "axios";
 import config from "../../config/env";
 import {
   FhirBundle,
@@ -76,12 +77,13 @@ export class SHRService {
       const facilityCode = await this.mappingService.getFacilityCodeUsingLocationUuid(
         location_uuid
       );
-      const shrData = decryptData(response.data.data, facilityCode ?? "");
+      const shrData = await decryptData(response.data.data, facilityCode ?? "");
 
-      // Transform searchset to collection bundle
-      const collectionBundle = this.transformToCollectionBundle(shrData);
+      console.log(shrData);
+      // Transform searchset to transaction bundle for HAPI FHIR compatibility
+      const transactionBundle = this.transformToTransactionBundle(shrData, cr_id);
 
-      return collectionBundle;
+      return transactionBundle;
     } catch (error: any) {
       logger.error(`HIE client registry request failed: ${error.message}`);
       const details =
@@ -93,16 +95,24 @@ export class SHRService {
     }
   }
 
-  private transformToCollectionBundle(searchsetBundle: any): any {
+  private transformToTransactionBundle(
+    searchsetBundle: any,
+    patientId?: string
+  ): any {
     if (!searchsetBundle.entry || searchsetBundle.entry.length === 0) {
-      return searchsetBundle;
+      return {
+        resourceType: "Bundle",
+        type: "transaction",
+        timestamp: new Date().toISOString(),
+        entry: [],
+      };
     }
 
     logger.debug(
-      `Transforming searchset bundle with ${searchsetBundle.entry.length} entries to collection bundle`
+      `Transforming searchset bundle with ${searchsetBundle.entry.length} entries to transaction bundle`
     );
 
-    // For collection bundle, we keep the original structure but clean up entries
+    // Filter to valid FHIR resource types only
     const validEntries = searchsetBundle.entry.filter((entry: any) => {
       const resource = entry.resource;
       if (
@@ -117,7 +127,33 @@ export class SHRService {
       return true;
     });
 
-    // Remove duplicates based on resource type and identifier
+    // 1. Build ID Map (Old Reference -> New Reference)
+    // We scan all valid entries to determine if their IDs need sanitization (e.g. numeric -> prefixed)
+    const idMap = new Map<string, string>();
+
+    validEntries.forEach((entry: any) => {
+      const resource = entry.resource;
+      const originalId = resource.id;
+      const resourceType = resource.resourceType;
+
+      if (originalId) {
+        // Generate a safe, non-numeric ID if needed
+        const newId = this.sanitizeId(originalId);
+
+        // Map the old absolute/relative reference to the new one
+        // Handle "ResourceType/ID" format
+        idMap.set(`${resourceType}/${originalId}`, `${resourceType}/${newId}`);
+        // Handle "urn:uuid:ID" format if present
+        if (originalId.startsWith("urn:uuid:")) {
+          idMap.set(originalId, `urn:uuid:${newId}`);
+        }
+
+        // Store the new ID on the resource for later
+        entry._newId = newId;
+      }
+    });
+
+    // 2. Process Entries: Rewrite references and build transaction
     const uniqueEntries = new Map<string, any>();
     const processedIdentifiers = new Set<string>();
 
@@ -125,23 +161,33 @@ export class SHRService {
       const resource = entry.resource;
       const resourceType = resource.resourceType;
       const originalId = resource.id;
+      const newId = entry._newId || originalId; // Use the sanitized ID
+
+      // A. Rewrite internal references using our map
+      this.rewriteReferences(resource, idMap);
+
+      // B. Update the resource ID itself
+      resource.id = newId;
 
       // Create a unique key for this resource to avoid duplicates
       let resourceKey = "";
+      let primaryIdentifier: { system: string; value: string } | null = null;
+
       if (
         resource.identifier &&
         Array.isArray(resource.identifier) &&
         resource.identifier.length > 0
       ) {
-        const primaryIdentifier = resource.identifier[0];
-        if (primaryIdentifier.system && primaryIdentifier.value) {
-          resourceKey = `${resourceType}|${primaryIdentifier.system}|${primaryIdentifier.value}`;
+        const firstIdentifier = resource.identifier[0];
+        if (firstIdentifier.system && firstIdentifier.value) {
+          primaryIdentifier = firstIdentifier;
+          resourceKey = `${resourceType}|${firstIdentifier.system}|${firstIdentifier.value}`;
         }
       }
 
       // If no identifier-based key, use resourceType/id
-      if (!resourceKey && originalId) {
-        resourceKey = `${resourceType}/${originalId}`;
+      if (!resourceKey && newId) {
+        resourceKey = `${resourceType}/${newId}`;
       }
 
       // Skip if we've already processed this resource
@@ -156,41 +202,250 @@ export class SHRService {
 
       // Use original fullUrl or generate one based on resource type and id
       let fullUrl = entry.fullUrl;
-      if (!fullUrl && originalId) {
-        fullUrl = `${resourceType}/${originalId}`;
+      // If we changed the ID, we likely need to update the fullUrl too for consistency
+      // But preserving the original fullUrl is sometimes important if internal references use it.
+      // However, since we rewrote references based on ResourceType/ID, let's standardize fullUrl to that.
+      if (!fullUrl || originalId) {
+        fullUrl = `${resourceType}/${newId}`;
       }
 
-      const collectionEntry: any = {
+      // Build request entry for HAPI FHIR transaction bundle
+      const transactionEntry: any = {
         fullUrl: fullUrl,
         resource: resource,
+        request: {} as any,
       };
 
-      // Add request information if it exists, otherwise use search as fallback
-      if (entry.request) {
-        collectionEntry.request = entry.request;
-      } else if (entry.search) {
-        collectionEntry.request = {
-          method: "POST",
-          url: resource.resourceType,
-        };
+      if (newId) {
+        // Direct update by the new sanitized ID - Most specific and safe
+        // This avoids ambiguous identifier matches (HAPI-0958) AND numeric ID issues (HAPI-0960)
+        transactionEntry.request.method = "PUT";
+        transactionEntry.request.url = `${resourceType}/${newId}`;
+      } else if (primaryIdentifier) {
+        // Fallback for resources without IDs (should be rare if source is valid FHIR)
+        const identifierQuery = `identifier=${encodeURIComponent(
+          primaryIdentifier.system
+        )}|${encodeURIComponent(primaryIdentifier.value)}`;
+        transactionEntry.request.method = "POST";
+        transactionEntry.request.url = resourceType;
+        transactionEntry.request.ifNoneExist = identifierQuery;
+      } else {
+        // Ultimate Fallback
+        transactionEntry.request.method = "POST";
+        transactionEntry.request.url = resourceType;
       }
 
-      uniqueEntries.set(resourceKey || fullUrl, collectionEntry);
+      uniqueEntries.set(resourceKey || fullUrl, transactionEntry);
     });
 
-    // Create collection bundle
-    const collectionBundle = {
+    // Ensure Patient resource exists if referenced (HAPI-1094)
+    if (patientId) {
+      let hasPatient = false;
+      for (const entry of uniqueEntries.values()) {
+        if (entry.resource.resourceType === "Patient") {
+          hasPatient = true;
+          break;
+        }
+      }
+
+      if (!hasPatient) {
+        logger.debug(`Injecting missing Patient resource for ${patientId}`);
+        const patientResource = {
+          resourceType: "Patient",
+          id: patientId,
+          identifier: [
+            {
+              system: "http://kendata.org/identifier/cr-id",
+              value: patientId,
+            },
+          ],
+        };
+
+        const entry = {
+          fullUrl: `Patient/${patientId}`,
+          resource: patientResource,
+          request: {
+            method: "PUT",
+            url: `Patient/${patientId}`,
+          },
+        };
+        uniqueEntries.set(`Patient/${patientId}`, entry);
+      }
+    }
+
+    // Generic fix for other missing references (Encounter, Practitioner, Organization, MedicationRequest)
+    this.injectMissingReferences(uniqueEntries, patientId);
+
+    // Create transaction bundle
+    const transactionBundle = {
       resourceType: "Bundle",
-      type: "collection",
+      type: "transaction",
       timestamp: new Date().toISOString(),
       entry: Array.from(uniqueEntries.values()),
     };
 
     logger.debug(
-      `Created collection bundle with ${collectionBundle.entry.length} unique entries`
+      `Created transaction bundle with ${transactionBundle.entry.length} unique entries`
     );
 
-    return collectionBundle;
+    return transactionBundle;
+  }
+
+  // Helper to scan for missing references and inject placeholders
+  private injectMissingReferences(
+    uniqueEntries: Map<string, any>,
+    patientId?: string
+  ) {
+    const existingResources = new Set<string>();
+    const missingReferences = new Set<string>();
+
+    // 1. Catalog existing resources
+    for (const entry of uniqueEntries.values()) {
+      const resource = entry.resource;
+      if (resource.resourceType && resource.id) {
+        existingResources.add(`${resource.resourceType}/${resource.id}`);
+      }
+    }
+
+    // 2. Scan for references
+    const scanReferences = (obj: any) => {
+      if (!obj || typeof obj !== "object") return;
+      if (Array.isArray(obj)) {
+        obj.forEach((item) => scanReferences(item));
+        return;
+      }
+      if (obj.reference && typeof obj.reference === "string") {
+        const ref = obj.reference;
+        // Check if reference is relative ResourceType/ID format
+        if (ref.match(/^[A-Z][a-zA-Z]+\/[A-Za-z0-9\-\.]+$/)) {
+          if (!existingResources.has(ref)) {
+            missingReferences.add(ref);
+          }
+        }
+      }
+      Object.keys(obj).forEach((key) => {
+        if (key !== "reference" && key !== "resourceType" && key !== "id") {
+          scanReferences(obj[key]);
+        }
+      });
+    };
+
+    for (const entry of uniqueEntries.values()) {
+      scanReferences(entry.resource);
+    }
+
+    // 3. Create placeholders for missing references
+    missingReferences.forEach((ref) => {
+      const [resourceType, id] = ref.split("/");
+      // Only inject for specific types we know are safe/required
+      if (
+        [
+          "Encounter",
+          "Practitioner",
+          "Organization",
+          "Location",
+          "MedicationRequest",
+        ].includes(resourceType)
+      ) {
+        // Double check not already added (e.g. by Patient logic or previous iteration)
+        if (uniqueEntries.has(ref)) return;
+
+        logger.debug(
+          `Injecting placeholder for missing reference: ${resourceType}/${id}`
+        );
+
+        let resource: any = {
+          resourceType: resourceType,
+          id: id,
+        };
+
+        // Add minimal required fields for validity
+        if (resourceType === "Encounter") {
+          resource.status = "unknown";
+          resource.class = {
+            system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            code: "AMB",
+            display: "ambulatory",
+          };
+        } else if (resourceType === "MedicationRequest") {
+          resource.status = "unknown";
+          resource.intent = "order";
+          resource.medicationCodeableConcept = { text: "Unknown Medication" };
+          if (patientId) {
+            resource.subject = { reference: `Patient/${patientId}` };
+          }
+        } else if (resourceType === "Practitioner") {
+          resource.name = [{ family: "Unknown", given: ["Provider"] }];
+        } else if (resourceType === "Organization") {
+          resource.name = "Unknown Organization";
+        } else if (resourceType === "Location") {
+          resource.name = "Unknown Location";
+        }
+
+        const entry = {
+          fullUrl: ref,
+          resource: resource,
+          request: {
+            method: "PUT",
+            url: ref,
+          },
+        };
+        uniqueEntries.set(ref, entry);
+        // Add to existing set to prevent duplicates if referenced multiple times
+        existingResources.add(ref);
+      }
+    });
+  }
+
+  // Helper to ensure IDs are valid for creation (non-numeric)
+  private sanitizeId(id: string): string {
+    // If ID is purely numeric, prefix it to make it alphanumeric
+    // HAPI FHIR default policy rejects purely numeric IDs for client-assigned creation
+    if (/^\d+$/.test(id)) {
+      return `shr-${id}`;
+    }
+    return id;
+  }
+
+  // Helper to recursively rewrite references in a resource
+  private rewriteReferences(obj: any, idMap: Map<string, string>) {
+    if (!obj || typeof obj !== 'object') {
+      return;
+    }
+
+    if (Array.isArray(obj)) {
+      obj.forEach(item => this.rewriteReferences(item, idMap));
+      return;
+    }
+
+    // Check if this object is a Reference
+    // A FHIR Reference has a 'reference' string property
+    if (obj.reference && typeof obj.reference === 'string') {
+      const ref = obj.reference;
+      // Check if this reference points to something we've remapped
+      // The map keys are mostly relative references like "Patient/123"
+
+      // Try exact match
+      if (idMap.has(ref)) {
+        obj.reference = idMap.get(ref);
+      } else {
+        // If reference is absolute URL that ends with a mapped key, we might want to update it
+        // but generally local references are relative. 
+        // Let's check if the reference *contains* a mapped key as a suffix
+        for (const [oldRef, newRef] of idMap.entries()) {
+          if (ref.endsWith(oldRef) && (ref === oldRef || ref.endsWith('/' + oldRef))) {
+            // Replace the suffix
+            obj.reference = ref.slice(0, ref.length - oldRef.length) + newRef;
+            break;
+          }
+        }
+      }
+    }
+
+    // Recurse into all properties
+    Object.keys(obj).forEach(key => {
+      this.rewriteReferences(obj[key], idMap);
+    });
   }
 
   private isValidFhirResourceType(resourceType: string): boolean {
@@ -237,26 +492,22 @@ export class SHRService {
         `Posting transaction bundle to OpenHIM FHIR endpoint: ${openHimUrl}`
       );
 
-      // Use fetch for OpenHIM with custom headers
-      const authHeaders = {
-        Authorization: `Basic ${Buffer.from(
-          `${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`
-        ).toString("base64")}`,
-        "Content-Type": "application/fhir+json",
-        Accept: "application/fhir+json",
-      };
-
-      const response = await fetch(openHimUrl, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify(bundle),
+      const response = await axios.post(openHimUrl, bundle, {
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${config.HIE.OPENHIM_USERNAME}:${config.HIE.OPENHIM_PASSWORD}`
+          ).toString("base64")}`,
+          "Content-Type": "application/fhir+json",
+          Accept: "application/fhir+json",
+        },
+        timeout: 10000,
       });
 
       logger.debug(
         `Successfully posted bundle to OpenHIM. Response status: ${response.status}`
       );
 
-      return await response.json();
+      return response.data;
     } catch (error: any) {
       logger.error(`Failed to post bundle to OpenHIM: ${error.message}`);
       const details =

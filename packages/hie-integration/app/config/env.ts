@@ -36,7 +36,7 @@ export default {
       "HIE_SHR_FETCH_URL",
       "/v1/international-patient-summary"
     ),
-    SHR_POST_BUNDLE_URL: getEnv("HIE_SHR_POST_BUNDLE_URL", "/shr/hie"),
+    SHR_POST_BUNDLE_URL: getEnv("HIE_SHR_POST_BUNDLE_URL", "/v1/shr-med/bundle"),
     HAPI_POST_BUNDLE_URL: getEnv(
       "HIE_HAPI_POST_BUNDLE_URL",
       "/v1/hapi-med/bundle"
@@ -50,13 +50,13 @@ export default {
   AMRS_FHIR: {
     BASE_URL: getEnv(
       "AMRS_FHIR_BASE_URL",
-      "https://ngx.ampath.or.ke/amrs/ws/fhir2/R4"
+      "https://staging.ampath.or.ke/amrs/ws/fhir2/R4"
     ),
   },
   AMRS: {
     BASE_URL: getEnv(
       "AMRS_BASE_URL",
-      "https://ngx.ampath.or.ke/amrs/ws/fhir2/R4"
+      "https://staging.ampath.or.ke/amrs/ws/fhir2/R4"
     ),
     USERNAME: getEnv("AMRS_USERNAME"),
     PASSWORD: getEnv("AMRS_PASSWORD"),
@@ -77,4 +77,8 @@ export default {
       FHIR_EVENTS: getEnv("KAFKA_FHIR_EVENTS_TOPIC", "fhir-bundles"),
     },
   },
+  BATCH_JOB: {
+    SHR_URL: getEnv("BATCH_JOB_SHR_URL", "http://10.50.80.115:5001/v1/shr"),
+  },
+  DEFAULT_FACILITY_UUID: getEnv("DEFAULT_FACILITY_UUID", "3e365f38-28bc-467a-944e-a7f714f68349"),
 };

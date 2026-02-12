@@ -1,0 +1,1062 @@
+type: collection.insomnia.rest/5.0
+name: SHR
+meta:
+  id: wrk_a164a3c3d6bf4adf89788dce7a90db41
+  created: 1758017211763
+  modified: 1758017211763
+  description: ""
+collection:
+  - name: OTP Workflow APIs Updated
+    meta:
+      id: fld_c3f00b7658414f57a6ba0a3ea7c6443b
+      created: 1758018208066
+      modified: 1758018208066
+      sortKey: -1758018206901
+      description: >-
+        The OTP workflow constitutes of 2 APIs.
+
+
+        1. /send-custom-otp
+            
+        2. /validate-custom-otp
+            
+
+        The (1) is used to the send the OTP while (2) is used to validate the
+        OTP.
+  - name: Kenya Digital Superhighway
+    meta:
+      id: fld_73606a0430584d5c9f7bb76fb65a5be7
+      created: 1758018831751
+      modified: 1758018831751
+      sortKey: -1758018830611
+      description: |-
+        The National Health Information Exchange (HIE) APIs
+
+        Base URL: [https://uat.dha.go.ke/](https://uat.dha.go.ke/)
+    children:
+      - name: Terminology APIs
+        meta:
+          id: fld_2215bcc76a4d4b8697846c82b813d959
+          created: 1758018831752
+          modified: 1758018831752
+          sortKey: -1758018830610
+          description: ""
+    authentication:
+      type: basic
+      disabled: false
+      username: "{{username}}"
+      password: "{{password}}"
+    environment:
+      baseUrl: /
+  - name: Custom Requests
+    meta:
+      id: fld_9856e98eec6f49998e999f5c6cd54a6b
+      created: 1758093364190
+      modified: 1758093364190
+      sortKey: -1758093364190
+      description: ""
+    children:
+      - url: localhost:9000/v1/shr/summary?cr_id=CR5556285722802-5
+        name: Fetch SHR Summary
+        meta:
+          id: req_04d5ed302a004a8bbdb91600a9daaf2d
+          created: 1758030025092
+          modified: 1758178983895
+          isPrivate: false
+          description: ""
+          sortKey: -1758093380193
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:9000/hie/client/search
+        name: Fetch Client AMRS
+        meta:
+          id: req_a61992688f0b48a48b882977b99016d3
+          created: 1758036910933
+          modified: 1758093476618
+          isPrivate: false
+          description: ""
+          sortKey: -1758093380093
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"identificationNumber":"10101010",
+            	"identificationNumbeType":"National ID"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.6.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: https://uat.dha.go.ke/v1/shr/summary?cr_id=CR4098636401452-9
+        name: Fetch Bundle Direct from SHR
+        meta:
+          id: req_ebfaefe720894c77bbd4345d00402820
+          created: 1758092299966
+          modified: 1758093380040
+          isPrivate: false
+          description: ""
+          sortKey: -1758093379993
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+            id: pair_2fec538668bd469f9a42b66eb600bb80
+          - id: pair_75a70e5b0d404857ba840f4a7388f92a
+            name: Authorization
+            value: Bearer
+              eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTgwOTIzNjksImtleSI6IlJRUi1ESEFCUDAzMzM0In0.D-nANeOupZZEmyUp61MFt8qkIsr362BPOGQr2BDLKv8
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:9000/v1/shr/bundle
+        name: POST To SHR
+        meta:
+          id: req_3c1586ee6ab3412a8c41a5af45e7c6fd
+          created: 1758098843674
+          modified: 1758177989714
+          isPrivate: false
+          description: ""
+          sortKey: -1758093380143
+        method: POST
+        body:
+          mimeType: application/json
+          text: >
+            	{
+            	"resourceType": "Bundle",
+            	"id": "TESt-1998-90-89-amrs-190",
+            	"meta": {
+            		"lastUpdated": "2025-09-17T08:41:20.751+00:00"
+            	},
+            	"type": "searchset",
+            	"total": 1,
+            	"link": [
+            		{
+            			"relation": "self",
+            			"url": "https://kenya-shr.kenya-hie.health/fhir/Patient/CR7826392656734-4/$everything?_type=DocumentReference%2CEncounter%2CCondition%2CServiceRequest%2CProcedure%2CDiagnosticReport%2CMedicationRequest%2CMedicationDispense&cr_id=CR7826392656734-4"
+            		}
+            	],
+            	"entry": [
+            		{
+            			"resource":{
+            	"resourceType": "Patient",
+            	"id": "b7ed6ac9-4eac-406a-be75-a3e8ec681a30",
+            	"meta": {
+            		"versionId": "1667832626000",
+            		"lastUpdated": "2022-11-07T17:50:26.000+03:00"
+            	},
+            	"text": {
+            		"status": "generated",
+            		"div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><table class=\"hapiPropertyTable\"><tbody><tr><td>Id:</td><td>b7ed6ac9-4eac-406a-be75-a3e8ec681a30</td></tr><tr><td>Identifier:</td><td><div>11500078</div><div>119208986-8</div><div>MOH1667832627</div><div>00016-32627</div><div>NAT-123456</div></td></tr><tr><td>Active:</td><td>true</td></tr><tr><td>Name:</td><td> test test <b>TEST </b></td></tr><tr><td>Telecom:</td><td> +38783478348 </td></tr><tr><td>Gender:</td><td>FEMALE</td></tr><tr><td>Birth Date:</td><td>01/01/1999</td></tr><tr><td>Deceased:</td><td>false</td></tr><tr><td>Address:</td><td><span>sdvavdvds </span><span>Afghanistan </span></td></tr></tbody></table></div>"
+            	},
+            	"identifier": [
+            		{
+            			"id": "63508835-b171-4e36-8da3-d2f53db42878",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/patient/identifier#location",
+            					"valueReference": {
+            						"reference": "Location/18c343eb-b353-462a-9139-b16606e6b6c2",
+            						"type": "Location",
+            						"display": "Location Test"
+            					}
+            				}
+            			],
+            			"use": "official",
+            			"type": {
+            				"coding": [
+            					{
+            						"code": "ced014a1-068a-4a13-b6b3-17412f754af2"
+            					}
+            				],
+            				"text": "Passport Number"
+            			},
+            			"value": "11500078"
+            		},
+            		{
+            			"id": "71df91e3-3be7-4dc3-a097-47168d69d8f0",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/patient/identifier#location",
+            					"valueReference": {
+            						"reference": "Location/18c343eb-b353-462a-9139-b16606e6b6c2",
+            						"type": "Location",
+            						"display": "Location Test"
+            					}
+            				}
+            			],
+            			"use": "usual",
+            			"type": {
+            				"coding": [
+            					{
+            						"code": "58a4732e-1359-11df-a1f1-0026b9348838"
+            					}
+            				],
+            				"text": "AMRS Universal ID"
+            			},
+            			"value": "119208986-8"
+            		},
+            		{
+            			"id": "e987b351-54f5-4eca-b9a5-d06e9baad74c",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/patient/identifier#location",
+            					"valueReference": {
+            						"reference": "Location/18c343eb-b353-462a-9139-b16606e6b6c2",
+            						"type": "Location",
+            						"display": "Location Test"
+            					}
+            				}
+            			],
+            			"use": "usual",
+            			"type": {
+            				"coding": [
+            					{
+            						"code": "cba702b9-4664-4b43-83f1-9ab473cbd64d"
+            					}
+            				],
+            				"text": "UPI Number"
+            			},
+            			"value": "MOH1667832627"
+            		},
+            		{
+            			"id": "e8f010c1-a727-4447-9086-04d4ddc1585b",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/patient/identifier#location",
+            					"valueReference": {
+            						"reference": "Location/18c343eb-b353-462a-9139-b16606e6b6c2",
+            						"type": "Location",
+            						"display": "Location Test"
+            					}
+            				}
+            			],
+            			"use": "usual",
+            			"type": {
+            				"coding": [
+            					{
+            						"code": "f2d6ff1a-8440-4d35-a150-1d4b5a930c5e"
+            					}
+            				],
+            				"text": "CCC Number"
+            			},
+            			"value": "00016-32627"
+            		},
+            		{
+            			"id": "6c5310be-b681-4f03-b59c-97694f5f6c5c",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/patient/identifier#location",
+            					"valueReference": {
+            						"reference": "Location/18c343eb-b353-462a-9139-b16606e6b6c2",
+            						"type": "Location",
+            						"display": "Location Test"
+            					}
+            				}
+            			],
+            			"use": "usual",
+            			"type": {
+            				"coding": [
+            					{
+            						"code": "22ee6ad7-58fb-4382-9af2-c6a553f3d56a"
+            					}
+            				],
+            				"text": "NAT"
+            			},
+            			"value": "NAT-123456"
+            		}
+            	],
+            	"active": true,
+            	"name": [
+            		{
+            			"id": "b21f79db-7ef5-4b2c-b7a1-56db3aa0767f",
+            			"family": "test",
+            			"given": [
+            				"test",
+            				"test"
+            			]
+            		}
+            	],
+            	"telecom": [
+            		{
+            			"id": "7e636456-29b9-467e-b0ee-46d011dc8f23",
+            			"value": "+38783478348"
+            		}
+            	],
+            	"gender": "female",
+            	"birthDate": "1999",
+            	"deceasedBoolean": false,
+            	"address": [
+            		{
+            			"id": "b7618add-f981-4d85-b695-687e05e73d23",
+            			"extension": [
+            				{
+            					"url": "http://fhir.openmrs.org/ext/address",
+            					"extension": [
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address1",
+            							"valueString": "County N/A"
+            						},
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address2",
+            							"valueString": "Subcounty N/A"
+            						},
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address3",
+            							"valueString": "dvsd"
+            						},
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address7",
+            							"valueString": "Ward N/A"
+            						},
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address8",
+            							"valueString": "dsvvs"
+            						},
+            						{
+            							"url": "http://fhir.openmrs.org/ext/address#address10",
+            							"valueString": "County N/A"
+            						}
+            					]
+            				}
+            			],
+            			"use": "home",
+            			"city": "sdvavdvds",
+            			"country": "Afghanistan"
+            		}
+            	]
+            }}
+            	]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.6.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: https://uat.dha.go.ke/v1/shr-med/bundle
+        name: POST Bundle Direct to SHR
+        meta:
+          id: req_23e6a5db5ccb4cabb2216edc31887a13
+          created: 1758098886016
+          modified: 1758099019096
+          isPrivate: false
+          description: ""
+          sortKey: -1758056105301
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"resourceType": "Bundle",
+            	"id": "28245db8-5584-49dc-8483-058b59284336",
+            	"meta": {
+            		"lastUpdated": "2025-09-17T08:41:20.751+00:00"
+            	},
+            	"type": "searchset",
+            	"total": 7,
+            	"link": [
+            		{
+            			"relation": "self",
+            			"url": "https://kenya-shr.kenya-hie.health/fhir/Patient/CR7826392656734-4/$everything?_type=DocumentReference%2CEncounter%2CCondition%2CServiceRequest%2CProcedure%2CDiagnosticReport%2CMedicationRequest%2CMedicationDispense&cr_id=CR7826392656734-4"
+            		}
+            	],
+            	"entry": [
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/Patient/CR7826392656734-4",
+            			"resource": {
+            				"resourceType": "Patient",
+            				"id": "CR7826392656734-4",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-05-27T07:24:29.051+00:00",
+            					"source": "#c92ceaccb0c6dce5",
+            					"profile": [
+            						"https://mis.apeiro-digital.com/fhir/StructureDefinition/patient%7C1.0.0"
+            					]
+            				},
+            				"identifier": [
+            					{
+            						"use": "official",
+            						"system": " https://qa-sha.apeiro-digital.com/fhir/identifier/shanumber",
+            						"value": "CR7826392656734-4"
+            					}
+            				],
+            				"name": [
+            					{
+            						"text": "EVALYNE SYOMBUA NDUKU",
+            						"family": "NDUKU",
+            						"given": [
+            							"EVALYNE",
+            							"SYOMBUA"
+            						]
+            					}
+            				],
+            				"gender": "female",
+            				"birthDate": "1995-04-18"
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/Encounter/10881350",
+            			"resource": {
+            				"resourceType": "Encounter",
+            				"id": "10881350",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-04T00:18:30.814+00:00",
+            					"source": "#2eea0783bfbca8df"
+            				},
+            				"identifier": [
+            					{
+            						"system": "https://training.tiberbu.app/",
+            						"value": "Patient-Appointment-HLC-APP-250527-006415-7344-29205"
+            					}
+            				],
+            				"status": "finished",
+            				"class": {
+            					"system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            					"code": "OP",
+            					"display": "outpatient encounter"
+            				},
+            				"type": [
+            					{
+            						"coding": [
+            							{
+            								"system": "https://shr.kenya-hie.health/encounter-types",
+            								"code": "367336001",
+            								"display": "MCH - THNET"
+            							}
+            						]
+            					}
+            				],
+            				"priority": {
+            					"coding": [
+            						{
+            							"system": "https://hl7.org/fhir/R4/v3/ActPriority/vs.html",
+            							"code": "routine",
+            							"display": "routine"
+            						}
+            					]
+            				},
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"identifier": {
+            						"system": "https://cr.kenya-hie.health/api/v4/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"participant": [
+            					{
+            						"individual": {
+            							"identifier": {
+            								"system": "https://hwr.kenya-hie.health/api/v4/Practitioner",
+            								"value": "PUID-0010701-2"
+            							}
+            						}
+            					}
+            				],
+            				"period": {
+            					"start": "2025-05-27",
+            					"end": "2025-06-05T00:00:00"
+            				},
+            				"serviceProvider": {
+            					"reference": "https://fr.kenya-hie.health/api/v4/Organization/FID-20-114807-9",
+            					"identifier": {
+            						"system": "https://fr.kenya-hie.health/api/v4/Organization",
+            						"value": "FID-20-114807-9"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/ServiceRequest/10881460",
+            			"resource": {
+            				"resourceType": "ServiceRequest",
+            				"id": "10881460",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-04T00:18:31.265+00:00",
+            					"source": "#2eea0783bfbca8df"
+            				},
+            				"status": "completed",
+            				"intent": "order",
+            				"category": [
+            					{
+            						"coding": [
+            							{
+            								"system": "http://snomed.info/sct",
+            								"code": "386637004",
+            								"display": "Wound Cleaning"
+            							}
+            						],
+            						"text": "Wound Cleaning"
+            					}
+            				],
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"type": "Patient",
+            					"identifier": {
+            						"use": "official",
+            						"system": "https://api.dha.go.ke/v1/fhir/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"encounter": {
+            					"reference": "Encounter/Patient-Appointment-HLC-APP-250527-006415-7344-29205",
+            					"display": "EVALYNE SYOMBUA NDUKU with Mutula"
+            				},
+            				"occurrenceDateTime": "2025-05-27T09:59:24.683796",
+            				"requester": {
+            					"reference": "https://hwr.kenya-hie.health/api/v4/Practitioner/None",
+            					"identifier": {
+            						"system": "https://hwr.kenya-hie.health/api/v4/Practitioner"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/Encounter/11220319",
+            			"resource": {
+            				"resourceType": "Encounter",
+            				"id": "11220319",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-06T22:25:49.377+00:00",
+            					"source": "#f604d44a78fee5cb"
+            				},
+            				"identifier": [
+            					{
+            						"system": "https://training.tiberbu.app/",
+            						"value": "Patient-Appointment-HLC-APP-250527-327478-7344-29205"
+            					}
+            				],
+            				"status": "finished",
+            				"class": {
+            					"system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            					"code": "OP",
+            					"display": "outpatient encounter"
+            				},
+            				"type": [
+            					{
+            						"coding": [
+            							{
+            								"system": "https://shr.kenya-hie.health/encounter-types",
+            								"code": "367336001",
+            								"display": "General OPD - THNET"
+            							}
+            						]
+            					}
+            				],
+            				"priority": {
+            					"coding": [
+            						{
+            							"system": "https://hl7.org/fhir/R4/v3/ActPriority/vs.html",
+            							"code": "routine",
+            							"display": "routine"
+            						}
+            					]
+            				},
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"identifier": {
+            						"system": "https://cr.kenya-hie.health/api/v4/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"participant": [
+            					{
+            						"individual": {
+            							"identifier": {
+            								"system": "https://hwr.kenya-hie.health/api/v4/Practitioner"
+            							}
+            						}
+            					}
+            				],
+            				"period": {
+            					"start": "2025-05-27",
+            					"end": "2025-06-07T00:00:00"
+            				},
+            				"serviceProvider": {
+            					"reference": "https://fr.kenya-hie.health/api/v4/Organization/FID-20-114807-9",
+            					"identifier": {
+            						"system": "https://fr.kenya-hie.health/api/v4/Organization",
+            						"value": "FID-20-114807-9"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/Encounter/11443844",
+            			"resource": {
+            				"resourceType": "Encounter",
+            				"id": "11443844",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-08T21:40:57.270+00:00",
+            					"source": "#e5a7f204e2f89b10"
+            				},
+            				"identifier": [
+            					{
+            						"system": "https://mombasa-uat.tiberbu.app",
+            						"value": "Patient-Appointment-HLC-APP-250527-327478-7344-31688"
+            					}
+            				],
+            				"status": "finished",
+            				"class": {
+            					"system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            					"code": "OP",
+            					"display": "outpatient encounter"
+            				},
+            				"type": [
+            					{
+            						"coding": [
+            							{
+            								"system": "https://shr.kenya-hie.health/encounter-types",
+            								"code": "367336001",
+            								"display": "General OPD - THNET"
+            							}
+            						]
+            					}
+            				],
+            				"priority": {
+            					"coding": [
+            						{
+            							"system": "https://hl7.org/fhir/R4/v3/ActPriority/vs.html",
+            							"code": "routine",
+            							"display": "routine"
+            						}
+            					]
+            				},
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"identifier": {
+            						"system": "https://cr.kenya-hie.health/api/v4/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"participant": [
+            					{
+            						"individual": {
+            							"identifier": {
+            								"system": "https://hwr.kenya-hie.health/api/v4/Practitioner"
+            							}
+            						}
+            					}
+            				],
+            				"period": {
+            					"start": "2025-05-27",
+            					"end": "2025-06-09T00:00:00"
+            				},
+            				"serviceProvider": {
+            					"reference": "https://fr.kenya-hie.health/api/v4/Organization/FID-20-114807-9",
+            					"identifier": {
+            						"system": "https://fr.kenya-hie.health/api/v4/Organization",
+            						"value": "FID-20-114807-9"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/Encounter/11498144",
+            			"resource": {
+            				"resourceType": "Encounter",
+            				"id": "11498144",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-09T03:35:52.188+00:00",
+            					"source": "#67a691af3c39119f"
+            				},
+            				"identifier": [
+            					{
+            						"system": "https://mombasa-uat.tiberbu.app",
+            						"value": "Patient-Appointment-HLC-APP-250527-006415-7344-31688"
+            					}
+            				],
+            				"status": "finished",
+            				"class": {
+            					"system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+            					"code": "OP",
+            					"display": "outpatient encounter"
+            				},
+            				"type": [
+            					{
+            						"coding": [
+            							{
+            								"system": "https://shr.kenya-hie.health/encounter-types",
+            								"code": "367336001",
+            								"display": "MCH - THNET"
+            							}
+            						]
+            					}
+            				],
+            				"priority": {
+            					"coding": [
+            						{
+            							"system": "https://hl7.org/fhir/R4/v3/ActPriority/vs.html",
+            							"code": "routine",
+            							"display": "routine"
+            						}
+            					]
+            				},
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"identifier": {
+            						"system": "https://cr.kenya-hie.health/api/v4/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"participant": [
+            					{
+            						"individual": {
+            							"identifier": {
+            								"system": "https://hwr.kenya-hie.health/api/v4/Practitioner",
+            								"value": "PUID-0010701-2"
+            							}
+            						}
+            					}
+            				],
+            				"period": {
+            					"start": "2025-05-27",
+            					"end": "2025-06-10T00:00:00"
+            				},
+            				"serviceProvider": {
+            					"reference": "https://fr.kenya-hie.health/api/v4/Organization/FID-20-114807-9",
+            					"identifier": {
+            						"system": "https://fr.kenya-hie.health/api/v4/Organization",
+            						"value": "FID-20-114807-9"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		},
+            		{
+            			"fullUrl": "https://kenya-shr.kenya-hie.health/fhir/ServiceRequest/11498211",
+            			"resource": {
+            				"resourceType": "ServiceRequest",
+            				"id": "11498211",
+            				"meta": {
+            					"versionId": "1",
+            					"lastUpdated": "2025-06-09T03:35:52.590+00:00",
+            					"source": "#67a691af3c39119f"
+            				},
+            				"status": "completed",
+            				"intent": "order",
+            				"category": [
+            					{
+            						"coding": [
+            							{
+            								"system": "http://snomed.info/sct",
+            								"code": "386637004",
+            								"display": "Wound Cleaning"
+            							}
+            						],
+            						"text": "Wound Cleaning"
+            					}
+            				],
+            				"subject": {
+            					"reference": "Patient/CR7826392656734-4",
+            					"type": "Patient",
+            					"identifier": {
+            						"use": "official",
+            						"system": "https://api.dha.go.ke/v1/fhir/Patient",
+            						"value": "CR7826392656734-4"
+            					}
+            				},
+            				"encounter": {
+            					"reference": "Encounter/Patient-Appointment-HLC-APP-250527-006415-7344-31688",
+            					"display": "EVALYNE SYOMBUA NDUKU with Mutula"
+            				},
+            				"occurrenceDateTime": "2025-05-27T09:59:24.683796",
+            				"requester": {
+            					"reference": "https://hwr.kenya-hie.health/api/v4/Practitioner/None",
+            					"identifier": {
+            						"system": "https://hwr.kenya-hie.health/api/v4/Practitioner"
+            					}
+            				}
+            			},
+            			"search": {
+            				"mode": "match"
+            			}
+            		}
+            	]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+            id: pair_4dcd97df81354e078e4d640a1437161a
+          - name: User-Agent
+            value: insomnia/11.6.0
+            id: pair_2fec538668bd469f9a42b66eb600bb80
+          - id: pair_75a70e5b0d404857ba840f4a7388f92a
+            name: Authorization
+            value: Bearer
+              eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiJSUVItREhBQlAwMzMzNCIsImV4cCI6MTc1ODA5OTAyMH0.kYUdwi_j4ieX3vQVqBX6KplETnxK5CycrhUoCF6ieAI
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: AMRS FHIR
+    meta:
+      id: fld_5a6ae4fdeb4a4c57ba370f0d3f61c7ab
+      created: 1758101624768
+      modified: 1758101624768
+      sortKey: -1758101624768
+      description: ""
+    children:
+      - url: "{{ _.amrs_base
+          }}ws/fhir2/R4/Patient/b7ed6ac9-4eac-406a-be75-a3e8ec681a30?_summary=t\
+          rue"
+        name: Fetch Patient Resource
+        meta:
+          id: req_a89ab61c390f4457a9a1ec044f19a79c
+          created: 1758101631746
+          modified: 1758117553862
+          isPrivate: false
+          description: ""
+          sortKey: -1758101631746
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+        authentication:
+          type: basic
+          useISO88591: false
+          disabled: false
+          username: drono
+          password: Rono2019
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.amrs_base
+          }}ws/fhir2/R4/Encounter/2efc1499-03b6-4e6c-9b9d-7fd222f8533b"
+        name: Fetch Encounter Resource
+        meta:
+          id: req_8755039d942347f4bc62bc0b150ac7f9
+          created: 1758103557508
+          modified: 1758177530002
+          isPrivate: false
+          description: ""
+          sortKey: -1758097505969.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+        authentication:
+          type: basic
+          useISO88591: false
+          disabled: false
+          username: drono
+          password: Rono2019
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.amrs_base
+          }}ws/fhir2/R4/Observation/330ff918-6fca-4931-a9cb-e048a5637017?_summa\
+          ry=false"
+        name: Fetch Observation Resource
+        meta:
+          id: req_3aad1e925def40228f70fc85655c15eb
+          created: 1758117776151
+          modified: 1758177656718
+          isPrivate: false
+          description: ""
+          sortKey: -1758095443081.25
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+        authentication:
+          type: basic
+          useISO88591: false
+          disabled: false
+          username: drono
+          password: Rono2019
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.amrs_base
+          }}ws/fhir2/R4/MedicationRequest/b25c9e72-489d-4321-9c84-e0d7ca0475e4/\
+          ?_summary=true"
+        name: Fetch Medication Request Resource
+        meta:
+          id: req_26c05f8ffcfd4f978061a957de173a3c
+          created: 1758117953114
+          modified: 1758118198290
+          isPrivate: false
+          description: ""
+          sortKey: -1758094411637.125
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.6.0
+        authentication:
+          type: basic
+          useISO88591: false
+          disabled: false
+          username: drono
+          password: Rono2019
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_7295dc0cb6e6c340e82547c163f547252a685ecf
+    created: 1758017211766
+    modified: 1758176975029
+  cookies:
+    - key: INGRESSCOOKIE
+      value: 1758019255.898.841.934187|07e86b9e43277f42116179322974ec9a
+      domain: uat.dha.go.ke
+      path: /
+      secure: true
+      httpOnly: true
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.150Z
+      lastAccessed: 2025-09-16T10:40:56.150Z
+      id: 8b35c6c3-ccb2-4e3f-bac6-5ce57b8ff657
+    - key: sid
+      value: Guest
+      maxAge: 612000
+      domain: uat.dha.go.ke
+      path: /
+      httpOnly: true
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.155Z
+      lastAccessed: 2025-09-16T13:44:48.976Z
+      sameSite: lax
+      id: 3d29f890-9456-4ac4-9127-0269e76edfcc
+    - key: system_user
+      value: no
+      domain: uat.dha.go.ke
+      path: /
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.155Z
+      lastAccessed: 2025-09-16T13:44:48.976Z
+      sameSite: lax
+      id: a61442a6-fd06-4447-80e1-21c5a05a7d24
+    - key: full_name
+      value: Guest
+      domain: uat.dha.go.ke
+      path: /
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.155Z
+      lastAccessed: 2025-09-16T13:44:48.976Z
+      sameSite: lax
+      id: d9eaa3c5-1029-4ae2-9ad1-7dc290d00bb3
+    - key: user_id
+      value: Guest
+      domain: uat.dha.go.ke
+      path: /
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.155Z
+      lastAccessed: 2025-09-16T13:44:48.976Z
+      sameSite: lax
+      id: 5cd9cf48-7c2e-4fff-a013-cc474eee0d44
+    - key: user_image
+      domain: uat.dha.go.ke
+      path: /
+      hostOnly: true
+      creation: 2025-09-16T10:40:56.155Z
+      lastAccessed: 2025-09-16T13:44:48.976Z
+      sameSite: lax
+      id: ab361513-49e3-4efb-9318-b8fd81f086af
+    - key: JSESSIONID
+      value: 18006C39EC9BF0205ADCA1DB1280E8FF
+      domain: ngx.ampath.or.ke
+      path: /amrs
+      httpOnly: true
+      hostOnly: true
+      creation: 2025-09-17T09:36:01.952Z
+      lastAccessed: 2025-09-18T06:29:35.028Z
+      id: 90653844-1b96-46ab-815b-fb47d3e35bd5
+environments:
+  name: Base Environment
+  meta:
+    id: env_7295dc0cb6e6c340e82547c163f547252a685ecf
+    created: 1758017211765
+    modified: 1758101672430
+    isPrivate: false
+  data:
+    username: y0e1W6DtyL0WRFm5iGv
+    password: b6rqNioqvGJr9qvH8zZ
+    consumer_key: RQR-DHABP03334
+    base_url: https://uat.dha.go.ke/
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiJSUVItREhBQlAwMzMzNCIsImV4cCI6MTc1ODAyOTg2Mn0.ZLnDYMdjyZqS4rjfES6tCZSYjKLDTu6YXXjaAuzdu9o
+    amrs_base: https://ngx.ampath.or.ke/amrs/

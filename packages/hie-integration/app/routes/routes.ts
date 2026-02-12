@@ -435,9 +435,8 @@ export const routes = (): ServerRoute[] => [
         }
         return h
           .response({
-            message: `Credentials ${
-              is_active ? "activated" : "deactivated"
-            } successfully`,
+            message: `Credentials ${is_active ? "activated" : "deactivated"
+              } successfully`,
           })
           .code(200);
       } catch (error: any) {
@@ -623,6 +622,12 @@ export const routes = (): ServerRoute[] => [
     path: "/v1/shr/bundle",
     options: {
       validate: {
+        query: Joi.object({
+          locationUuid: Joi.string()
+            .uuid()
+            .required()
+            .description("Location UUID"),
+        }),
         payload: Joi.object({
           resourceType: Joi.string().required(),
           type: Joi.string().required(),
@@ -717,6 +722,9 @@ export const routes = (): ServerRoute[] => [
             .description(
               "Date to use for testing (YYYY-MM-DD format), defaults to yesterday",
             ),
+          locationUuid: Joi.string()
+            .optional()
+            .description("Location UUID to use for testing"),
         }),
       },
       tags: ["api", "shr", "test"],
@@ -732,6 +740,7 @@ export const routes = (): ServerRoute[] => [
       };
 
       try {
+        console.log("locationUuid", locationUuid);
         const service = new SHRService(locationUuid);
         const result = await service.testPatientBundle(patientUuid, date);
 

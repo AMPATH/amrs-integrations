@@ -93,7 +93,7 @@ export class KafkaService {
 
     const consumer = this.kafka.consumer(kafkaConfig);
     this.consumers.set(groupId, consumer);
-    
+
     logger.info(`Created consumer for group: ${groupId}`, { kafkaConfig });
     return consumer;
   }
@@ -112,33 +112,33 @@ export class KafkaService {
         brokers: this.kafkaConfig.brokers,
         clientId: this.kafkaConfig.clientId
       });
-      
+
       const consumer = await this.createConsumer(groupId, consumerConfig);
-      
+
       // Add error handlers
       consumer.on('consumer.connect', () => {
         logger.info(`Consumer connected for topic: ${topic}, group: ${groupId}`);
       });
-      
+
       consumer.on('consumer.disconnect', () => {
         logger.warn(`Consumer disconnected for topic: ${topic}, group: ${groupId}`);
         this.isConnected = false;
       });
-      
+
       consumer.on('consumer.stop', () => {
         logger.info(`Consumer stopped for topic: ${topic}, group: ${groupId}`);
       });
-      
+
       consumer.on('consumer.crash', (error) => {
         logger.error(`Consumer crashed for topic: ${topic}, group: ${groupId}:`, error);
         this.isConnected = false;
       });
-      
+
       await consumer.connect();
-      
+
       // Set connection status
       this.isConnected = true;
-      
+
       await consumer.subscribe({ topic, fromBeginning: true });
 
       await consumer.run({
@@ -164,7 +164,14 @@ export class KafkaService {
             // You might want to implement dead letter queue logic here
           }
         },
-      });
+      }),
+        consumer.on('consumer.group_join', ({ payload }) => {
+          logger.info('Consumer joined group', {
+            groupId: payload.groupId,
+            memberId: payload.memberId,
+            memberAssignment: payload.memberAssignment
+          });
+        });
 
       logger.info(`Successfully subscribed to topic ${topic} with group ${groupId}`);
     } catch (error) {
@@ -180,7 +187,7 @@ export class KafkaService {
     }
   }
 
- 
+
   /**
    * Validate Kafka connection
    */
@@ -188,13 +195,13 @@ export class KafkaService {
     try {
       const admin = await this.getAdmin();
       const clusterInfo = await admin.describeCluster();
-      
+
       logger.info('Kafka connection validated successfully', {
         clusterId: clusterInfo.clusterId,
         brokerCount: clusterInfo.brokers.length,
         brokers: clusterInfo.brokers.map((b: any) => `${b.host}:${b.port}`)
       });
-      
+
       this.isConnected = true;
       return true;
     } catch (error) {
@@ -246,7 +253,7 @@ export class KafkaService {
       valueLength: message.value.length,
       valuePreview: message.value.substring(0, 200) + (message.value.length > 200 ? '...' : '')
     });
-    
+
     try {
       const parsed = JSON.parse(message.value);
       logger.debug('Successfully parsed Kafka event', {

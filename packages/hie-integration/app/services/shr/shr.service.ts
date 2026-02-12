@@ -27,7 +27,7 @@ export class SHRService {
   private mappingService: HieMappingService;
 
   constructor(locationUuid: string) {
-    logger.info("Initializing SHRService", { locationUuid });
+    logger.info("Initializing SHRService", locationUuid);
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
     this.openHIM = new HieHttpClient(config.HIE.OPENHIM_BASE_URL, locationUuid);
     this.httpClient = new HieHttpClient(config.HIE.BASE_URL, locationUuid);
@@ -102,7 +102,7 @@ export class SHRService {
     if (!searchsetBundle.entry || searchsetBundle.entry.length === 0) {
       return {
         resourceType: "Bundle",
-        type: "transaction",
+        type: "collection",
         timestamp: new Date().toISOString(),
         entry: [],
       };
@@ -279,7 +279,7 @@ export class SHRService {
     // Create transaction bundle
     const transactionBundle = {
       resourceType: "Bundle",
-      type: "transaction",
+      type: "collection",
       timestamp: new Date().toISOString(),
       entry: Array.from(uniqueEntries.values()),
     };
@@ -520,20 +520,12 @@ export class SHRService {
 
   async postBundleToSHR(bundle: FhirBundle<any>): Promise<any> {
     try {
-      const response = await this.httpClient.post<EncryptedClientResp>(
-        config.HIE.SHR_POST_BUNDLE_URL,
-        bundle
-      );
-      return response.data || [];
+      return await this.shrFhirClient.postBundle(bundle);
     } catch (error: any) {
-      logger.error(`HIE client registry request failed: ${error.message}`, {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        url: config.HIE.SHR_POST_BUNDLE_URL,
+      logger.error(`SHR bundle post failed in service: ${error.message}`, {
         bundleId: bundle.id,
       });
-      throw new Error(error.response?.data || error.message);
+      throw error;
     }
   }
 
@@ -557,7 +549,7 @@ export class SHRService {
 
       logger.info(`[EXTERNAL SHR] ✓ Bundle posted to OpenHIM successfully`, {
         bundleId: (bundle as any).id,
-        route: config.HIE.OPENHIM_FHIR_ENDPOINT,
+        route: config.HIE.SHR_POST_BUNDLE_URL,
       });
       return response;
     } catch (error: any) {
@@ -585,7 +577,7 @@ export class SHRService {
       const fullUrl = `${this.openHIM.getBaseURL()}${config.HIE.SHR_POST_BUNDLE_URL
         }`;
       logger.info(
-        `[HIE SHR] Attempting to post bundle to /shr/hie with HIE token`,
+        `[HIE SHR] Posting bundle to /shr/hie with HIE token - Complete payload`,
         {
           fullUrl,
           baseUrl: this.openHIM.getBaseURL(),
@@ -593,6 +585,8 @@ export class SHRService {
           bundleId: (bundle as any).id,
           bundleType: bundle.resourceType,
           entryCount: bundle.entry?.length || 0,
+          resourceTypes: bundle.entry?.map((e: any) => e.resource?.resourceType),
+          transformedPayload: JSON.stringify(bundle, null, 2)
         }
       );
 
@@ -601,6 +595,11 @@ export class SHRService {
         config.HIE.SHR_POST_BUNDLE_URL,
         bundle
       );
+
+      logger.info(`[HIE SHR] Response from /shr/hie:`, {
+        data: response.data,
+        status: response.status,
+      });
 
       logger.info(`[HIE SHR] ✓ Bundle posted to /shr/hie successfully`, {
         bundleId: (bundle as any).id,
@@ -623,7 +622,7 @@ export class SHRService {
       };
 
       logger.error(
-        `[HIE SHR] ✗ Failed to post bundle to /shr/hie`,
+        `[HIE SHR] ✗ Failed to post bundle to ${config.HIE.SHR_POST_BUNDLE_URL}`,
         errorDetails
       );
       throw new Error(`Failed to post bundle to HIE SHR: ${error.message}`);
@@ -668,7 +667,8 @@ export class SHRService {
       // get the practitioner and facilty from amrs using both location uuid and provider uuid
 
       const shrBundle = await this.transformer.transform(patientData);
-      return shrBundle;
+      const response = await this.shrFhirClient.postBundle(shrBundle);
+      return response;
 
       // logger.info(
       //   {

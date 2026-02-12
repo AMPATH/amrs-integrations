@@ -12,6 +12,7 @@ import { AmrsFhirClient } from '../shr/amrs-fhir-client';
 import { VisitService } from '../amrs/visit-service';
 import axios from 'axios';
 import { ShrFhirClient } from '../shr/shr-fhir-client';
+import { ProcessedVisitRepository } from '../../repositories/ProcessedVisitRepository';
 
 export class KafkaConsumerService {
   private isRunning = false;
@@ -19,32 +20,48 @@ export class KafkaConsumerService {
   private readonly maxRetries = 3;
   private readonly retryDelay = 1000; // 1 second
   private shrService!: SHRService;
-  private mappingService: HieMappingService;
-  private transformer: FhirTransformer;
-  private visitService: VisitService;
-  private amrsFhirClient: AmrsFhirClient;
+  private mappingService!: HieMappingService;
+  private transformer!: FhirTransformer;
+  private visitService!: VisitService;
+  private amrsFhirClient!: AmrsFhirClient;
+  private processedVisitRepository!: ProcessedVisitRepository;
 
   constructor() {
-    this.mappingService = new HieMappingService();
-    this.transformer = new FhirTransformer(this.mappingService);
-    this.visitService = new VisitService();
-    this.amrsFhirClient = new AmrsFhirClient();
+    // Services are initialized lazily in initialize() after database is ready
+  }
+
+  /**
+   * Initialize services that depend on database connections
+   * Must be called after DatabaseManager.initializeAll()
+   */
+  private initializeServices(): void {
+    if (!this.mappingService) {
+      this.mappingService = new HieMappingService();
+      this.transformer = new FhirTransformer(this.mappingService);
+      this.visitService = new VisitService();
+      this.amrsFhirClient = new AmrsFhirClient();
+      this.processedVisitRepository = new ProcessedVisitRepository();
+    }
   }
 
   /**
    * Initialize all Kafka consumers
    */
   async initialize(): Promise<void> {
-      try {
-        logger.info('Initializing Kafka consumer service...');
-        // Don't initialize SHR service here - it will be initialized per message with the correct facility ID
+    try {
+      logger.info('Initializing Kafka consumer service...');
+      
+      // Initialize services that depend on database (must be done after DB is ready)
+      this.initializeServices();
+      
+      // Don't initialize SHR service here - it will be initialized per message with the correct facility ID
 
       // Validate Kafka connection first
       const isConnected = await kafkaService.validateConnection();
       if (!isConnected) {
         throw new Error('Failed to connect to Kafka cluster');
       }
-      
+
       // Set up consumers in parallel for better performance
       const setupPromises = [
         this.setupFhirEventConsumer(),
@@ -90,7 +107,7 @@ export class KafkaConsumerService {
         const metadata = await kafkaService.getTopicMetadata(topic);
         logger.info(`Topic ${topic} metadata retrieved`, { metadata });
       } catch (error) {
-        logger.warn(`Topic ${topic} may not exist or is not accessible`, { 
+        logger.warn(`Topic ${topic} may not exist or is not accessible`, {
           error: error instanceof Error ? error.message : String(error),
           topic,
           brokers: config.KAFKA.BROKERS
@@ -147,7 +164,7 @@ export class KafkaConsumerService {
   private async handleFhirEvent(payload: any): Promise<void> {
     const startTime = Date.now();
     let retryCount = 0;
-    
+
     logger.info('Received Kafka message', {
       topic: payload.topic,
       partition: payload.partition,
@@ -156,11 +173,11 @@ export class KafkaConsumerService {
       valueLength: payload.message.value?.length || 0,
       timestamp: payload.message.timestamp
     });
-    
+
     try {
       const event = kafkaService.parseEvent(payload) as any;
       const eventId = event?.id || 'unknown';
-      
+
       logger.info('Processing FHIR event', {
         eventId,
         hasBody: !!event?.body,
@@ -196,7 +213,7 @@ export class KafkaConsumerService {
           } else {
             bundle = event.body;
           }
-          
+
           logger.debug('Bundle validation', {
             eventId,
             hasEntry: !!bundle.entry,
@@ -205,7 +222,7 @@ export class KafkaConsumerService {
             bundleId: bundle.id,
             resourceType: bundle.resourceType,
           });
-          
+
           if (!bundle.entry || !Array.isArray(bundle.entry) || bundle.entry.length === 0) {
             logger.info('Skipping empty bundle', {
               eventId,
@@ -224,8 +241,8 @@ export class KafkaConsumerService {
           });
 
           // Transactional processing: both operations must succeed
-         // await this.processFhirEventTransactionally(bundle, eventId);
-         await this.processFhirEventTransactionally(bundle, eventId);          
+          // await this.processFhirEventTransactionally(bundle, eventId);
+          await this.processFhirEventTransactionally(bundle, eventId);
           const processingTime = Date.now() - startTime;
           logger.info('FHIR event processed successfully', {
             eventId,
@@ -237,7 +254,7 @@ export class KafkaConsumerService {
         } catch (error) {
           retryCount++;
           const isLastRetry = retryCount >= this.maxRetries;
-          
+
           logger.error('Error processing FHIR event', {
             error: error instanceof Error ? error.message : String(error),
             retryCount,
@@ -265,7 +282,7 @@ export class KafkaConsumerService {
         error: parseError instanceof Error ? parseError.message : String(parseError),
         payload: JSON.stringify(payload, null, 2)
       });
-      
+
       // Send unparseable message to dead letter queue
       await this.sendToDeadLetterQueue({ id: 'unknown', body: payload }, parseError);
     }
@@ -276,10 +293,48 @@ export class KafkaConsumerService {
    */
   private async processFhirEventTransactionally(bundle: any, eventId: string): Promise<void> {
     // Extract facility ID and initialize SHR service
-    const facilityId = "3e365f38-28bc-467a-944e-a7f714f68349"; // Hardcoded for testing
+    let locationUuid: string | undefined;
 
-    // Initialize the SHRService with the facilityId (currently hardcoded)
-    this.shrService = new SHRService(facilityId);
+    // 1. Extract Encounter UUID from Bundle
+    const encounterId = this.extractEncounterIdFromBundle(bundle);
+
+    if (encounterId) {
+      // 2. Get Encounter Context (Visit -> Location)
+      const context = await this.mappingService.getEncounterContext(encounterId);
+
+      if (context && context.locationUuid) {
+        // 3. Verify that a Facility Code exists for this Location UUID
+        // We don't use the code here directly, but we verify it exists so SHRService won't fail later
+        const code = await this.mappingService.getFacilityCodeUsingLocationUuid(
+          context.locationUuid
+        );
+        if (code) {
+          locationUuid = context.locationUuid;
+        } else {
+          logger.warn(
+            { encounterId, locationUuid: context.locationUuid },
+            "Facility code not found for location"
+          );
+        }
+      } else {
+        logger.warn(
+          { encounterId },
+          "Encounter context or location UUID not found"
+        );
+      }
+    } else {
+      logger.warn({ bundleId: bundle.id }, "No Encounter found in bundle");
+    }
+
+    if (!locationUuid) {
+      const errorMsg = `Could not determine location UUID (for facility) for bundle ${bundle.id}. Aborting processing.`;
+      logger.error({ bundleId: bundle.id }, errorMsg);
+      // Fail processing if location UUID is missing
+      throw new Error(errorMsg);
+    }
+
+    // Initialize the SHRService with the locationUuid
+    this.shrService = new SHRService(locationUuid);
 
     // Post the bundle to the OpenHIM channel using postBundleToExternalHapi
     try {
@@ -338,14 +393,35 @@ export class KafkaConsumerService {
 
       // Ensure SHR service is initialized for dead letter queue
       if (!this.shrService) {
-        // Use the hardcoded facility ID for dead letter queue operations
-        const facilityId = "3e365f38-28bc-467a-944e-a7f714f68349";
+        // Try to extract locationUuid from the event
+        let locationUuid: string | undefined;
+        
+        try {
+          const bundle = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+          const encounterId = this.extractEncounterIdFromBundle(bundle);
+          
+          if (encounterId) {
+            const context = await this.mappingService.getEncounterContext(encounterId);
+            if (context?.locationUuid) {
+              locationUuid = context.locationUuid;
+              logger.debug({ locationUuid, encounterId }, 'Extracted locationUuid for dead letter queue');
+            }
+          }
+        } catch (extractError) {
+          logger.debug('Could not extract locationUuid from event, using default', {
+            error: extractError instanceof Error ? extractError.message : String(extractError)
+          });
+        }
+
+        // Fall back to configured default facility UUID
+        const facilityId = locationUuid || config.DEFAULT_FACILITY_UUID;
         this.shrService = new SHRService(facilityId);
+        logger.info({ facilityId, usedDefault: !locationUuid }, 'Initialized SHR service for dead letter queue');
       }
 
       // Send to HAPI dead letter endpoint
       await this.shrService.sendToDeadLetterQueue(deadLetterPayload);
-      
+
       logger.info('Event sent to dead letter queue', {
         eventId: event.id,
         error: error instanceof Error ? error.message : String(error)
@@ -360,52 +436,123 @@ export class KafkaConsumerService {
   }
   async executeBatchJob(
     jobDate: Date = new Date()
-  ): Promise<{ success: boolean; processedPatients: number }> {
-    // await this.conceptService.initializeConceptCache();
-
+  ): Promise<{ success: boolean; processedPatients: number; skippedVisits: number }> {
+    // Ensure services are initialized (in case called before initialize())
+    this.initializeServices();
+    
     const processingDate = new Date(jobDate);
     processingDate.setDate(processingDate.getDate() - 1); // def yesterday
     const dateString = processingDate.toISOString().split("T")[0];
+    
+    // Use the actual current timestamp when batch job runs
+    const now = new Date();
+    const batchStartTimestamp = now.toISOString().replace('T', ' ').substring(0, 19);
 
-    logger.info({ date: dateString }, "Starting SHR batch job for date");
+    logger.info({ date: dateString, batchStartTimestamp }, "Starting SHR batch job for date");
 
     try {
-      // 1. Get patient IDs from AMRS
+      // 1. Get patient IDs and their visits from AMRS
       const patientVisitMap = await this.visitService.findClosedVisitsForDate(
         dateString
       );
-      const patientUuids = Array.from(patientVisitMap.keys());
 
-      // Initialize transformer with concept service
-      // const transformer = new FhirTransformer(this.conceptService);
+      // 2. Collect all visit UUIDs to check which are already processed
+      const allVisitUuids: string[] = [];
+      for (const visits of patientVisitMap.values()) {
+        allVisitUuids.push(...visits);
+      }
 
+      // 3. Filter out already processed visits
+      const processedVisitUuids = await this.processedVisitRepository.findProcessedVisitUuids(allVisitUuids);
+      
       logger.info(
-        { count: patientUuids.length },
-        `Processing data for ${patientUuids.length} patients`
+        { totalVisits: allVisitUuids.length, alreadyProcessed: processedVisitUuids.size },
+        `Found ${processedVisitUuids.size} already processed visits out of ${allVisitUuids.length} total`
       );
 
-      // 2. Process each patient
-      for (const patientUuid of patientUuids) {
-        try {
-          const patientData = await this.amrsFhirClient.getPatientDataForDate(
-            patientUuid,
-            dateString
-          );
-          const shrBundle = await this.transformer.transform(patientData);
-
-          const response = await axios.post("http://10.50.80.115:5001/v1/shr", shrBundle);
-          logger.debug('Batch job response', { patientUuid, status: response.status });
-        } catch (patientError) {
-          logger.error(
-            { error: patientError, patientUuid, date: dateString },
-            `Failed to process patient ${patientUuid} for date ${dateString}`
-          );
-          // TODO: Implement retry mechanism or store somwheere
+      // 4. Build filtered patient-visit map excluding processed visits
+      const filteredPatientVisitMap = new Map<string, string[]>();
+      for (const [patientUuid, visits] of patientVisitMap.entries()) {
+        const unprocessedVisits = visits.filter(v => !processedVisitUuids.has(v));
+        if (unprocessedVisits.length > 0) {
+          filteredPatientVisitMap.set(patientUuid, unprocessedVisits);
         }
       }
 
-      logger.info("SHR Batch Job completed successfully");
-      return { success: true, processedPatients: patientUuids.length };
+      const patientUuids = Array.from(filteredPatientVisitMap.keys());
+      const skippedVisits = processedVisitUuids.size;
+
+      logger.info(
+        { count: patientUuids.length, skippedVisits },
+        `Processing data for ${patientUuids.length} patients (skipped ${skippedVisits} already processed visits)`
+      );
+
+      if (patientUuids.length === 0) {
+        logger.info("No new visits to process");
+        return { success: true, processedPatients: 0, skippedVisits };
+      }
+
+      // 5. Get configurable SHR URL
+      const shrUrl = config.BATCH_JOB.SHR_URL;
+      let processedCount = 0;
+
+      // 6. Process each patient and their visits
+      for (const patientUuid of patientUuids) {
+        const visitUuids = filteredPatientVisitMap.get(patientUuid) || [];
+        
+        for (const visitUuid of visitUuids) {
+          try {
+            const patientData = await this.amrsFhirClient.getPatientDataForDate(
+              patientUuid,
+              dateString
+            );
+            const shrBundle = await this.transformer.transform(patientData);
+
+            const response = await axios.post(shrUrl, shrBundle);
+            
+            // Mark visit as successfully processed with the batch timestamp
+            await this.processedVisitRepository.markVisitProcessed(
+              visitUuid,
+              patientUuid,
+              dateString,
+              response.status,
+              batchStartTimestamp
+            );
+            
+            processedCount++;
+            logger.debug('Batch job response', { 
+              patientUuid, 
+              visitUuid, 
+              status: response.status,
+              processedAt: batchStartTimestamp
+            });
+          } catch (visitError: any) {
+            const errorMessage = visitError instanceof Error ? visitError.message : String(visitError);
+            const httpStatus = visitError.response?.status;
+            
+            // Mark visit as failed with the batch timestamp
+            await this.processedVisitRepository.markVisitFailed(
+              visitUuid,
+              patientUuid,
+              dateString,
+              errorMessage,
+              batchStartTimestamp,
+              httpStatus
+            );
+            
+            logger.error(
+              { error: visitError, patientUuid, visitUuid, date: dateString },
+              `Failed to process visit ${visitUuid} for patient ${patientUuid}`
+            );
+          }
+        }
+      }
+
+      logger.info(
+        { processedCount, skippedVisits },
+        `SHR Batch Job completed: ${processedCount} visits processed, ${skippedVisits} skipped`
+      );
+      return { success: true, processedPatients: processedCount, skippedVisits };
     } catch (error) {
       logger.fatal({ error }, "SHR Batch Job failed catastrophically");
       throw error;
@@ -419,7 +566,7 @@ export class KafkaConsumerService {
     try {
       const message = kafkaService.parseMessage(payload);
       const event = kafkaService.parseEvent(payload) as ErrorEvent;
-      
+
       logger.error('Processing error event', {
         eventId: event.id,
         errorType: event.type,
@@ -491,7 +638,7 @@ export class KafkaConsumerService {
     try {
       const isConnected = kafkaService.isServiceConnected();
       const topics = Object.values(config.KAFKA.TOPICS);
-      
+
       return {
         isConnected,
         brokers: config.KAFKA.BROKERS,
@@ -532,10 +679,10 @@ export class KafkaConsumerService {
   async stop(): Promise<void> {
     try {
       logger.info('Stopping Kafka consumer service...');
-      
+
       await kafkaService.disconnect();
       await this.cleanup();
-      
+
       logger.info('Kafka consumer service stopped successfully');
     } catch (error) {
       logger.error('Error stopping Kafka consumer service:', error);
@@ -549,6 +696,18 @@ export class KafkaConsumerService {
    */
   isServiceRunning(): boolean {
     return this.isRunning;
+  }
+
+  private extractEncounterIdFromBundle(bundle: any): string | null {
+    if (!bundle?.entry || !Array.isArray(bundle.entry)) {
+      return null;
+    }
+
+    const encounterEntry = bundle.entry.find(
+      (entry: any) => entry.resource?.resourceType === "Encounter"
+    );
+
+    return encounterEntry?.resource?.id || null;
   }
 }
 

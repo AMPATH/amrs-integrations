@@ -1,37 +1,42 @@
 import axios from "axios";
 import { logger } from "../../utils/logger";
 import config from "../../config/env";
-
+import { TokenService } from "../../services/auth/token.service";
 
 export class ShrFhirClient {
+  private facilityUuid: string;
+  private tokenService: TokenService;
+
   constructor(facilityUuid: string) {
-    // No client needed, using axios directly
+    this.facilityUuid = facilityUuid;
+    this.tokenService = new TokenService();
   }
 
   async postBundle(bundle: any): Promise<any> {
     try {
-      const fullUrl = `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`;
-      logger.info(`[OPENHIM SHR] Attempting to post bundle to OpenHIM`, {
+      const fullUrl = `${config.HIE.BASE_URL}${config.HIE.SHR_POST_BUNDLE_URL}`;
+      
+      // Log the complete transformed bundle being sent to OpenHIM
+      logger.info(`[OPENHIM SHR] Posting transformed bundle to OpenHIM`, {
         fullUrl,
-        baseUrl: config.HIE.OPENHIM_BASE_URL,
-        endpoint: config.HIE.OPENHIM_FHIR_ENDPOINT,
+        facilityUuid: this.facilityUuid,
         bundleId: bundle.id,
         bundleType: bundle.resourceType,
         entryCount: bundle.entry?.length || 0,
-        hasAuth: !!(config.HIE.OPENHIM_USERNAME && config.HIE.OPENHIM_PASSWORD),
+        resourceTypes: bundle.entry?.map((e: any) => e.resource?.resourceType),
+        transformedPayload: JSON.stringify(bundle, null, 2)
       });
       
-      // Call OpenHIM FHIR endpoint using plain axios
+      console.log("facilityUuid", this.facilityUuid, bundle.entry?.length || 0);
+      const token = await this.tokenService.getAccessToken(this.facilityUuid);
+      console.log("token", token);
       const response = await axios.post(fullUrl, bundle, {
         headers: {
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        auth: config.HIE.OPENHIM_USERNAME && config.HIE.OPENHIM_PASSWORD ? {
-          username: config.HIE.OPENHIM_USERNAME,
-          password: config.HIE.OPENHIM_PASSWORD,
-        } : undefined,
       });
-      
+      console.log("response", response);
       logger.info(`[OPENHIM SHR] ✓ Bundle posted to OpenHIM successfully`, {
         bundleId: bundle.id,
         status: response.status,
@@ -41,19 +46,18 @@ export class ShrFhirClient {
     } catch (error: any) {
       const errorDetails = {
         bundleId: bundle.id,
-        fullUrl: `${config.HIE.OPENHIM_BASE_URL}${config.HIE.OPENHIM_FHIR_ENDPOINT}`,
-        baseUrl: config.HIE.OPENHIM_BASE_URL,
-        endpoint: config.HIE.OPENHIM_FHIR_ENDPOINT,
+        fullUrl: `${config.HIE.BASE_URL}${config.HIE.SHR_POST_BUNDLE_URL}`,
         status: error.response?.status,
-        statusText: error.response?.statusText,
-        responseData: JSON.stringify(error.response?.data),
+        responseData: error.response?.data,
         errorMessage: error.message,
-        errorCode: error.code,
-        hasAuth: !!(config.HIE.OPENHIM_USERNAME && config.HIE.OPENHIM_PASSWORD),
       };
-      
-      logger.error(`[OPENHIM SHR] ✗ Failed to post bundle to OpenHIM`, errorDetails);
+
+      logger.error(
+        `[OPENHIM SHR] ✗ Failed to post bundle to OpenHIM`,
+        errorDetails
+      );
       throw new Error(`Failed to post bundle to OpenHIM: ${error.message}`);
     }
   }
+
 }

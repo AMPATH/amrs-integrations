@@ -26,6 +26,12 @@ export interface FacilityCredentialsRecord extends FacilityCredentialsData {
   updatedAt: Date;
 }
 
+export interface EncounterContext {
+  encounterUuid: string;
+  visitUuid: string;
+  locationUuid: string;
+}
+
 export class HieMappingService {
   private dbManager: DatabaseManager;
 
@@ -258,6 +264,69 @@ export class HieMappingService {
       }
     } catch (error) {
       logger.error("Error fetching all active facilities:", error);
+      throw error;
+    }
+  }
+
+  public async getShrPatientId(amrsPatientUuid: string): Promise<string> {
+    const amrsDataSource = this.dbManager.getDataSource("amrs");
+    console.log("amrsPatientUuid", amrsPatientUuid);
+    const query = `
+      SELECT pi.identifier
+      FROM patient_identifier pi
+      JOIN patient_identifier_type pit ON pi.identifier_type = pit.patient_identifier_type_id
+      JOIN person p ON pi.patient_id = p.person_id
+      WHERE p.uuid = ? AND pit.patient_identifier_type_id = 55 AND pi.voided = 0
+    `;
+
+    try {
+      const result = await amrsDataSource.query(query, [amrsPatientUuid]);
+
+      if (result && result.length > 0) {
+        return result[0].identifier;
+      }
+
+      throw new Error(
+        `Patient ${amrsPatientUuid} does not have a Client Registry Number. Aborting bundle generation.`
+      );
+    } catch (error: any) {
+      logger.error(
+        { error, patientUuid: amrsPatientUuid },
+        "Failed to fetch Patient CR"
+      );
+      throw error;
+    }
+  }
+
+  public async getEncounterContext(encounterUuid: string): Promise<EncounterContext | null> {
+    const amrsDataSource = this.dbManager.getDataSource("amrs");
+    const query = `
+      SELECT 
+        e.uuid as encounter_uuid,
+        v.uuid as visit_uuid,
+        l.uuid as location_uuid
+      FROM encounter e
+      JOIN visit v ON e.visit_id = v.visit_id
+      JOIN location l ON v.location_id = l.location_id
+      WHERE e.uuid = ?
+    `;
+
+    try {
+      const result = await amrsDataSource.query(query, [encounterUuid]);
+
+      if (result && result.length > 0) {
+        return {
+          encounterUuid: result[0].encounter_uuid,
+          visitUuid: result[0].visit_uuid,
+          locationUuid: result[0].location_uuid
+        };
+      }
+      return null;
+    } catch (error) {
+      logger.error(
+        { error, encounterUuid },
+        "Failed to fetch encounter context"
+      );
       throw error;
     }
   }

@@ -16,6 +16,8 @@ export class FhirTransformer {
   private mappingService: HieMappingService;
   //  private conceptService: ConceptService;
 
+  //  private conceptService: ConceptService;
+
   constructor(mappingService: HieMappingService) {
     this.conceptMapper = new ConceptMapper();
     this.mappingService = mappingService;
@@ -24,6 +26,9 @@ export class FhirTransformer {
 
   async transform(patientData: PatientData): Promise<any> {
     const { patient, encounters, observationsByEncounter } = patientData;
+
+    // Step 0: Get SHR Patient ID (Fail fast if not found)
+    const shrPatientId = await this.mappingService.getShrPatientId(patient.id);
 
     // Step 1: Extract unique practitioner and location UUIDs from encounters
     const {
@@ -49,7 +54,8 @@ export class FhirTransformer {
       patient,
       encounters,
       observationsByEncounter,
-      encounterMappings
+      encounterMappings,
+      shrPatientId
     );
 
     return bundle;
@@ -135,7 +141,8 @@ export class FhirTransformer {
     patient: any,
     encounters: any[],
     observationsByEncounter: Record<string, any[]>,
-    encounterMappings: Map<string, EncounterMapping>
+    encounterMappings: Map<string, EncounterMapping>,
+    shrPatientId: string
   ): Promise<any> {
     const bundle: any = {
       resourceType: "Bundle",
@@ -154,6 +161,7 @@ export class FhirTransformer {
       const transformedEncounter = await this.transformEncounter(
         encounter,
         patient,
+        shrPatientId,
         mapping
       );
       this.addBundleEntry(bundle, transformedEncounter, "Encounter");
@@ -174,6 +182,7 @@ export class FhirTransformer {
               observation,
               patient,
               encounter,
+              shrPatientId,
               mapping
             );
             this.addBundleEntry(bundle, transformedObs, "Observation");
@@ -183,12 +192,12 @@ export class FhirTransformer {
     }
 
     if (clinicalNotes.length > 0) {
-      const composition = await this.createComposition(clinicalNotes, patient);
+      const composition = await this.createComposition(clinicalNotes, patient, shrPatientId);
       this.addBundleEntry(bundle, composition, "Composition");
     }
 
     for (const drugData of drugObservations) {
-      const medicationRequest = await this.createMedicationRequest(drugData);
+      const medicationRequest = await this.createMedicationRequest(drugData, shrPatientId);
       this.addBundleEntry(bundle, medicationRequest, "MedicationRequest");
     }
 
@@ -241,7 +250,8 @@ export class FhirTransformer {
   private async transformEncounter(
     encounter: any,
     patient: any,
-    mapping?: EncounterMapping 
+    shrPatientId: string,
+    mapping?: EncounterMapping
   ): Promise<any> {
     const transformedEncounter = { ...encounter };
 
@@ -258,7 +268,7 @@ export class FhirTransformer {
     ];
 
     // Transform patient reference (you'll need to implement patient mapping logic)
-    const shrPatientId = await this.getShrPatientId(patient.id);
+    // const shrPatientId = await this.getShrPatientId(patient.id);
     transformedEncounter.subject = {
       reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
       identifier: {
@@ -310,7 +320,8 @@ export class FhirTransformer {
     observation: any,
     patient: any,
     encounter: any,
-    mapping?: EncounterMapping 
+    shrPatientId: string,
+    mapping?: EncounterMapping
   ): Promise<any> {
     const transformedObs = { ...observation };
 
@@ -323,7 +334,7 @@ export class FhirTransformer {
     ]);
 
     // Transform patient reference
-    const shrPatientId = await this.getShrPatientId(patient.id);
+    // const shrPatientId = await this.getShrPatientId(patient.id);
     transformedObs.subject = {
       reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
       type: "Patient",
@@ -357,11 +368,7 @@ export class FhirTransformer {
     return transformedObs;
   }
 
-  private async getShrPatientId(amrsPatientUuid: string): Promise<string> {
-    // TODO: Implement patient CR mapping logic
-    // For now, return a placeholder
-    return "CR7671914222027-5"; // This should come from your patient mapping service
-  }
+
 
   private async createComposition(
     clinicalNotesData: Array<{
@@ -369,7 +376,8 @@ export class FhirTransformer {
       encounter: any;
       patient: any;
     }>,
-    patient: any
+    patient: any,
+    shrPatientId: string
   ): Promise<any> {
     if (clinicalNotesData.length === 0) {
       throw new Error("No clinical notes provided for composition");
@@ -384,25 +392,25 @@ export class FhirTransformer {
 
     const compositionType = loincCoding
       ? {
-          coding: [
-            {
-              system: "http://loinc.org",
-              code: loincCoding.code,
-              display: loincCoding.display || "Clinical Note",
-            },
-          ],
-          text: primaryNote.code?.text || "Clinical Note",
-        }
+        coding: [
+          {
+            system: "http://loinc.org",
+            code: loincCoding.code,
+            display: loincCoding.display || "Clinical Note",
+          },
+        ],
+        text: primaryNote.code?.text || "Clinical Note",
+      }
       : {
-          coding: [
-            {
-              system: "http://loinc.org",
-              code: "34109-9", // Fallback to generic note
-              display: "Note",
-            },
-          ],
-          text: "Clinical Note",
-        };
+        coding: [
+          {
+            system: "http://loinc.org",
+            code: "34109-9", // Fallback to generic note
+            display: "Note",
+          },
+        ],
+        text: "Clinical Note",
+      };
 
     const notesText = clinicalNotesData
       .map((data) => this.extractNoteText(data.observation))
@@ -425,11 +433,11 @@ export class FhirTransformer {
         },
       ],
       subject: {
-        reference: `https://cr.kenya-hie.health/api/v4/Patient/CR7671914222027-5`,
+        reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
         identifier: [
           {
             system: "https://cr.kenya-hie.health/api/v4/Patient",
-            value: "CR7671914222027-5",
+            value: shrPatientId,
           },
         ],
       },
@@ -470,7 +478,7 @@ export class FhirTransformer {
     observation: any;
     encounter: any;
     patient: any;
-  }): Promise<any> {
+  }, shrPatientId: string): Promise<any> {
     const { observation, encounter } = drugData;
     const drugCoding = observation.valueCodeableConcept?.coding?.[0];
 
@@ -489,11 +497,9 @@ export class FhirTransformer {
       frequencyDisplay: "Once daily",
     };
 
-    const dosageText = `Take ${arvDefaults.doseQuantity} ${
-      arvDefaults.doseUnit
-    } of ${drugCoding?.display || "ARV medication"} ${
-      arvDefaults.frequencyDisplay
-    }.`;
+    const dosageText = `Take ${arvDefaults.doseQuantity} ${arvDefaults.doseUnit
+      } of ${drugCoding?.display || "ARV medication"} ${arvDefaults.frequencyDisplay
+      }.`;
 
     return {
       resourceType: "MedicationRequest",
@@ -519,12 +525,12 @@ export class FhirTransformer {
           "ARV Medication",
       },
       subject: {
-        reference: `https://cr.kenya-hie.health/api/v4/Patient/CR7671914222027-5`,
+        reference: `https://cr.kenya-hie.health/api/v4/Patient/${shrPatientId}`,
         type: "Patient",
         identifier: {
           use: "official",
           system: "https://cr.kenya-hie.health/api/v4/Patient",
-          value: "CR7671914222027-5",
+          value: shrPatientId,
         },
       },
       encounter: {
@@ -599,11 +605,9 @@ export class FhirTransformer {
         {
           authorString: "PUID-0155222-4",
           time: observation.effectiveDateTime || encounter.period?.start,
-          text: `Oral ${drugCoding?.display || "ARV medication"} ${
-            arvDefaults.doseQuantity
-          } for ${arvDefaults.duration} Hour(s) ${
-            arvDefaults.frequencyDisplay
-          } dose`,
+          text: `Oral ${drugCoding?.display || "ARV medication"} ${arvDefaults.doseQuantity
+            } for ${arvDefaults.duration} Hour(s) ${arvDefaults.frequencyDisplay
+            } dose`,
         },
       ],
     };

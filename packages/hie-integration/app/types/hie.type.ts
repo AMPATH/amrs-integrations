@@ -256,3 +256,15 @@ export enum RequestIdTypes {
   BirthCertificate2 = 10,
   HouseholdNumber = 11,
 }
+
+export interface PaymentFilterSearchDto {
+  payment_uuid?: string;
+  bill_uuid?: string;
+  reference_no?: string;
+}
+
+export interface CreatePaymentDto {
+  payment_uuid: string;
+  bill_uuid: string;
+  reference_no: string;
+}

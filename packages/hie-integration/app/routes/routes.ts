@@ -8,6 +8,7 @@ import {
   IdentifierType,
   PatientSearchPayload,
   FacilityFilterDto,
+  CreatePaymentDto,
 } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
@@ -20,6 +21,7 @@ import { HieMappingService } from "../services/amrs/hie-mapping-service";
 import { MediatorUtils } from "../utils/mediator";
 import config from "../config/env";
 import { EligibilityService } from "../services/eligibility/eligibility.service";
+import { PaymentService } from "../services/payment/payment.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -850,6 +852,42 @@ export const routes = (): ServerRoute[] => [
           requestIdType,
         });
         return h.response(resp).code(200);
+      } catch (error) {
+        return h.response("An error occurred").code(500);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/payment",
+    options: {
+      validate: {
+        payload: Joi.object({
+          billUuid: Joi.string().required().description("Invoice uuid"),
+          referenceNo: Joi.string()
+            .required()
+            .description("Payment Reference Number"),
+          paymentUuid: Joi.string().required().description("Payment Uuid"),
+        }),
+      },
+      tags: ["api", "payment"],
+      description: "Client Payment",
+    },
+    handler: async (request, h) => {
+      const payload = request.payload as {
+        billUuid: string;
+        referenceNo: string;
+        paymentUuid: string;
+      };
+      const createPaymentDto: CreatePaymentDto = {
+        bill_uuid: payload.billUuid,
+        payment_uuid: payload.paymentUuid,
+        reference_no: payload.referenceNo,
+      };
+      try {
+        const paymentService = new PaymentService();
+        const payment = await paymentService.create(createPaymentDto);
+        return h.response(payment).code(200);
       } catch (error) {
         return h.response("An error occurred").code(500);
       }

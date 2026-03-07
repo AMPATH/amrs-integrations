@@ -9,6 +9,7 @@ import {
   PatientSearchPayload,
   FacilityFilterDto,
   CreatePaymentDto,
+  CreateClientPaymentModeDto,
 } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
@@ -22,6 +23,7 @@ import { MediatorUtils } from "../utils/mediator";
 import config from "../config/env";
 import { EligibilityService } from "../services/eligibility/eligibility.service";
 import { PaymentService } from "../services/payment/payment.service";
+import { ClientPaymentModeService } from "../services/client-payment-mode/client-payment-mode.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -890,6 +892,83 @@ export const routes = (): ServerRoute[] => [
         return h.response(payment).code(200);
       } catch (error) {
         return h.response("An error occurred").code(500);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/client-payment-mode",
+    options: {
+      validate: {
+        payload: Joi.object({
+          clientId: Joi.string()
+            .required()
+            .description("Client ID e.g CR or national Id"),
+          paymentModeUuid: Joi.string()
+            .required()
+            .description("Payment Mode e.g cash,sha etc"),
+        }),
+      },
+      tags: ["api", "client payment mode"],
+      description: "Client Payment Mode",
+    },
+    handler: async (request, h) => {
+      const payload = request.payload as {
+        clientId: string;
+        paymentModeUuid: string;
+      };
+      const createClientPaymentModeDto: CreateClientPaymentModeDto = {
+        client_id: payload.clientId,
+        payment_mode_uuid: payload.paymentModeUuid,
+      };
+      try {
+        const clientPaymentModeService = new ClientPaymentModeService();
+        const clientPaymentMode = await clientPaymentModeService.create(
+          createClientPaymentModeDto,
+        );
+        return h.response(clientPaymentMode).code(200);
+      } catch (error) {
+        return h.response("An error occurred").code(500);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/client-payment-mode",
+    options: {
+      validate: {
+        query: Joi.object({
+          clientId: Joi.string()
+            .required()
+            .description("The client ID e.g CR or National ID"),
+        }),
+      },
+      tags: ["api", "hie", "client payment mode"],
+      description: "Search for a client payment mode",
+      notes:
+        "Client selected payment method during a visit e.g SHA,CASH,INSURANCE",
+    },
+    handler: async (request, h) => {
+      const clientPaymentModeDto = request.query as { clientId: string };
+      console.log(request.query);
+      const clientPaymentModeFilter = {
+        client_id: clientPaymentModeDto.clientId,
+      };
+      const service = new ClientPaymentModeService();
+
+      try {
+        const result = await service.findOneBy(clientPaymentModeFilter);
+        return h.response(result).code(200);
+      } catch (error: any) {
+        logger.error(
+          `Client payment mode search failed: ${clientPaymentModeDto.clientId} - ${error.message}`,
+        );
+        return h
+          .response({
+            error: "Client search failed",
+            details: error.message,
+          })
+          .code(500);
       }
     },
   },

@@ -10,6 +10,8 @@ import {
   FacilityFilterDto,
   CreatePaymentDto,
   CreateClientPaymentModeDto,
+  CreateBillOrderDto,
+  BillOrderFilterSearchDto,
 } from "../types/hie.type";
 import { PractitionerRegistryService } from "../services/practitioner-registry/practitioner-registry.service";
 import { AmrsProviderService } from "../services/amrs/amrs-provider.service";
@@ -24,6 +26,7 @@ import config from "../config/env";
 import { EligibilityService } from "../services/eligibility/eligibility.service";
 import { PaymentService } from "../services/payment/payment.service";
 import { ClientPaymentModeService } from "../services/client-payment-mode/client-payment-mode.service";
+import { BillOrderService } from "../services/bill-order/bill-order.service";
 
 export const routes = (): ServerRoute[] => [
   {
@@ -966,6 +969,73 @@ export const routes = (): ServerRoute[] => [
         return h
           .response({
             error: "Client search failed",
+            details: error.message,
+          })
+          .code(500);
+      }
+    },
+  },
+  {
+    method: "POST",
+    path: "/hie/bill-order",
+    options: {
+      validate: {
+        payload: Joi.object({
+          bill_uuid: Joi.string().required().description("Invoice uuid"),
+          order_no: Joi.string().required().description("Order Number"),
+        }),
+      },
+      tags: ["api", "Bill Order Creation"],
+      description: "Bills mapped agains the order number",
+    },
+    handler: async (request, h) => {
+      const payload = request.payload as {
+        bill_uuid: string;
+        order_no: string;
+      };
+      const createbillOrderDto: CreateBillOrderDto = {
+        bill_uuid: payload.bill_uuid,
+        order_no: payload.order_no,
+      };
+      try {
+        const billOrderService = new BillOrderService();
+        const billOrder = await billOrderService.create(createbillOrderDto);
+        return h.response(billOrder).code(200);
+      } catch (error) {
+        return h.response("An error occurred").code(500);
+      }
+    },
+  },
+  {
+    method: "GET",
+    path: "/hie/bill-order",
+    options: {
+      validate: {
+        query: Joi.object({
+          order_no: Joi.string().required().description("The Order Number"),
+        }),
+      },
+      tags: ["api", "hie", "bill order"],
+      description: "Get the bill order",
+      notes: "Get bill mapped to order",
+    },
+    handler: async (request, h) => {
+      const billOrderDto = request.query as { order_no: string };
+      const billOrderFilter: BillOrderFilterSearchDto = {
+        order_no: billOrderDto.order_no,
+      };
+      const service = new BillOrderService();
+
+      try {
+        const result = await service.findOneBy(billOrderFilter);
+        return h.response(result ?? undefined).code(200);
+      } catch (error: any) {
+        logger.error(
+          `Bill Order search failed: ${billOrderDto.order_no} - ${error.message}`,
+        );
+        return h
+          .response({
+            error: "Bill order search failed",
             details: error.message,
           })
           .code(500);

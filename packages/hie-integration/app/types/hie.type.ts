@@ -277,3 +277,11 @@ export type CreateClientPaymentModeDto = {
   client_id: string;
   payment_mode_uuid: string;
 };
+export type CreateBillOrderDto = {
+  bill_uuid: string;
+  order_no: string;
+};
+export type BillOrderFilterSearchDto = {
+  bill_uuid?: string;
+  order_no?: string;
+};

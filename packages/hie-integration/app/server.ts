@@ -12,7 +12,7 @@ export const initServer = async () => {
   try {
     const dbManager = DatabaseManager.getInstance();
     await dbManager.initializeAll();
-    await kafkaConsumerService.initialize();
+    //await kafkaConsumerService.initialize();
 
     // Initialize mediator
     // move this to after server starts

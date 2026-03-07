@@ -268,3 +268,12 @@ export interface CreatePaymentDto {
   bill_uuid: string;
   reference_no: string;
 }
+
+export interface ClientPaymentModeDto {
+  client_id?: string;
+  payment_mode_uuid?: string;
+}
+export type CreateClientPaymentModeDto = {
+  client_id: string;
+  payment_mode_uuid: string;
+};

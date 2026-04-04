@@ -442,9 +442,8 @@ export const routes = (): ServerRoute[] => [
         }
         return h
           .response({
-            message: `Credentials ${
-              is_active ? "activated" : "deactivated"
-            } successfully`,
+            message: `Credentials ${is_active ? "activated" : "deactivated"
+              } successfully`,
           })
           .code(200);
       } catch (error: any) {
@@ -983,6 +982,7 @@ export const routes = (): ServerRoute[] => [
         payload: Joi.object({
           bill_uuid: Joi.string().required().description("Invoice uuid"),
           order_no: Joi.string().required().description("Order Number"),
+          line_item_uuid: Joi.string().required().description("Line item uuid")
         }),
       },
       tags: ["api", "Bill Order Creation"],
@@ -992,10 +992,12 @@ export const routes = (): ServerRoute[] => [
       const payload = request.payload as {
         bill_uuid: string;
         order_no: string;
+        line_item_uuid: string;
       };
       const createbillOrderDto: CreateBillOrderDto = {
         bill_uuid: payload.bill_uuid,
         order_no: payload.order_no,
+        line_item_uuid: payload.line_item_uuid
       };
       try {
         const billOrderService = new BillOrderService();

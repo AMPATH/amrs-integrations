@@ -18,6 +18,9 @@ export class BillOrder {
   @Column({ type: "varchar", length: 100 })
   order_no!: string;
 
+  @Column({ type: "varchar", length: 100, default: "" })
+  line_item_uuid!: string;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 

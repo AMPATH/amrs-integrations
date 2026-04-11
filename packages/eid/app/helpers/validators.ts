@@ -25,14 +25,61 @@ export default class Validators {
       viralLoadPayload.trim() === "Target Not Detected"
     ) {
       status = 0;
-    } else if (viralLoadPayload === "Collect New Sample") {
+    } else if (
+      viralLoadPayload === "Collect New Sample" ||
+      viralLoadPayload === "COLLECT NEW SAMPLE" ||
+      viralLoadPayload === "collect new sample" ||
+      viralLoadPayload === "redraw" ||
+      viralLoadPayload === "REDRAW"
+    ) {
       status = 3;
     } else {
       status = 2;
     }
     return status;
   }
+  checkHPVStatus(hpvResult: any) {
+    let status = 0;
+    console.log("Checking........");
+    if (hpvResult === "Negative") {
+      status = 664;
+    }
+    if (hpvResult === "Positive") {
+      status = 703;
+    }
+    if (hpvResult === "Failed") {
+      status = 1138;
+    }
 
+    return status;
+  }
+
+  checkCD4Status(cd4Value: string) {
+    let status = 0;
+    const hasNumbersOnly = /^[0-9]*(?:\.\d{1,2})?$/;
+    const hasLessThanSymbol = /</g;
+    const helper = new Helpers();
+
+    if (_.isEmpty(cd4Value)) return -1;
+    var cd4Value = helper.removeWhiteSpace(cd4Value);
+
+    if (_.isEmpty(cd4Value)) {
+      return -1;
+    }
+
+    if (
+      cd4Value === "Collect New Sample" ||
+      cd4Value === "COLLECT NEW SAMPLE" ||
+      cd4Value === "collect new sample" ||
+      cd4Value === "collecty new sample" ||
+      cd4Value === "collecct new sample" ||
+      cd4Value === "redraw" ||
+      cd4Value === "REDRAW"
+    ) {
+      status = 3;
+    }
+    return status;
+  }
   validateCsv(file: any) {
     try {
       // Check that file is a CSV

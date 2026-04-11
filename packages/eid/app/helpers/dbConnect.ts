@@ -28,10 +28,27 @@ export default class GetPatient {
     await CM.releaseConnections(amrsCON);
     return result;
   }
+  async checkPatientHPVSync(date_collected: any, hpvValue: any, uuid: string) {
+    let amrsCON = await CM.getConnectionAmrs();
+    let sql = `select count(encounter_id)  as count from etl.flat_labs_and_imaging where test_datetime='${date_collected}' and uuid='${uuid}' and hpv = '${hpvValue}'`;
+    console.log("sqlHPV: ",sql);
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+    return result;
+  }
 
   async checkPatientCD4Sync(params: any, uuid: string, date_collected: any) {
     let amrsCON = await CM.getConnectionAmrs();
-    let sql = `select count(encounter_id)  as count from etl.flat_labs_and_imaging where test_datetime='${date_collected}' and uuid='${uuid}' and cd4_count = '${params.AVGCD3CD4AbsCnt}'`;
+    let sql = `select count(encounter_id)  as count from etl.flat_labs_and_imaging where DATE(test_datetime)='${date_collected}' and uuid='${uuid}' and cd4_count = '${params.AVGCD3CD4AbsCnt}'`;
+    console.log ("CD4 SQL", sql);
+    let result: any = await CM.query(sql, amrsCON);
+    await CM.releaseConnections(amrsCON);
+    return result;
+  }
+  async checkPatientCD4SyncCsv(value: any, uuid: string, date_collected: any) {
+    let amrsCON = await CM.getConnectionAmrs();
+    let sql = `select count(encounter_id)  as count from etl.flat_labs_and_imaging where test_datetime='${date_collected}' and uuid='${uuid}' and cd4_count = '${value}'`;
+    console.log ("CD4 SQL", sql);
     let result: any = await CM.query(sql, amrsCON);
     await CM.releaseConnections(amrsCON);
     return result;
@@ -96,7 +113,7 @@ export default class GetPatient {
   }
 
   // get eid_file_upload_metadata_id
-  async getEidCsvMetaDataId(params: any) {
+  async saveCD4 (params: any) {
     let amrsCON = await CM.getConnectionAmrs();
     let sql = `insert into etl.eid_cd4_sync values('','${params}')`;
     let result = await CM.query(sql, amrsCON);
@@ -104,9 +121,9 @@ export default class GetPatient {
     return result;
   }
 
-  async saveCD4(params: any) {
+  async getEidCsvMetaDataId(fileName: any) {
     let amrsCON = await CM.getConnectionAmrs();
-    let sql = `select * from etl.eid_file_upload_metadata where file_name='${params.file_name}'`;
+    let sql = `select * from etl.eid_file_upload_metadata where file_name='${fileName}'`;
     let result: any = await CM.query(sql, amrsCON);
     await CM.releaseConnections(amrsCON);
     return result;

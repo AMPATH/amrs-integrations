@@ -8,6 +8,7 @@ import { EligibilityModule } from './eligibility/eligibility.module';
 import { FacilityRegistryModule } from './facility-registry/facility-registry.module';
 import * as Joi from 'joi';
 import { HieHttpRequestModule } from './hie-http-request/hie-http-request.module';
+import { HealthWorkerRegistryModule } from './health-worker-registry/health-worker-registry.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HieHttpRequestModule } from './hie-http-request/hie-http-request.module
     EligibilityModule,
     FacilityRegistryModule,
     HieHttpRequestModule,
+    HealthWorkerRegistryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

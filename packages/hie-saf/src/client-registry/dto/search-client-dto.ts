@@ -1,4 +1,11 @@
-export type SearchClientDto = {
-  identificationType: string;
-  identificationNumber: string;
-};
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class SearchClientDto {
+  @IsNotEmpty()
+  @IsString()
+  identificationType!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  identificationNumber!: string;
+}

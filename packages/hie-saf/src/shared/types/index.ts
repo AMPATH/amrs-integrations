@@ -25,3 +25,10 @@ export const FacilityIdentificationTypesMap: { [key: string]: string } = {
   facilityCode: FacilityIdentifierTypes.RegistrationNumber,
   registrationNumber: FacilityIdentifierTypes.RegistrationNumber,
 };
+
+export type RequestOtpApiResponse = {
+  status: string;
+  message: string;
+  id: string;
+  error?: string;
+};

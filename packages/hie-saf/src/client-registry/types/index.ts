@@ -103,3 +103,8 @@ export type CRPatientApiResponse = {
   responseCode?: string;
   errorCode?: number;
 };
+
+export enum ConsentScope {
+  ClientRegistry = 'CLIENT_REGISTRY',
+  SharedHealthRecords = 'SHARED_HEALTH_RECORD',
+}

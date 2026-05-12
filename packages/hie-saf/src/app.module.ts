@@ -9,6 +9,7 @@ import { FacilityRegistryModule } from './facility-registry/facility-registry.mo
 import * as Joi from 'joi';
 import { HieHttpRequestModule } from './hie-http-request/hie-http-request.module';
 import { HealthWorkerRegistryModule } from './health-worker-registry/health-worker-registry.module';
+import { ConsentModule } from './consent/consent.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { HealthWorkerRegistryModule } from './health-worker-registry/health-work
     FacilityRegistryModule,
     HieHttpRequestModule,
     HealthWorkerRegistryModule,
+    ConsentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

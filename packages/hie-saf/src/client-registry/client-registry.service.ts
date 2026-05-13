@@ -15,18 +15,18 @@ export class ClientRegistryService {
     const clientSearchUrl = `${baseUrl}/hie/api/v1/patient?identifierType=${searchClientDto.identificationType}&identifierNumber=${searchClientDto.identificationNumber}`;
 
     try {
-      const response = (await this.hieHttpRequests.sendGetRequest(
-        clientSearchUrl,
-      )) as CRPatientApiResponse;
-      if (response.errorCode) {
-        if (response.message?.total === 0) {
+      const response =
+        await this.hieHttpRequests.sendGetRequest(clientSearchUrl);
+      const data = (await response.json()) as CRPatientApiResponse;
+      if (data.errorCode) {
+        if (data.message?.total === 0) {
           throw new HttpException(
             'Client Not Found',
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
       }
-      return response.message?.result ?? [];
+      return data.message?.result ?? [];
     } catch (error) {
       console.error(error);
       throw new HttpException(

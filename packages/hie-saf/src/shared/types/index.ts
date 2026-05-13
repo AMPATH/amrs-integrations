@@ -32,3 +32,22 @@ export type RequestOtpApiResponse = {
   id: string;
   error?: string;
 };
+export type TiberbuRequestOtpApiResponse = {
+  message: string;
+  sessionId: string;
+  maskedPhone: string;
+};
+export type ValidateConsentApiResponse = {
+  token: string;
+  issued: number;
+  expires: number;
+  status: string;
+  expires_in: number;
+};
+export type TiberbuValidateConsentApiResponse = {
+  data: {
+    identification_type: string;
+    identification_number: string;
+    status: 'valid' | 'invalid';
+  };
+};

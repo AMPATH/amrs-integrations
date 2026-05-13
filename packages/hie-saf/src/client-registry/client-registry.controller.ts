@@ -5,6 +5,8 @@ import { SendCustomOtpParamsDto } from './dto/send-custom-otp-params.dto';
 import { ConsentService } from '../consent/consent.service';
 import { type RequestConsentDto } from '../shared/dto/request-consent.dto';
 import { ConsentScope } from './types';
+import { ValidateCustomOtpParamsDto } from './dto/validate-custom-otp.dto';
+import { ValidateConsentDto } from '../shared/dto/validate-consent.dto';
 
 @Controller('client')
 export class ClientRegistryController {
@@ -38,5 +40,13 @@ export class ClientRegistryController {
       scope: [ConsentScope.ClientRegistry, ConsentScope.SharedHealthRecords],
     };
     return this.consentService.requestClientConsent(requestConsentDto);
+  }
+  @Post('validate-custom-otp')
+  public validateCustomOtp(@Body() body: ValidateCustomOtpParamsDto) {
+    const validateConsentDto: ValidateConsentDto = {
+      id: body.sessionId,
+      otp: body.otp,
+    };
+    return this.consentService.validateClientConsent(validateConsentDto);
   }
 }

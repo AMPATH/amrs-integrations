@@ -37,12 +37,24 @@ export type TiberbuRequestOtpApiResponse = {
   sessionId: string;
   maskedPhone: string;
 };
-export type ValidateConsentApiResponse = {
+export type ValidateConsentApiResponse =
+  | ValidateConsentApiSuccessResponse
+  | ValidateConsentApiErrorResponse;
+export type ValidateConsentApiSuccessResponse = {
   token: string;
   issued: number;
   expires: number;
   status: string;
   expires_in: number;
+};
+export type ValidateConsentApiErrorResponse = {
+  errorResponse: {
+    requestId: string;
+    code: string;
+    message: string;
+    info: string;
+    timestamp: string;
+  };
 };
 export type TiberbuValidateConsentApiResponse = {
   data: {

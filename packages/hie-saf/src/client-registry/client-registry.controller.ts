@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ClientRegistryService } from './client-registry.service';
 import { type SearchClientDto } from './dto/search-client-dto';
 import { SendCustomOtpParamsDto } from './dto/send-custom-otp-params.dto';
@@ -7,7 +7,9 @@ import { type RequestConsentDto } from '../shared/dto/request-consent.dto';
 import { ConsentScope } from './types';
 import { ValidateCustomOtpParamsDto } from './dto/validate-custom-otp.dto';
 import { ValidateConsentDto } from '../shared/dto/validate-consent.dto';
+import { OpenMrsAuthGuard } from '../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 
+@UseGuards(OpenMrsAuthGuard)
 @Controller('client')
 export class ClientRegistryController {
   constructor(

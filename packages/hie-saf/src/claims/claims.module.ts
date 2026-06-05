@@ -6,6 +6,8 @@ import { InterventionsController } from './claims-eligibility/interventions/inte
 import { InterventionsService } from './claims-eligibility/interventions/interventions.service';
 import { BenefitsUtilizationController } from './claims-eligibility/benefit-utilization/benefits-utilization.controller';
 import { BenefitsUtilizationService } from './claims-eligibility/benefit-utilization/benefits-utilization.service';
+import { BedOccupancyController } from './claims-eligibility/bed-occupancy/bed-occupancy.controller';
+import { BedOccupancyService } from './claims-eligibility/bed-occupancy/bed-occupancy.service';
 
 @Module({
   imports: [HieHttpRequestModule],
@@ -13,11 +15,13 @@ import { BenefitsUtilizationService } from './claims-eligibility/benefit-utiliza
     SubBenefitsController,
     InterventionsController,
     BenefitsUtilizationController,
+    BedOccupancyController,
   ],
   providers: [
     SubBenefitsService,
     InterventionsService,
     BenefitsUtilizationService,
+    BedOccupancyService,
   ],
 })
 export class ClaimsModule {}

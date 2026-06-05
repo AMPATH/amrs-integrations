@@ -10,6 +10,7 @@ import * as Joi from 'joi';
 import { HieHttpRequestModule } from './hie-http-request/hie-http-request.module';
 import { HealthWorkerRegistryModule } from './health-worker-registry/health-worker-registry.module';
 import { ConsentModule } from './consent/consent.module';
+import { ClaimsModule } from './claims/claims.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConsentModule } from './consent/consent.module';
         HIE_CLIENT_SECRET: Joi.string().required(),
         HIE_GRANT_TYPE: Joi.string().required(),
         HIE_BASE_URL: Joi.string().required(),
+        HIE_CLIAMS_BASE_URL: Joi.string().required(),
       }),
     }),
     ClientRegistryModule,
@@ -30,6 +32,7 @@ import { ConsentModule } from './consent/consent.module';
     HieHttpRequestModule,
     HealthWorkerRegistryModule,
     ConsentModule,
+    ClaimsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

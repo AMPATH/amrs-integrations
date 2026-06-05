@@ -4,13 +4,16 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { IdentifierTypeHelper } from '../shared/utils/identifier-type';
 import { EligibilityService } from './eligibility.service';
 import type { ClientEligibilityParamsDto } from './dto/client-eligibility-params.dto';
 import type { ClientEligibilitySearchDto } from './dto/client-eligibility-search.dto';
+import { OpenMrsAuthGuard } from '../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 
+@UseGuards(OpenMrsAuthGuard)
 @Controller('eligibility')
 export class EligibilityController {
   constructor(

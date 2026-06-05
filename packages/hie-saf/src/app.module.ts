@@ -11,6 +11,7 @@ import { HieHttpRequestModule } from './hie-http-request/hie-http-request.module
 import { HealthWorkerRegistryModule } from './health-worker-registry/health-worker-registry.module';
 import { ConsentModule } from './consent/consent.module';
 import { ClaimsModule } from './claims/claims.module';
+import { OpenMrsAuthGuard } from './auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 
 @Module({
   imports: [
@@ -35,6 +36,6 @@ import { ClaimsModule } from './claims/claims.module';
     ClaimsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, OpenMrsAuthGuard],
 })
 export class AppModule {}

@@ -11,6 +11,8 @@ export class HieHttpRequests {
       accept: 'application/json',
       authorization: `Bearer ${token}`,
       'content-type': 'application/json',
+      'x-facility-id': 'FID-27-114387-5',
+      'x-facility-id-type': 'fr-code',
     };
   }
   async sendGetRequest(url: string) {

@@ -8,4 +8,8 @@ export class ClientEligibilityParamsDto {
   @IsNotEmpty()
   @IsString()
   requestIdType!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

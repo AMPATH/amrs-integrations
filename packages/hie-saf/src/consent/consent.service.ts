@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../hie-http-request/hie-http-requests';
-import { RequestConsentDto } from '../shared/dto/request-consent.dto';
 import {
+  ConsentDto,
   RequestOtpApiResponse,
   TiberbuRequestOtpApiResponse,
   TiberbuValidateConsentApiResponse,
@@ -16,14 +16,17 @@ export class ConsentService {
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
   ) {}
-  async requestClientConsent(requestConsentDto: RequestConsentDto) {
+  async requestClientConsent(
+    requestConsentDto: ConsentDto,
+    locationUuid: string,
+  ) {
     const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';
     const clientSearchUrl = `${baseUrl}/hie/api/v1/consent-service/request`;
-
     try {
       const response = await this.hieHttpRequests.sendPostRequest(
         clientSearchUrl,
         requestConsentDto,
+        locationUuid,
       );
       const data = (await response.json()) as RequestOtpApiResponse;
       if (data.status === 'success') {
@@ -52,7 +55,10 @@ export class ConsentService {
       );
     }
   }
-  async validateClientConsent(validateConsentDto: ValidateConsentDto) {
+  async validateClientConsent(
+    validateConsentDto: ValidateConsentDto,
+    locationUuid: string,
+  ) {
     const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';
     const clientSearchUrl = `${baseUrl}/hie/api/v1/consent-service/validate-otp`;
 
@@ -60,6 +66,7 @@ export class ConsentService {
       const response = await this.hieHttpRequests.sendPostRequest(
         clientSearchUrl,
         validateConsentDto,
+        locationUuid,
       );
       if ('ok' in response && response['ok'] === false) {
         throw new HttpException(

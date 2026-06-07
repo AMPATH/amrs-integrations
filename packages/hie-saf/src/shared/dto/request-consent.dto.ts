@@ -16,7 +16,7 @@ export class RequestConsentDto {
 
   @IsNotEmpty()
   @IsString()
-  facility!: string;
+  locationUuid!: string;
 
   @IsNotEmpty()
   @IsString()

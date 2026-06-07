@@ -13,4 +13,8 @@ export class FetchHealthWorkerDto {
   @IsNotEmpty()
   @IsString()
   identifierNumber!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

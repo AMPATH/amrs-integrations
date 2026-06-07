@@ -15,8 +15,10 @@ export class ClientRegistryService {
     const clientSearchUrl = `${baseUrl}/hie/api/v1/patient?identifierType=${searchClientDto.identificationType}&identifierNumber=${searchClientDto.identificationNumber}`;
 
     try {
-      const response =
-        await this.hieHttpRequests.sendGetRequest(clientSearchUrl);
+      const response = await this.hieHttpRequests.sendGetRequest(
+        clientSearchUrl,
+        searchClientDto.locationUuid,
+      );
       const data = (await response.json()) as CRPatientApiResponse;
       if (data.errorCode) {
         if (data.message?.total === 0) {

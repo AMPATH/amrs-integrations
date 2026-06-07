@@ -8,4 +8,8 @@ export class SearchFacilityParamsDto {
   @IsNotEmpty()
   @IsString()
   filterValue!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

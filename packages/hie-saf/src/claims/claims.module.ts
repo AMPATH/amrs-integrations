@@ -8,9 +8,12 @@ import { BenefitsUtilizationController } from './claims-eligibility/benefit-util
 import { BenefitsUtilizationService } from './claims-eligibility/benefit-utilization/benefits-utilization.service';
 import { BedOccupancyController } from './claims-eligibility/bed-occupancy/bed-occupancy.controller';
 import { BedOccupancyService } from './claims-eligibility/bed-occupancy/bed-occupancy.service';
+import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { FacilityLocation } from '../core/database/entities/facility-locations.entity';
 
 @Module({
-  imports: [HieHttpRequestModule],
+  imports: [HieHttpRequestModule, TypeOrmModule.forFeature([FacilityLocation])],
   controllers: [
     SubBenefitsController,
     InterventionsController,
@@ -22,6 +25,7 @@ import { BedOccupancyService } from './claims-eligibility/bed-occupancy/bed-occu
     InterventionsService,
     BenefitsUtilizationService,
     BedOccupancyService,
+    LocationFacilityHelper,
   ],
 })
 export class ClaimsModule {}

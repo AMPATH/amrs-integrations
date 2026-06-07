@@ -8,4 +8,8 @@ export class ValidateCustomOtpParamsDto {
   @IsNotEmpty()
   @IsString()
   otp!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

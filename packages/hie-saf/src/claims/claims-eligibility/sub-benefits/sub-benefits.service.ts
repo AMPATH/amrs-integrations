@@ -14,8 +14,10 @@ export class SubBenefitsService {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const clientSearchUrl = `${baseUrl}/api/v1/patients/sub-benefits?patient_id=${fetchSubBenefitsDto.patient_id}`;
     try {
-      const response =
-        await this.hieHttpRequests.sendGetRequest(clientSearchUrl);
+      const response = await this.hieHttpRequests.sendGetRequest(
+        clientSearchUrl,
+        fetchSubBenefitsDto.locationUuid,
+      );
       const data = (await response.json()) as SubBenefitsResponse;
       return data.results;
     } catch (error) {

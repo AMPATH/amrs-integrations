@@ -8,4 +8,8 @@ export class FetchFacilityDto {
   @IsNotEmpty()
   @IsString()
   identifier!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

@@ -25,6 +25,12 @@ HIE_GRANT_TYPE=<HIE_GRANT_TYPE>
 HIE_BASE_URL=<HIE_BASE_URL>
 HIE_CLIAMS_BASE_URL=<HIE_CLIAMS_BASE_URL>
 AMRS_BASE_URL=<AMRS_BASE_URL>
+
+DATABASE_HOST=<DATABASE_HOST>
+DATABASE_PORT=<DATABASE_PORT>
+DATABASE_USER=<DATABASE_USER>
+DATABASE_PASSWORD=<DATABASE_PASSWORD>
+DATABASE_NAME=<DATABASE_NAME>
 ```
 
 To run the dev server for your app, use:
@@ -38,4 +44,19 @@ To create production bundle
 
 ```sh
 yarn run build
+```
+
+## Docker
+
+To create a docker image
+
+```sh
+docker build --platform linux/amd64 -f Dockerfile -t ampathke/hie-saf-integration:<version> .
+
+```
+
+To deploy the image
+
+```sh
+sudo docker run -d --name <CONTAINER_NAME> -p <HOST_PORT>:3000 --env-file=<ENV_PATH> ampathke/hie-saf-integration:<version>
 ```

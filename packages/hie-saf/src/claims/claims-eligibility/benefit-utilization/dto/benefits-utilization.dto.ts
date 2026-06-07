@@ -8,4 +8,8 @@ export class BenefitsUtilizationDto {
   @IsNotEmpty()
   @IsString()
   intervention_code!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

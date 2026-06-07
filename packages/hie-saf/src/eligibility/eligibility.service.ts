@@ -20,6 +20,7 @@ export class EligibilityService {
       const resp = await this.hieHttpRequests.sendPostRequest(
         eligibilityUrl,
         clientEligibilitySearchDto,
+        clientEligibilitySearchDto.locationUuid,
       );
       const data = (await resp.json()) as MemberEligibilityResponse;
       return data;

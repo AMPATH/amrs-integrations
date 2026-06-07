@@ -21,6 +21,7 @@ export class FacilityRegistryController {
     const facilityFetchDto: FetchFacilityDto = {
       'identifier-type': facilityIdentifierType,
       identifier: query.filterValue,
+      locationUuid: query.locationUuid,
     };
     return this.facilityRegistryService.fetchFacilityFromClientRegistry(
       facilityFetchDto,

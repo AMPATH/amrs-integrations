@@ -23,7 +23,10 @@ export class HealthWorkerRegistryService {
     encodedParams.set('regulator', fetchHealthWorkerDto.regulator);
     const hwrSearchUrl = `${baseUrl}/hie/api/v1/professional?${encodedParams.toString()}`;
     try {
-      const resp = await this.hieHttpRequests.sendGetRequest(hwrSearchUrl);
+      const resp = await this.hieHttpRequests.sendGetRequest(
+        hwrSearchUrl,
+        fetchHealthWorkerDto.locationUuid,
+      );
       const data: HealthWokerApiResponse[] = await resp.json();
       return data;
     } catch (error) {

@@ -16,8 +16,10 @@ export class InterventionsService {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const interventionsUrl = `${baseUrl}/api/v1/patients/benefits/interventions?patient_id=${fetchInterventionsDto.patient_id}&sub_benefit_code=${fetchInterventionsDto.sub_benefit_code}`;
     try {
-      const response =
-        await this.hieHttpRequests.sendGetRequest(interventionsUrl);
+      const response = await this.hieHttpRequests.sendGetRequest(
+        interventionsUrl,
+        fetchInterventionsDto.locationUuid,
+      );
       const data = (await response.json()) as InterventionsApiResponse;
       return data.results;
     } catch (error) {

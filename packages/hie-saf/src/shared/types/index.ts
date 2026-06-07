@@ -1,3 +1,5 @@
+import { ConsentScope } from '../../client-registry/types';
+
 export enum IdentifierTypes {
   TemporaryID = 'Temporary ID',
   AlienID = 'Alien ID',
@@ -62,4 +64,12 @@ export type TiberbuValidateConsentApiResponse = {
     identification_number: string;
     status: 'valid' | 'invalid';
   };
+};
+
+export type ConsentDto = {
+  identifierType: string;
+  identifierNumber: string;
+  phoneNumber: string;
+  facility: string;
+  scope: ConsentScope[];
 };

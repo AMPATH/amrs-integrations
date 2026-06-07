@@ -3,10 +3,17 @@ import { ClientRegistryController } from './client-registry.controller';
 import { ClientRegistryService } from './client-registry.service';
 import { HieHttpRequestModule } from '../hie-http-request/hie-http-request.module';
 import { ConsentModule } from '../consent/consent.module';
+import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { FacilityLocation } from '../core/database/entities/facility-locations.entity';
 
 @Module({
-  imports: [HieHttpRequestModule, ConsentModule],
+  imports: [
+    HieHttpRequestModule,
+    ConsentModule,
+    TypeOrmModule.forFeature([FacilityLocation]),
+  ],
   controllers: [ClientRegistryController],
-  providers: [ClientRegistryService],
+  providers: [ClientRegistryService, LocationFacilityHelper],
 })
 export class ClientRegistryModule {}

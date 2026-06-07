@@ -1,13 +1,21 @@
-import { Body, Controller, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ClientRegistryService } from './client-registry.service';
 import { type SearchClientDto } from './dto/search-client-dto';
 import { SendCustomOtpParamsDto } from './dto/send-custom-otp-params.dto';
 import { ConsentService } from '../consent/consent.service';
-import { type RequestConsentDto } from '../shared/dto/request-consent.dto';
 import { ConsentScope } from './types';
 import { ValidateCustomOtpParamsDto } from './dto/validate-custom-otp.dto';
 import { ValidateConsentDto } from '../shared/dto/validate-consent.dto';
 import { OpenMrsAuthGuard } from '../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
+import { ConsentDto } from '../shared/types';
+import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('client')
@@ -15,33 +23,37 @@ export class ClientRegistryController {
   constructor(
     private clientRegistryService: ClientRegistryService,
     private consentService: ConsentService,
+    private locationFacilityHelper: LocationFacilityHelper,
   ) {}
   @Post('search')
   public searchClient(@Body() searchClientRequestParams: SearchClientDto) {
-    if (
-      !searchClientRequestParams.identificationNumber ||
-      !searchClientRequestParams.identificationType
-    ) {
-      return HttpStatus.BAD_REQUEST;
-    }
-    const searchClientDto: SearchClientDto = {
-      identificationNumber: searchClientRequestParams.identificationNumber,
-      identificationType: searchClientRequestParams.identificationType,
-    };
     return this.clientRegistryService.fetchClientFromClientRegistry(
-      searchClientDto,
+      searchClientRequestParams,
     );
   }
   @Post('send-custom-otp')
-  public sendCustomOtp(@Body() body: SendCustomOtpParamsDto) {
-    const requestConsentDto: RequestConsentDto = {
+  public async sendCustomOtp(@Body() body: SendCustomOtpParamsDto) {
+    const facility =
+      await this.locationFacilityHelper.getFacilityUsingLocationUuid(
+        body.locationUuid,
+      );
+    if (!facility) {
+      throw new HttpException('Missing facility', HttpStatus.BAD_REQUEST);
+    }
+    if (!facility.frCode) {
+      throw new HttpException('Missing facility code', HttpStatus.BAD_REQUEST);
+    }
+    const consentDto: ConsentDto = {
       identifierType: body.identificationType,
       identifierNumber: body.identificationNumber,
       phoneNumber: body.phoneNumber,
-      facility: body.facility,
       scope: [ConsentScope.ClientRegistry, ConsentScope.SharedHealthRecords],
+      facility: facility.frCode,
     };
-    return this.consentService.requestClientConsent(requestConsentDto);
+    return this.consentService.requestClientConsent(
+      consentDto,
+      body.locationUuid,
+    );
   }
   @Post('validate-custom-otp')
   public validateCustomOtp(@Body() body: ValidateCustomOtpParamsDto) {
@@ -49,6 +61,9 @@ export class ClientRegistryController {
       id: body.sessionId,
       otp: body.otp,
     };
-    return this.consentService.validateClientConsent(validateConsentDto);
+    return this.consentService.validateClientConsent(
+      validateConsentDto,
+      body.locationUuid,
+    );
   }
 }

@@ -63,8 +63,6 @@ export class HieAuthService {
   private isTokenExpired(): boolean {
     const now = new Date();
     const timeInS = now.setSeconds(now.getSeconds());
-    const exp = timeInS > this.getTokenExpiry();
-    console.log('timeInS > this.getTokenExpiry()...', exp);
     return timeInS > this.getTokenExpiry();
   }
 }

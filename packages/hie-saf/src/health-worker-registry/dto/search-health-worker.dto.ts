@@ -8,4 +8,8 @@ export class SearchHealthWorkerParamsDto {
   @IsNotEmpty()
   @IsString()
   identifierValue!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

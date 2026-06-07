@@ -17,6 +17,7 @@ export class BenefitsUtilizationService {
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         benefitsUtilizationUrl,
+        benefitsUtilizationDto.locationUuid,
       );
       const data = (await response.json()) as unknown as any;
       return data;

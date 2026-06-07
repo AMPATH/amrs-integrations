@@ -15,5 +15,5 @@ export class SendCustomOtpParamsDto {
 
   @IsNotEmpty()
   @IsString()
-  facility!: string;
+  locationUuid!: string;
 }

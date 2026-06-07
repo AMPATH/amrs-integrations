@@ -16,7 +16,10 @@ export class FacilityRegistryService {
     const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';
     const facilitySearchUrl = `${baseUrl}/fr/v1/facility/search?identifier-type=${searchFacilityDto['identifier-type']}&identifier=${searchFacilityDto.identifier}`;
     try {
-      const resp = await this.hieHttpRequests.sendGetRequest(facilitySearchUrl);
+      const resp = await this.hieHttpRequests.sendGetRequest(
+        facilitySearchUrl,
+        searchFacilityDto.locationUuid,
+      );
       const data: Facility[] = await resp.json();
       return {
         message: data[0],

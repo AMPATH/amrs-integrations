@@ -15,6 +15,7 @@ export class HealthWorkerRegistryController {
       identifierNumber: query.identifierValue,
       identifierType: query.identifierType,
       regulator: Regulators.Kmpdc,
+      locationUuid: query.locationUuid,
     };
     return this.hwrService.fetchFacilityFromClientRegistry(
       fetchHealthWorkerDto,

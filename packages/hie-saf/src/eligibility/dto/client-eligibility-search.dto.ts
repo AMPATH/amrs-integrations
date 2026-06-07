@@ -8,4 +8,8 @@ export class ClientEligibilitySearchDto {
   @IsNotEmpty()
   @IsString()
   identificationNumber!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  locationUuid!: string;
 }

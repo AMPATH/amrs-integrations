@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
-import { BedOccupancyDto } from './dto/bed-occupancy.dto';
 import { BedOccupancyApiReponse } from './types';
 
 @Injectable()
@@ -11,13 +10,16 @@ export class BedOccupancyService {
     private readonly configService: ConfigService,
   ) {}
   async fetchBedOccupancy(
-    bedOccupancyDto: BedOccupancyDto,
+    frCode: string,
+    locationUuid: string,
   ): Promise<BedOccupancyApiReponse> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const interventionsUrl = `${baseUrl}/api/v1/facilities/${bedOccupancyDto.facility_code}/beds/occupancy`;
+    const interventionsUrl = `${baseUrl}/api/v1/facilities/${frCode}/beds/occupancy`;
     try {
-      const response =
-        await this.hieHttpRequests.sendGetRequest(interventionsUrl);
+      const response = await this.hieHttpRequests.sendGetRequest(
+        interventionsUrl,
+        locationUuid,
+      );
       const data = (await response.json()) as BedOccupancyApiReponse;
       return data;
     } catch (error) {

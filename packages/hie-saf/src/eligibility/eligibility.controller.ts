@@ -39,6 +39,7 @@ export class EligibilityController {
     const eligibilityDto: ClientEligibilitySearchDto = {
       identificationNumber: body.requestIdNumber,
       identificationType: identificationTypeName,
+      locationUuid: body.locationUuid,
     };
     return this.eligibilityService.fetchClientEligibilityStatus(eligibilityDto);
   }

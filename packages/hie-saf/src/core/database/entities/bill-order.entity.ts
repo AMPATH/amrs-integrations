@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 @Entity('bill_orders')
-@Index(['bill_uuid', 'order_no'], { unique: true })
+@Index(['bill_uuid', 'order_no', 'line_item_uuid'], { unique: true })
 export class BillOrder {
   @PrimaryGeneratedColumn()
   id!: string;
@@ -15,10 +15,10 @@ export class BillOrder {
   @Column({ type: 'varchar', length: 100 })
   bill_uuid!: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   order_no!: string;
 
-  @Column({ type: 'varchar', length: 100, default: '' })
+  @Column({ type: 'varchar', length: 100, unique: true })
   line_item_uuid!: string;
 
   @CreateDateColumn({ name: 'created_at' })

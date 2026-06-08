@@ -11,14 +11,21 @@ import { BedOccupancyService } from './claims-eligibility/bed-occupancy/bed-occu
 import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from '../core/database/entities/facility-locations.entity';
+import { BillOrderController } from './claims-eligibility/bill-order/bill-order.controller';
+import { BillOrderService } from './claims-eligibility/bill-order/bill-order.service';
+import { BillOrder } from '../core/database/entities/bill-order.entity';
 
 @Module({
-  imports: [HieHttpRequestModule, TypeOrmModule.forFeature([FacilityLocation])],
+  imports: [
+    HieHttpRequestModule,
+    TypeOrmModule.forFeature([FacilityLocation, BillOrder]),
+  ],
   controllers: [
     SubBenefitsController,
     InterventionsController,
     BenefitsUtilizationController,
     BedOccupancyController,
+    BillOrderController,
   ],
   providers: [
     SubBenefitsService,
@@ -26,6 +33,7 @@ import { FacilityLocation } from '../core/database/entities/facility-locations.e
     BenefitsUtilizationService,
     BedOccupancyService,
     LocationFacilityHelper,
+    BillOrderService,
   ],
 })
 export class ClaimsModule {}

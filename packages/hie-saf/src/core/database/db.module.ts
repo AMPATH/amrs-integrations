@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from './entities/facility-locations.entity';
-import { LocationFacilityHelper } from '../../shared/utils/location-facility.helper';
+import { BillOrder } from './entities/bill-order.entity';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { LocationFacilityHelper } from '../../shared/utils/location-facility.hel
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [FacilityLocation],
+        entities: [FacilityLocation, BillOrder],
         poolSize: 5,
         synchronize: false,
       }),

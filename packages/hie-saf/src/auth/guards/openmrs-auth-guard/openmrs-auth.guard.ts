@@ -13,6 +13,10 @@ export class OpenMrsAuthGuard implements CanActivate {
   constructor(private readonly configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const app_env = this.configService.get<string>('APP_ENV') ?? '';
+    if (app_env === 'development') {
+      return true;
+    }
     const request = context.switchToHttp().getRequest();
     const sessionCookie = request.cookies?.['JSESSIONID'];
 

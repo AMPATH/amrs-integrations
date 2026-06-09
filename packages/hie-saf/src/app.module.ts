@@ -34,6 +34,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         DATABASE_USER: Joi.string().required(),
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_NAME: Joi.string().required(),
+        APP_ENV: Joi.string().required(),
       }),
     }),
     DatabaseModule,

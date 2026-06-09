@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BillOrder } from '../../../core/database/entities/bill-order.entity';
 import { Repository } from 'typeorm';
@@ -58,9 +63,16 @@ export class BillOrderService {
     }
     return this.billOrderRepository.save(record);
   }
-  findOne(searchBillOrderDto: SearchBillOrderDto) {
-    return this.billOrderRepository.findOneBy({
+  async findOne(searchBillOrderDto: SearchBillOrderDto) {
+    const billOrder = await this.billOrderRepository.findOneBy({
       ...searchBillOrderDto,
     });
+    if (billOrder) {
+      return billOrder;
+    } else {
+      throw new NotFoundException(
+        'Bill with the given order or uuid does not exisit',
+      );
+    }
   }
 }

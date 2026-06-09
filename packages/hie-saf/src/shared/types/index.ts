@@ -24,8 +24,10 @@ export enum FacilityIdentifierTypes {
 }
 
 export const FacilityIdentificationTypesMap: { [key: string]: string } = {
-  facilityCode: FacilityIdentifierTypes.RegistrationNumber,
   registrationNumber: FacilityIdentifierTypes.RegistrationNumber,
+  registrationCode: FacilityIdentifierTypes.FacilityRegistryCode,
+  licenseNumber: FacilityIdentifierTypes.RegulatorLicenseNumber,
+  shaLicenseNumber: FacilityIdentifierTypes.SHALicenseNumber,
 };
 
 export type RequestOtpApiResponse = {

@@ -17,8 +17,6 @@ export class HealthWorkerRegistryController {
       regulator: Regulators.Kmpdc,
       locationUuid: query.locationUuid,
     };
-    return this.hwrService.fetchFacilityFromClientRegistry(
-      fetchHealthWorkerDto,
-    );
+    return this.hwrService.fetchHealthWorkerFromRegistry(fetchHealthWorkerDto);
   }
 }

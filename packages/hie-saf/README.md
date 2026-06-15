@@ -7,6 +7,7 @@ This project is for HIE intergration using Safaricom provided API's.
 1. NodeJs v24+
 2. Yarn v1.22+
 3. NestJs v11.0.21
+4. Mariadb
 
 ## Set up
 
@@ -33,6 +34,7 @@ DATABASE_PASSWORD=<DATABASE_PASSWORD>
 DATABASE_NAME=<DATABASE_NAME>
 
 APP_ENV=<APP_ENV>
+BASIC_AUTH=<BASIC_AUTH>
 ```
 
 To run the dev server for your app, use:

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HealthWorkerRegistryService } from '../health-worker-registry/health-worker-registry.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HwrSync } from '../core/database/entities/hwr_sync.entity';
@@ -30,6 +30,21 @@ export class HwrSyncService {
   public async batchSyncHealthWorkerRecords(hwrBatchSyncDto: HwrBatchSyncDto) {
     // get list of health workers to sync from the queue
     const hwrToSync = await this.hwrSyncRepository.findBy(hwrBatchSyncDto);
+
+    // generate facility sync queue
+    try {
+      await this.hwrSyncRepository.query(
+        `CALL hie.create_hwr_facility_sync_queue(?);`,
+        [hwrBatchSyncDto.location_uuid],
+      );
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Failed to generate sync queue',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
     let i = 0;
     for (const hwr of hwrToSync) {
       console.log({ i });

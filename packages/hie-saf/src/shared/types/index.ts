@@ -75,3 +75,22 @@ export type ConsentDto = {
   facility: string;
   scope: ConsentScope[];
 };
+
+export type AttributeType = {
+  uuid: string;
+  display: string;
+  resourceVersion: string;
+};
+
+export type ProviderAttribute = {
+  uuid: string;
+  display: string;
+  value: any;
+  attributeType: AttributeType;
+  resourceVersion: string;
+};
+
+export type AttributeDto = {
+  attributeType: string;
+  value: string;
+};

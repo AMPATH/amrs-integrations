@@ -16,6 +16,7 @@ import { DatabaseModule } from './core/database/db.module';
 import { LocationFacilityHelper } from './shared/utils/location-facility.helper';
 import { FacilityLocation } from './core/database/entities/facility-locations.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ConsentModule,
     ClaimsModule,
     TypeOrmModule.forFeature([FacilityLocation]),
+    HwrSyncModule,
   ],
   controllers: [AppController],
   providers: [AppService, OpenMrsAuthGuard, LocationFacilityHelper],

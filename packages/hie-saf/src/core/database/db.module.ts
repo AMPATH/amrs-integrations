@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from './entities/facility-locations.entity';
 import { BillOrder } from './entities/bill-order.entity';
+import { HwrSync } from './entities/hwr_sync.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { BillOrder } from './entities/bill-order.entity';
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [FacilityLocation, BillOrder],
+        entities: [FacilityLocation, BillOrder, HwrSync],
         poolSize: 5,
         synchronize: false,
       }),

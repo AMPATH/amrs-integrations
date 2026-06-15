@@ -10,7 +10,7 @@ export class HealthWorkerRegistryService {
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
   ) {}
-  async fetchFacilityFromClientRegistry(
+  async fetchHealthWorkerFromRegistry(
     fetchHealthWorkerDto: FetchHealthWorkerDto,
   ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';

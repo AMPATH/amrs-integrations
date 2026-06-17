@@ -21,10 +21,12 @@ export default class ExtractINSAndPostToETL {
       let total: number = 0;
       let uuid: any = "";
       let valid: any;
+      let value_ConceptID: any;
+      let validValue: any;
       let data: any = request; //JSON.parse(request);
       let eidobs: Array<any> = [];
 
-      let patientCCCNo = helper.splitToCCC(data.patient) ;
+      let patientCCCNo = helper.splitToCCC(data.patient);
       let external_id = data.id;
       let value = data.result;
       let collectionDate = data.date_collected;
@@ -66,6 +68,7 @@ export default class ExtractINSAndPostToETL {
        * 1 PCR
        * 2 Viral Load
        * 3 CD4
+       * 5 HPV
        *  */
 
       if (testType === 1) {
@@ -133,7 +136,7 @@ export default class ExtractINSAndPostToETL {
           conceptID = "a8982474-1350-11df-a1f1-0026b9348838";
           resultingValue = valid == 1 ? value : 0;
         }
-        resultingValue = valid == 1 ? value : 0;
+        //  resultingValue = valid == 1 ? value : 0;
         // check if data is already synced
         const isDataSynced = await getPatient.checkPatientVLSync(
           collection_date,
@@ -164,6 +167,7 @@ export default class ExtractINSAndPostToETL {
           eidobs.push(obs);
         }
       } else if (testType === 3) {
+        value_ConceptID = "a89c3d8e-1350-11df-a1f1-0026b9348838"; // - for poor quality sample
         //CD4
         //check if allready  synced
         const isDataSynced = await getPatient.checkPatientCD4Sync(
@@ -216,40 +220,125 @@ export default class ExtractINSAndPostToETL {
           ) {
             isCD45AbsCntEmpty = true;
           }
+
+          // check if the value of the response is okay
+
           if (!isAVGCD3AbsCntEmpty) {
+            value = absAvgCountValue;
             conceptID = "a8a8bb18-1350-11df-a1f1-0026b9348838";
+            validValue = validator.checkCD4Status(value);
+            if (validValue === 3) {
+              conceptID = "457c741d-8f71-4829-b59d-594e0a618892";
+              value = value_ConceptID;
+            }
+
             let obs_abscount: EIDPayloads.Observation = {
               person: uuid,
               concept: conceptID,
               obsDatetime: collection_date,
-              value: absAvgCountValue,
+              value: value,
               order: order,
             };
             eidobs.push(obs_abscount);
           }
           //%lymph
           if (!isAVGCD3CD4percentLymphEmpty) {
+            value = lymphAvgPercValue;
             conceptID = "a8970a26-1350-11df-a1f1-0026b9348838";
+            validValue = validator.checkCD4Status(value);
+            if (validValue === 3) {
+              conceptID = "457c741d-8f71-4829-b59d-594e0a618892";
+              value = value_ConceptID;
+            }
+
             let obs_lymph: EIDPayloads.Observation = {
               person: uuid,
               concept: conceptID,
               obsDatetime: collection_date,
-              value: lymphAvgPercValue,
+              value: value,
               order: order,
             };
             eidobs.push(obs_lymph);
           }
           if (!isCD45AbsCntEmpty) {
+            value = cd45AbsCount;
             conceptID = "a898fcd2-1350-11df-a1f1-0026b9348838";
+            validValue = validator.checkCD4Status(value);
+            if (validValue === 3) {
+              conceptID = "457c741d-8f71-4829-b59d-594e0a618892";
+              value = value_ConceptID;
+            }
+
             let obs_cd45count: EIDPayloads.Observation = {
               person: uuid,
               concept: conceptID,
               obsDatetime: collection_date,
-              value: cd45AbsCount,
+              value: value,
               order: order,
             };
             eidobs.push(obs_cd45count);
           }
+        }
+      } else if (testType === 5) {
+        // HPV
+        conceptID = "a8982474-1350-11df-a1f1-0026b9348838";
+        // check if viral load value is valid
+        valid = validator.checkHPVStatus(value);
+        if (valid === 0) {
+          failed++;
+          logToFile(
+            filename,
+            "error",
+            `${patientCCCNo}': Record has erroneous HPV value: ' ${value}`
+          );
+          response = JSON.stringify({
+            id: external_id,
+            timestamp: now(),
+            status: "failed",
+          });
+          return response;
+        } else if (valid === 1) {
+          conceptID = "a8a46fd6-1350-11df-a1f1-0026b9348838";
+          resultingValue = "a896d2cc-1350-11df-a1f1-0026b9348838";
+        } else if (valid === 2) {
+          conceptID = "a8a46fd6-1350-11df-a1f1-0026b9348838";
+          resultingValue = "a896f3a6-1350-11df-a1f1-0026b9348838";
+        } else if (valid === 3) {
+          conceptID = "a8a46fd6-1350-11df-a1f1-0026b9348838";
+          resultingValue = "a89a7ae4-1350-11df-a1f1-0026b9348838";
+        } else {
+          conceptID = "a8a46fd6-1350-11df-a1f1-0026b9348838";
+          resultingValue = "a89a7ae4-1350-11df-a1f1-0026b9348838";
+        }
+        //  resultingValue = valid == 1 ? value : 0;
+        // check if data is already synced
+        const isDataSynced = await getPatient.checkPatientHPVSync(
+          collection_date,
+          resultingValue,
+          uuid
+        );
+        if (isDataSynced[0].count > 0) {
+          alreadySynced++;
+          logToFile(
+            filename,
+            "info",
+            `${patientCCCNo}': Record already exists'`
+          );
+          response = JSON.stringify({
+            id: external_id,
+            timestamp: now(),
+            status: "synced",
+          });
+          return response;
+        } else {
+          let obs: EIDPayloads.Observation = {
+            person: uuid,
+            concept: conceptID,
+            obsDatetime: collection_date,
+            value: resultingValue,
+            order: order,
+          };
+          eidobs.push(obs);
         }
       }
       for (let i = 0; i < eidobs.length; i++) {

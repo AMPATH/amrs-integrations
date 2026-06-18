@@ -18,7 +18,7 @@ import { HwrSync } from './entities/hwr_sync.entity';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         entities: [FacilityLocation, BillOrder, HwrSync],
-        poolSize: 5,
+        poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,
       }),
       inject: [ConfigService],

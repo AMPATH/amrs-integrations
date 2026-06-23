@@ -14,6 +14,8 @@ import { FacilityLocation } from '../core/database/entities/facility-locations.e
 import { BillOrderController } from './claims-eligibility/bill-order/bill-order.controller';
 import { BillOrderService } from './claims-eligibility/bill-order/bill-order.service';
 import { BillOrder } from '../core/database/entities/bill-order.entity';
+import { ClaimsVisitController } from './claims-eligibility/visit/visit.controller';
+import { ClaimsVisitService } from './claims-eligibility/visit/visit.service';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { BillOrder } from '../core/database/entities/bill-order.entity';
     BenefitsUtilizationController,
     BedOccupancyController,
     BillOrderController,
+    ClaimsVisitController,
   ],
   providers: [
     SubBenefitsService,
@@ -34,6 +37,7 @@ import { BillOrder } from '../core/database/entities/bill-order.entity';
     BedOccupancyService,
     LocationFacilityHelper,
     BillOrderService,
+    ClaimsVisitService,
   ],
 })
 export class ClaimsModule {}

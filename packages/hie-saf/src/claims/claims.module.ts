@@ -16,6 +16,8 @@ import { BillOrderService } from './claims-eligibility/bill-order/bill-order.ser
 import { BillOrder } from '../core/database/entities/bill-order.entity';
 import { ClaimsVisitController } from './claims-eligibility/visit/visit.controller';
 import { ClaimsVisitService } from './claims-eligibility/visit/visit.service';
+import { ClaimsOtpController } from './claims-eligibility/otp/claims-otp.controller';
+import { ClaimsOtpService } from './claims-eligibility/otp/claims-otp.service';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { ClaimsVisitService } from './claims-eligibility/visit/visit.service';
     BedOccupancyController,
     BillOrderController,
     ClaimsVisitController,
+    ClaimsOtpController,
   ],
   providers: [
     SubBenefitsService,
@@ -38,6 +41,7 @@ import { ClaimsVisitService } from './claims-eligibility/visit/visit.service';
     LocationFacilityHelper,
     BillOrderService,
     ClaimsVisitService,
+    ClaimsOtpService,
   ],
 })
 export class ClaimsModule {}

@@ -1,6 +1,9 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClaimsMemberEligibilityResponse, MemberEligibilityResponse } from './types';
+import {
+  ClaimsMemberEligibilityResponse,
+  MemberEligibilityResponse,
+} from './types';
 import { ClientEligibilitySearchDto } from './dto/client-eligibility-search.dto';
 import { HieHttpRequests } from 'src/hie-http-request/hie-http-requests';
 

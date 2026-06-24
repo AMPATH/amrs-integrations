@@ -8,6 +8,21 @@ export interface MemberEligibilityResponse {
   schemes: Scheme[];
 }
 
+export interface ClaimsMemberEligibilityResponse {
+  requestIdType: number;
+  requestIdNumber: string;
+  dateOfBirth: string;
+  gender: string;
+  age: number;
+  whitelistedForOTP: boolean;
+  facilityBiometricsEnforced: boolean;
+  memberCrNumber: string;
+  fullName: string;
+  statusCode: string;
+  statusDesc: string;
+  schemes: Scheme[];
+}
+
 export interface Scheme {
   schemeName: string;
   schemeId: number;

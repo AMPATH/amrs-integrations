@@ -16,6 +16,8 @@ import { ValidateConsentDto } from '../shared/dto/validate-consent.dto';
 import { OpenMrsAuthGuard } from '../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { ConsentDto } from '../shared/types';
 import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
+import { ContactsService } from '../consent/contacts/contacts.service';
+import { SearchPatientContactsDto } from '../consent/contacts/dto/search-patient-contact.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('client')
@@ -24,6 +26,7 @@ export class ClientRegistryController {
     private clientRegistryService: ClientRegistryService,
     private consentService: ConsentService,
     private locationFacilityHelper: LocationFacilityHelper,
+    private contactsService: ContactsService,
   ) {}
   @Post('search')
   public searchClient(@Body() searchClientRequestParams: SearchClientDto) {
@@ -65,5 +68,9 @@ export class ClientRegistryController {
       validateConsentDto,
       body.locationUuid,
     );
+  }
+  @Post('contacts')
+  public getClientContacts(@Body() body: SearchPatientContactsDto) {
+    return this.contactsService.fetchPatientContacts(body, body.locationUuid);
   }
 }

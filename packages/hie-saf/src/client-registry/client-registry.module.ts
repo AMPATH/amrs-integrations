@@ -6,6 +6,7 @@ import { ConsentModule } from '../consent/consent.module';
 import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from '../core/database/entities/facility-locations.entity';
+import { ContactsService } from '../consent/contacts/contacts.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { FacilityLocation } from '../core/database/entities/facility-locations.e
     TypeOrmModule.forFeature([FacilityLocation]),
   ],
   controllers: [ClientRegistryController],
-  providers: [ClientRegistryService, LocationFacilityHelper],
+  providers: [ClientRegistryService, LocationFacilityHelper, ContactsService],
 })
 export class ClientRegistryModule {}

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -42,5 +44,26 @@ export class EligibilityController {
       locationUuid: body.locationUuid,
     };
     return this.eligibilityService.fetchClientEligibilityStatus(eligibilityDto);
+  }
+  @Get('claims-eligibility')
+  public getClientClaimsEligibility(
+    @Query() query: ClientEligibilitySearchDto,
+  ) {
+    if (!query.identificationNumber) {
+      throw new HttpException(
+        'Missing Identification Number',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!query.identificationType) {
+      throw new HttpException(
+        'Missing Identification Type',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!query.locationUuid) {
+      throw new HttpException('Missing Location uuid', HttpStatus.BAD_REQUEST);
+    }
+    return this.eligibilityService.fetchClientClaimsEligibility(query);
   }
 }

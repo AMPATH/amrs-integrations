@@ -4,7 +4,9 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ClientRegistryService } from './client-registry.service';
 import { type SearchClientDto } from './dto/search-client-dto';
@@ -18,6 +20,9 @@ import { ConsentDto } from '../shared/types';
 import { LocationFacilityHelper } from '../shared/utils/location-facility.helper';
 import { ContactsService } from '../consent/contacts/contacts.service';
 import { SearchPatientContactsDto } from '../consent/contacts/dto/search-patient-contact.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateOtpWhitelistRequestDto } from '../consent/otp-whitelist/dto/create-otp-whitelist.dto';
+import { OtpWhitelistService } from '../consent/otp-whitelist/otp-whitelist.service';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('client')
@@ -27,6 +32,7 @@ export class ClientRegistryController {
     private consentService: ConsentService,
     private locationFacilityHelper: LocationFacilityHelper,
     private contactsService: ContactsService,
+    private otpWhitelistService: OtpWhitelistService,
   ) {}
   @Post('search')
   public searchClient(@Body() searchClientRequestParams: SearchClientDto) {
@@ -72,5 +78,17 @@ export class ClientRegistryController {
   @Post('contacts')
   public getClientContacts(@Body() body: SearchPatientContactsDto) {
     return this.contactsService.fetchPatientContacts(body, body.locationUuid);
+  }
+  @Post('otp-whitelist')
+  @UseInterceptors(FileInterceptor('attachmentsFileBlob'))
+  public createOtpWhitelistRequest(
+    @UploadedFile() file: any,
+    @Body() body: CreateOtpWhitelistRequestDto,
+  ) {
+    return this.otpWhitelistService.createOtpWhitelistRequest(
+      body,
+      body.locationUuid,
+      file,
+    );
   }
 }

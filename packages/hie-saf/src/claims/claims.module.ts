@@ -18,6 +18,8 @@ import { ClaimsVisitController } from './claims-eligibility/visit/visit.controll
 import { ClaimsVisitService } from './claims-eligibility/visit/visit.service';
 import { ClaimsOtpController } from './claims-eligibility/otp/claims-otp.controller';
 import { ClaimsOtpService } from './claims-eligibility/otp/claims-otp.service';
+import { ClaimLineController } from './claims-eligibility/claim-line/claim-line.controller';
+import { ClaimLineService } from './claims-eligibility/claim-line/claim-line.service';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { ClaimsOtpService } from './claims-eligibility/otp/claims-otp.service';
     BillOrderController,
     ClaimsVisitController,
     ClaimsOtpController,
+    ClaimLineController,
   ],
   providers: [
     SubBenefitsService,
@@ -42,6 +45,7 @@ import { ClaimsOtpService } from './claims-eligibility/otp/claims-otp.service';
     BillOrderService,
     ClaimsVisitService,
     ClaimsOtpService,
+    ClaimLineService,
   ],
 })
 export class ClaimsModule {}

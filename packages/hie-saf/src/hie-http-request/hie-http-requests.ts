@@ -45,12 +45,32 @@ export class HieHttpRequests {
     url: string,
     payload: any,
     locationUuid: string,
+    extraHeaders?: Record<string, string>,
   ): Promise<any> {
     const headers = await this.getHeaders(locationUuid);
     const options = {
       method: 'POST',
-      headers: headers,
+      headers: {
+        ...headers,
+        ...extraHeaders,
+      },
       body: JSON.stringify(payload),
+    };
+    return await fetch(url, options);
+  }
+
+  async sendFormDataPostRequest(
+    url: string,
+    payload: any,
+    locationUuid: string,
+  ): Promise<any> {
+    const headers = await this.getHeaders(locationUuid);
+    const options = {
+      method: 'POST',
+      headers: {
+        authorization: headers['authorization'],
+      },
+      body: payload,
     };
     return await fetch(url, options);
   }

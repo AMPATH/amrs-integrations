@@ -17,6 +17,7 @@ import { LocationFacilityHelper } from './shared/utils/location-facility.helper'
 import { FacilityLocation } from './core/database/entities/facility-locations.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
+import { BiometricsService } from './consent/biometrics/biometrics.service';
 
 @Module({
   imports: [
@@ -50,6 +51,11 @@ import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
     HwrSyncModule,
   ],
   controllers: [AppController],
-  providers: [AppService, OpenMrsAuthGuard, LocationFacilityHelper],
+  providers: [
+    AppService,
+    OpenMrsAuthGuard,
+    LocationFacilityHelper,
+    BiometricsService,
+  ],
 })
 export class AppModule {}

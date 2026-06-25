@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from '../core/database/entities/facility-locations.entity';
 import { ContactsService } from '../consent/contacts/contacts.service';
 import { OtpWhitelistService } from '../consent/otp-whitelist/otp-whitelist.service';
+import { BiometricsService } from 'src/consent/biometrics/biometrics.service';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { OtpWhitelistService } from '../consent/otp-whitelist/otp-whitelist.serv
     LocationFacilityHelper,
     ContactsService,
     OtpWhitelistService,
+    BiometricsService,
   ],
 })
 export class ClientRegistryModule {}

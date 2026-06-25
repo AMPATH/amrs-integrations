@@ -23,6 +23,9 @@ import { SearchPatientContactsDto } from '../consent/contacts/dto/search-patient
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateOtpWhitelistRequestDto } from '../consent/otp-whitelist/dto/create-otp-whitelist.dto';
 import { OtpWhitelistService } from '../consent/otp-whitelist/otp-whitelist.service';
+import { CreateBiometricsAuthorizationDto } from '../consent/biometrics/dto/create-biometrics-authorization.dto';
+import { BiometricsAuthorizationDto } from '../consent/biometrics/types';
+import { BiometricsService } from '../consent/biometrics/biometrics.service';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('client')
@@ -33,6 +36,7 @@ export class ClientRegistryController {
     private locationFacilityHelper: LocationFacilityHelper,
     private contactsService: ContactsService,
     private otpWhitelistService: OtpWhitelistService,
+    private biometricsService: BiometricsService,
   ) {}
   @Post('search')
   public searchClient(@Body() searchClientRequestParams: SearchClientDto) {
@@ -89,6 +93,43 @@ export class ClientRegistryController {
       body,
       body.locationUuid,
       file,
+    );
+  }
+  @Post('biometrics-authorize')
+  public async authorizeBiometrics(
+    @Body() body: CreateBiometricsAuthorizationDto,
+  ) {
+    const facility =
+      await this.locationFacilityHelper.getFacilityUsingLocationUuid(
+        body.locationUuid,
+      );
+    if (!facility) {
+      throw new HttpException('Missing facility', HttpStatus.BAD_REQUEST);
+    }
+    if (!facility.frCode) {
+      throw new HttpException('Missing facility code', HttpStatus.BAD_REQUEST);
+    }
+    if (!facility.facilityName) {
+      throw new HttpException('Missing facility name', HttpStatus.BAD_REQUEST);
+    }
+    const biometricsAuthorizationDto: BiometricsAuthorizationDto = {
+      agent_id: body.agentId,
+      authorizing_device_os: body.authorizingDeviceOs,
+      ekyc_provider_id: facility.facilityName,
+      factors: body.factors,
+      interventions: body.interventions,
+      is_biometrics_discharge_authorization:
+        body.isBiometricsDischargeAuthorization,
+      is_emergency: body.isEmergency,
+      is_integration: body.isIntegration,
+      patient_id: body.patientId,
+      provider: facility.frCode,
+      service_type: body.serviceType,
+      work_station_id: body.workStationId,
+    };
+    return this.biometricsService.authorizeBiometrics(
+      biometricsAuthorizationDto,
+      body.locationUuid,
     );
   }
 }

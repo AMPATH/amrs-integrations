@@ -8,6 +8,7 @@ import {
   InterventionsApiResponse,
   SwitchInterventionsDto,
 } from './types';
+import { VisitIntervention } from '../visit/types';
 
 @Injectable()
 export class InterventionsService {
@@ -38,7 +39,7 @@ export class InterventionsService {
   async addInterventions(
     addInterventionsDto: AddIntervationDto,
     locationUuid: string,
-  ): Promise<Intervention[]> {
+  ): Promise<VisitIntervention> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const addInterventionsUrl = `${baseUrl}/api/v1/claims/interventions`;
     try {
@@ -47,7 +48,7 @@ export class InterventionsService {
         addInterventionsDto,
         locationUuid,
       );
-      const data = await response.json();
+      const data = (await response.json()) as VisitIntervention;
       return data ?? null;
     } catch (error) {
       Logger.error(error);
@@ -60,7 +61,7 @@ export class InterventionsService {
   async switchInterventions(
     switchInterventionsDto: SwitchInterventionsDto,
     locationUuid: string,
-  ): Promise<Intervention[]> {
+  ): Promise<VisitIntervention> {
     // do some validations
     if (switchInterventionsDto.retain_bill_items) {
       if (!switchInterventionsDto.bill_from) {
@@ -78,7 +79,7 @@ export class InterventionsService {
         switchInterventionsDto,
         locationUuid,
       );
-      const data = await response.json();
+      const data = (await response.json()) as VisitIntervention;
       return data ?? null;
     } catch (error) {
       Logger.error(error);

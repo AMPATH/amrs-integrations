@@ -7,3 +7,8 @@ export type AddClaimLineDto = {
   quantity: string;
   scheme_code: string;
 };
+
+export type RemoveClaimLineDto = {
+  consent_token: string;
+  line_guid: string;
+};

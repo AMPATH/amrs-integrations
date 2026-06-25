@@ -1,8 +1,9 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { ClaimLineService } from './claim-line.service';
 import { AddClaimLineRequestDto } from './dto/add-claim-line-request.dto';
-import { AddClaimLineDto } from './types';
+import { AddClaimLineDto, RemoveClaimLineDto } from './types';
+import { RemoveClaimLineRequestDto } from './dto/remove-claim-line-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('claim-line')
@@ -22,6 +23,17 @@ export class ClaimLineController {
     };
     return this.claimLineService.addClaimLine(
       addClaimLineDto,
+      body.locationUuid,
+    );
+  }
+  @Delete()
+  public removeClaimLine(@Body() body: RemoveClaimLineRequestDto) {
+    const removeClaimLineDto: RemoveClaimLineDto = {
+      consent_token: body.consentToken,
+      line_guid: body.lineGuid,
+    };
+    return this.claimLineService.removeClaimLine(
+      removeClaimLineDto,
       body.locationUuid,
     );
   }

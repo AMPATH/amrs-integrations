@@ -74,4 +74,22 @@ export class HieHttpRequests {
     };
     return await fetch(url, options);
   }
+
+   async sendPatchRequest(
+    url: string,
+    payload: any,
+    locationUuid: string,
+    extraHeaders?: Record<string, string>,
+  ): Promise<any> {
+    const headers = await this.getHeaders(locationUuid);
+    const options = {
+      method: 'PATCH',
+      headers: {
+        ...headers,
+        ...extraHeaders,
+      },
+      body: JSON.stringify(payload),
+    };
+    return await fetch(url, options);
+  }
 }

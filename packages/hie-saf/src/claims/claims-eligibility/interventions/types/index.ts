@@ -35,7 +35,7 @@ export type InterventionsApiResponse = {
   results: Intervention[];
 };
 
-export type AddIntervationDto = {
+export type AddInterventionDto = {
   consent_token: string;
   intervention_code: string;
 };
@@ -46,4 +46,9 @@ export type SwitchInterventionsDto = {
   retain_bill_items: boolean;
   bill_from?: string;
   bill_to?: string;
+};
+
+export type RestoreInterventionDto = {
+  consent_token: string;
+  intervention_code: string;
 };

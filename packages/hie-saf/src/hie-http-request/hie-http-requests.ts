@@ -75,7 +75,7 @@ export class HieHttpRequests {
     return await fetch(url, options);
   }
 
-   async sendPatchRequest(
+  async sendPatchRequest(
     url: string,
     payload: any,
     locationUuid: string,

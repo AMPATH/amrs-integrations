@@ -3,9 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { InterventionsDto } from './dto/interventions.dto';
 import {
-  AddIntervationDto,
+  AddInterventionDto,
   Intervention,
   InterventionsApiResponse,
+  RestoreInterventionDto,
   SwitchInterventionsDto,
 } from './types';
 import { VisitIntervention } from '../visit/types';
@@ -37,7 +38,7 @@ export class InterventionsService {
     }
   }
   async addInterventions(
-    addInterventionsDto: AddIntervationDto,
+    addInterventionsDto: AddInterventionDto,
     locationUuid: string,
   ): Promise<VisitIntervention> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
@@ -85,6 +86,28 @@ export class InterventionsService {
       Logger.error(error);
       throw new HttpException(
         'Error switching interventions',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async restoreInterventions(
+    restoreInterventionDto: RestoreInterventionDto,
+    locationUuid: string,
+  ): Promise<Intervention> {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const restoreInterventionsUrl = `${baseUrl}/api/v1/claims/interventions/restore`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        restoreInterventionsUrl,
+        restoreInterventionDto,
+        locationUuid,
+      );
+      const data = (await response.json()) as Intervention;
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error restoring intervention',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

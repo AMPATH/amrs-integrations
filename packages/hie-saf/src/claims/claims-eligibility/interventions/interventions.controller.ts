@@ -3,8 +3,13 @@ import { InterventionsService } from './interventions.service';
 import { InterventionsDto } from './dto/interventions.dto';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { AddInterventionsRequestDto } from './dto/add-interventions.dto';
-import { AddIntervationDto, SwitchInterventionsDto } from './types';
+import {
+  AddInterventionDto,
+  RestoreInterventionDto,
+  SwitchInterventionsDto,
+} from './types';
 import { SwitchInterventionsRequestDto } from './dto/switch-interventions-request.dto';
+import { RestoreInterventionsRequestDto } from './dto/restore-intervention-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('interventions')
@@ -16,7 +21,7 @@ export class InterventionsController {
   }
   @Post()
   public addInterventions(@Body() body: AddInterventionsRequestDto) {
-    const addInterventionDto: AddIntervationDto = {
+    const addInterventionDto: AddInterventionDto = {
       consent_token: body.consentToken,
       intervention_code: body.interventionCode,
     };
@@ -39,6 +44,17 @@ export class InterventionsController {
     }
     return this.interventionsService.switchInterventions(
       switchInterventionDto,
+      body.locationUuid,
+    );
+  }
+  @Post('restore')
+  public restoreIntervention(@Body() body: RestoreInterventionsRequestDto) {
+    const restoreInterventionDto: RestoreInterventionDto = {
+      consent_token: body.consentToken,
+      intervention_code: body.interventionCode,
+    };
+    return this.interventionsService.restoreInterventions(
+      restoreInterventionDto,
       body.locationUuid,
     );
   }

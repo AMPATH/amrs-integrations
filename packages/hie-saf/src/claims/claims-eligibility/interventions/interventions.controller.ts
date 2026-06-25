@@ -6,10 +6,12 @@ import { AddInterventionsRequestDto } from './dto/add-interventions.dto';
 import {
   AddInterventionDto,
   RestoreInterventionDto,
+  RetireInterventionDto,
   SwitchInterventionsDto,
 } from './types';
 import { SwitchInterventionsRequestDto } from './dto/switch-interventions-request.dto';
 import { RestoreInterventionsRequestDto } from './dto/restore-intervention-request.dto';
+import { RetireInterventionsRequestDto } from './dto/retire-intervention.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('interventions')
@@ -55,6 +57,17 @@ export class InterventionsController {
     };
     return this.interventionsService.restoreInterventions(
       restoreInterventionDto,
+      body.locationUuid,
+    );
+  }
+  @Post('retire')
+  public retireIntervention(@Body() body: RetireInterventionsRequestDto) {
+    const retireInterventionDto: RetireInterventionDto = {
+      consent_token: body.consentToken,
+      intervention_code: body.interventionCode,
+    };
+    return this.interventionsService.retireInterventions(
+      retireInterventionDto,
       body.locationUuid,
     );
   }

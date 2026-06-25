@@ -7,6 +7,7 @@ import {
   Intervention,
   InterventionsApiResponse,
   RestoreInterventionDto,
+  RetireInterventionDto,
   SwitchInterventionsDto,
 } from './types';
 import { VisitIntervention } from '../visit/types';
@@ -100,6 +101,28 @@ export class InterventionsService {
       const response = await this.hieHttpRequests.sendPostRequest(
         restoreInterventionsUrl,
         restoreInterventionDto,
+        locationUuid,
+      );
+      const data = (await response.json()) as Intervention;
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error restoring intervention',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async retireInterventions(
+    retireInterventionDto: RetireInterventionDto,
+    locationUuid: string,
+  ): Promise<Intervention> {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const retireInterventionsUrl = `${baseUrl}/api/v1/claims/interventions/retire`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        retireInterventionsUrl,
+        retireInterventionDto,
         locationUuid,
       );
       const data = (await response.json()) as Intervention;

@@ -52,3 +52,7 @@ export type RestoreInterventionDto = {
   consent_token: string;
   intervention_code: string;
 };
+export type RetireInterventionDto = {
+  consent_token: string;
+  intervention_code: string;
+};

@@ -20,6 +20,14 @@ export class FacilityLocation {
   @Column({ name: 'fr_code', type: 'varchar', length: 20, nullable: true })
   frCode!: string | null;
 
+  @Column({
+    name: 'facility_name',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  facilityName!: string | null;
+
   @Column({ name: 'location_uuid', type: 'varchar', length: 100 })
   location_uuid!: string;
 

@@ -38,13 +38,11 @@ export class OtpWhitelistService {
     const externalFormData = new FormData();
 
     try {
-
       if (file) {
         if (!file.originalname) {
           return false;
         }
         const originalname = (file?.originalname as unknown as string) ?? '';
-        console.log({ originalname });
         const fileBlob = new Blob([file.buffer], { type: file.mimetype });
         externalFormData.append(
           'attachments_file_blob',
@@ -72,8 +70,6 @@ export class OtpWhitelistService {
         createOtpWhitelistRequestDto.biometricAttempts,
       );
       externalFormData.append('facility_fr_code', facility.frCode ?? '');
-
-      console.log({ externalFormData });
     } catch (error: any) {
       throw new InternalServerErrorException(
         `Failed to forward form data: ${error.message}`,

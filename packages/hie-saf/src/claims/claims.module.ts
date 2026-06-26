@@ -22,6 +22,8 @@ import { ClaimLineController } from './claims-eligibility/claim-line/claim-line.
 import { ClaimLineService } from './claims-eligibility/claim-line/claim-line.service';
 import { ClaimDiagnosisController } from './claims-eligibility/claim-diagnosis/claim-diagnosis.controller';
 import { ClaimDiagnosisService } from './claims-eligibility/claim-diagnosis/claim-diagnosis.service';
+import { ClaimAttachmentController } from './claims-eligibility/claim-attachment/claim-attachment.controller';
+import { ClaimAttachmentService } from './claims-eligibility/claim-attachment/claim-attachment.service';
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { ClaimDiagnosisService } from './claims-eligibility/claim-diagnosis/clai
     ClaimsOtpController,
     ClaimLineController,
     ClaimDiagnosisController,
+    ClaimAttachmentController,
   ],
   providers: [
     SubBenefitsService,
@@ -50,6 +53,7 @@ import { ClaimDiagnosisService } from './claims-eligibility/claim-diagnosis/clai
     ClaimsOtpService,
     ClaimLineService,
     ClaimDiagnosisService,
+    ClaimAttachmentService,
   ],
 })
 export class ClaimsModule {}

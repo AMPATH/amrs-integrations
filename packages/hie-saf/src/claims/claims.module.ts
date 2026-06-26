@@ -20,6 +20,8 @@ import { ClaimsOtpController } from './claims-eligibility/otp/claims-otp.control
 import { ClaimsOtpService } from './claims-eligibility/otp/claims-otp.service';
 import { ClaimLineController } from './claims-eligibility/claim-line/claim-line.controller';
 import { ClaimLineService } from './claims-eligibility/claim-line/claim-line.service';
+import { ClaimDiagnosisController } from './claims-eligibility/claim-diagnosis/claim-diagnosis.controller';
+import { ClaimDiagnosisService } from './claims-eligibility/claim-diagnosis/claim-diagnosis.service';
 
 @Module({
   imports: [
@@ -35,6 +37,7 @@ import { ClaimLineService } from './claims-eligibility/claim-line/claim-line.ser
     ClaimsVisitController,
     ClaimsOtpController,
     ClaimLineController,
+    ClaimDiagnosisController,
   ],
   providers: [
     SubBenefitsService,
@@ -46,6 +49,7 @@ import { ClaimLineService } from './claims-eligibility/claim-line/claim-line.ser
     ClaimsVisitService,
     ClaimsOtpService,
     ClaimLineService,
+    ClaimDiagnosisService,
   ],
 })
 export class ClaimsModule {}

@@ -14,10 +14,10 @@ export class ClaimResubmissionService {
     locationUuid: string,
   ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const addClaimLineUrl = `${baseUrl}/api/v1/claims/resubmit`;
+    const resubmitClaimUrl = `${baseUrl}/api/v1/claims/resubmit`;
     try {
       const response = await this.hieHttpRequests.sendPostRequest(
-        addClaimLineUrl,
+        resubmitClaimUrl,
         resubmitClaimDto,
         locationUuid,
       );

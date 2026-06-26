@@ -3,10 +3,12 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { AddClaimAttachmentRequestDto } from './dto/add-claim-attachment-request.dto';
+import { RemoveClaimAttachmentDto } from './types';
 
 @Injectable()
 export class ClaimAttachmentService {
@@ -67,6 +69,28 @@ export class ClaimAttachmentService {
       console.error(error);
       throw new HttpException(
         'Error adding file attachment',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async removeClaimAttachment(
+    removeClaimAttachmentDto: RemoveClaimAttachmentDto,
+    locationUuid: string,
+  ): Promise<any> {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const removeClaimAttachmentUrl = `${baseUrl}/api/v1/claims/attachments`;
+    try {
+      const response = await this.hieHttpRequests.sendPatchRequest(
+        removeClaimAttachmentUrl,
+        removeClaimAttachmentDto,
+        locationUuid,
+      );
+      const data = await response.json();
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error Removing claim attachment',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

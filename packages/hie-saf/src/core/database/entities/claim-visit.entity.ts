@@ -66,6 +66,10 @@ export class ClaimVisit {
   @Column({ type: 'json', name: 'visit_response', nullable: false })
   visitResponse!: Record<string, any>;
 
+  @Column({ type: 'varchar', length: 100, name: 'created_by', nullable: true })
+  @Index('created_by')
+  createdBy!: string | null;
+
   @CreateDateColumn({ type: 'timestamp', name: 'date_created' })
   dateCreated!: Date;
 }

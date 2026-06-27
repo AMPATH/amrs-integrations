@@ -34,7 +34,7 @@ export class ClaimIntervention {
     name: 'consent_token',
     nullable: false,
   })
-  @Index('consent_token') // Creates the performance index for consent_token
+  @Index('consent_token')
   consentToken!: string;
 
   @Column({
@@ -70,11 +70,14 @@ export class ClaimIntervention {
   @Column({ type: 'varchar', length: 100, name: 'bill_to', nullable: true })
   billTo!: string | null;
 
-  // Maps to your LONGTEXT column, handled automatically as JSON by TypeORM
   @Column({ type: 'json', name: 'intervention_response', nullable: false })
   interventionResponse!: Record<string, any>;
 
+  @Column({ type: 'varchar', length: 100, name: 'created_by', nullable: true })
+  @Index('created_by')
+  createdBy!: string | null;
+
   @CreateDateColumn({ type: 'timestamp', name: 'date_created' })
-  @Index('date_created') // Creates the performance index for date_created
+  @Index('date_created')
   dateCreated!: Date;
 }

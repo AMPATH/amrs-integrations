@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FacilityLocation } from './entities/facility-locations.entity';
 import { BillOrder } from './entities/bill-order.entity';
 import { HwrSync } from './entities/hwr_sync.entity';
+import { ClaimVisit } from './entities/claim-visit.entity';
+import { ClaimIntervention } from './entities/claim-intervention.entity';
 
 @Module({
   imports: [
@@ -17,7 +19,13 @@ import { HwrSync } from './entities/hwr_sync.entity';
         username: configService.get<string>('DATABASE_USER'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [FacilityLocation, BillOrder, HwrSync],
+        entities: [
+          FacilityLocation,
+          BillOrder,
+          HwrSync,
+          ClaimVisit,
+          ClaimIntervention,
+        ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,
       }),

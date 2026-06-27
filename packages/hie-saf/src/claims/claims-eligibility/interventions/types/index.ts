@@ -56,3 +56,10 @@ export type RetireInterventionDto = {
   consent_token: string;
   intervention_code: string;
 };
+
+export enum InterventionActions {
+  Add = 'ADD',
+  Switch = 'SWITCH',
+  Restore = 'RESTORE',
+  Retire = 'RETIRE',
+}

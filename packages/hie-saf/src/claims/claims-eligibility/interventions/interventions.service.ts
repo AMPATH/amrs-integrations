@@ -5,22 +5,26 @@ import { InterventionsDto } from './dto/interventions.dto';
 import {
   AddInterventionDto,
   Intervention,
+  InterventionActions,
   InterventionsApiResponse,
   RestoreInterventionDto,
   RetireInterventionDto,
   SwitchInterventionsDto,
 } from './types';
 import { VisitIntervention } from '../visit/types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ClaimIntervention } from '../../../core/database/entities/claim-intervention.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class InterventionsService {
   constructor(
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
+    @InjectRepository(ClaimIntervention)
+    private claimInterventionRepository: Repository<ClaimIntervention>,
   ) {}
-  async fetchInterventions(
-    fetchInterventionsDto: InterventionsDto,
-  ): Promise<Intervention[]> {
+  async fetchInterventions(fetchInterventionsDto: InterventionsDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const interventionsUrl = `${baseUrl}/api/v1/patients/benefits/interventions?patient_id=${fetchInterventionsDto.patient_id}&sub_benefit_code=${fetchInterventionsDto.sub_benefit_code}`;
     try {
@@ -29,6 +33,10 @@ export class InterventionsService {
         fetchInterventionsDto.locationUuid,
       );
       const data = (await response.json()) as InterventionsApiResponse;
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
       return data.results;
     } catch (error) {
       Logger.error(error);
@@ -41,7 +49,7 @@ export class InterventionsService {
   async addInterventions(
     addInterventionsDto: AddInterventionDto,
     locationUuid: string,
-  ): Promise<VisitIntervention> {
+  ): Promise<VisitIntervention | Error> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const addInterventionsUrl = `${baseUrl}/api/v1/claims/interventions`;
     try {
@@ -51,6 +59,27 @@ export class InterventionsService {
         locationUuid,
       );
       const data = (await response.json()) as VisitIntervention;
+
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const addInterventionEntity = this.claimInterventionRepository.create(
+            {
+              locationUuid: locationUuid,
+              interventionAction: InterventionActions.Add,
+              consentToken: addInterventionsDto.consent_token,
+              interventionCode: addInterventionsDto.intervention_code,
+              interventionResponse: data,
+            },
+          );
+          await this.claimInterventionRepository.save(addInterventionEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);
@@ -82,6 +111,31 @@ export class InterventionsService {
         locationUuid,
       );
       const data = (await response.json()) as VisitIntervention;
+
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const switchInterventionEntity =
+            this.claimInterventionRepository.create({
+              locationUuid: locationUuid,
+              interventionAction: InterventionActions.Switch,
+              consentToken: switchInterventionsDto.consent_token,
+              newInterventionCode: switchInterventionsDto.new_intervention_code,
+              existingInterventionCode:
+                switchInterventionsDto.existing_intervention_code,
+              interventionResponse: data,
+              retainBillItems: switchInterventionsDto.retain_bill_items,
+              billFrom: switchInterventionsDto.bill_from,
+              billTo: switchInterventionsDto.bill_to,
+            });
+          await this.claimInterventionRepository.save(switchInterventionEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);
@@ -104,6 +158,27 @@ export class InterventionsService {
         locationUuid,
       );
       const data = (await response.json()) as Intervention;
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const restoreInterventionEntity =
+            this.claimInterventionRepository.create({
+              locationUuid: locationUuid,
+              interventionAction: InterventionActions.Restore,
+              consentToken: restoreInterventionDto.consent_token,
+              interventionCode: restoreInterventionDto.intervention_code,
+              interventionResponse: data,
+            });
+          await this.claimInterventionRepository.save(
+            restoreInterventionEntity,
+          );
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);
@@ -126,6 +201,25 @@ export class InterventionsService {
         locationUuid,
       );
       const data = (await response.json()) as Intervention;
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const retireInterventionEntity =
+            this.claimInterventionRepository.create({
+              locationUuid: locationUuid,
+              interventionAction: InterventionActions.Retire,
+              consentToken: retireInterventionDto.consent_token,
+              interventionCode: retireInterventionDto.intervention_code,
+              interventionResponse: data,
+            });
+          await this.claimInterventionRepository.save(retireInterventionEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);

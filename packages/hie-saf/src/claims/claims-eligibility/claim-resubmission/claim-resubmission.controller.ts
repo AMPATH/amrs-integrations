@@ -12,7 +12,7 @@ export class ClaimResubmissionController {
   ) {}
 
   @Post()
-  public addClaimLine(@Body() body: ResubmitClaimRequestDto) {
+  public resubmitClaim(@Body() body: ResubmitClaimRequestDto) {
     const resubmitClaimDto: ResubmitClaimDto = {
       consent_token: body.consentToken,
     };

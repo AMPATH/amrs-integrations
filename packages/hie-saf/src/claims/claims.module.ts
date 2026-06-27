@@ -32,11 +32,18 @@ import { CombinedBillingController } from './claims-eligibility/combined-billing
 import { CombinedBillingService } from './claims-eligibility/combined-billing/combined-billing.service';
 import { ClaimSubmissionController } from './claims-eligibility/claim-submission/claim-submission.controller';
 import { ClaimSubmissionService } from './claims-eligibility/claim-submission/claim-submission.service';
+import { ClaimVisit } from '../core/database/entities/claim-visit.entity';
+import { ClaimIntervention } from '../core/database/entities/claim-intervention.entity';
 
 @Module({
   imports: [
     HieHttpRequestModule,
-    TypeOrmModule.forFeature([FacilityLocation, BillOrder]),
+    TypeOrmModule.forFeature([
+      FacilityLocation,
+      BillOrder,
+      ClaimVisit,
+      ClaimIntervention,
+    ]),
   ],
   controllers: [
     SubBenefitsController,

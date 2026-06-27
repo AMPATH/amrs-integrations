@@ -30,6 +30,8 @@ import { ClaimResubmissionController } from './claims-eligibility/claim-resubmis
 import { ClaimResubmissionService } from './claims-eligibility/claim-resubmission/claim-resubmission.service';
 import { CombinedBillingController } from './claims-eligibility/combined-billing/combined-billing.controller';
 import { CombinedBillingService } from './claims-eligibility/combined-billing/combined-billing.service';
+import { ClaimSubmissionController } from './claims-eligibility/claim-submission/claim-submission.controller';
+import { ClaimSubmissionService } from './claims-eligibility/claim-submission/claim-submission.service';
 
 @Module({
   imports: [
@@ -50,6 +52,7 @@ import { CombinedBillingService } from './claims-eligibility/combined-billing/co
     ClaimPreviewController,
     ClaimResubmissionController,
     CombinedBillingController,
+    ClaimSubmissionController,
   ],
   providers: [
     SubBenefitsService,
@@ -66,6 +69,7 @@ import { CombinedBillingService } from './claims-eligibility/combined-billing/co
     ClaimPreviewService,
     ClaimResubmissionService,
     CombinedBillingService,
+    ClaimSubmissionService,
   ],
 })
 export class ClaimsModule {}

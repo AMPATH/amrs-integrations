@@ -9,3 +9,8 @@ export type RemoveClaimDiagnosisDto = {
   icd_code: string;
   intervention_code: string;
 };
+
+export enum DiagnosisActions {
+  Add = 'ADD',
+  Remove = 'Remove',
+}

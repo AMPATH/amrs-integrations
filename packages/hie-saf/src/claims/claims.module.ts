@@ -34,6 +34,7 @@ import { ClaimSubmissionController } from './claims-eligibility/claim-submission
 import { ClaimSubmissionService } from './claims-eligibility/claim-submission/claim-submission.service';
 import { ClaimVisit } from '../core/database/entities/claim-visit.entity';
 import { ClaimIntervention } from '../core/database/entities/claim-intervention.entity';
+import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ClaimIntervention } from '../core/database/entities/claim-intervention.
       BillOrder,
       ClaimVisit,
       ClaimIntervention,
+      ClaimDiagnosis,
     ]),
   ],
   controllers: [

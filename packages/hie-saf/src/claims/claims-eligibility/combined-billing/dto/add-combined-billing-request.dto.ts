@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AddCombinedBillingRequestDto {
   @ApiProperty()
@@ -46,8 +46,9 @@ export class AddCombinedBillingRequestDto {
   diagnoses!: string[];
 
   @ApiProperty()
+  @IsOptional()
   @IsNotEmpty()
-  attachments!: any[];
+  attachments?: any[];
 
   @ApiProperty()
   @IsNotEmpty()

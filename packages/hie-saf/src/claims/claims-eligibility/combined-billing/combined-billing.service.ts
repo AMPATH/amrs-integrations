@@ -80,8 +80,6 @@ export class CombinedBillingService {
         'attachments',
         String(addCombinedBillingRequestDto.attachments),
       );
-
-      console.log({ externalFormData });
     } catch (error: any) {
       throw new InternalServerErrorException(
         `Failed to forward form data: ${error.message}`,

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { ClaimsVisitReponse, ClaimVisitDto } from './types';
@@ -7,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
 import { Between, Repository } from 'typeorm';
 import { FacilityClaimVisitRequestDto } from './dto/facility-claim-visits-request.dto';
+import { ClaimVisitRequestDto } from './dto/get-claim-visit-request.dto';
 
 @Injectable()
 export class ClaimsVisitService {
@@ -79,6 +86,29 @@ export class ClaimsVisitService {
           new Date(`${facilityClaimVisitRequestDto.visitDate}T00:00:00`),
           new Date(`${facilityClaimVisitRequestDto.visitDate}T23:59:59`),
         ),
+      },
+    });
+  }
+  async find(claimVisitRequestDto: ClaimVisitRequestDto) {
+    const claimVisitFilter = {};
+    if (claimVisitRequestDto.consentToken) {
+      claimVisitFilter['authorizationCode'] = claimVisitRequestDto.consentToken;
+    }
+    if (claimVisitRequestDto.locationUuid) {
+      claimVisitFilter['locationUuid'] = claimVisitRequestDto.locationUuid;
+    }
+    if (claimVisitRequestDto.visitDate) {
+      claimVisitFilter['visitStart'] = Between(
+        new Date(`${claimVisitRequestDto.visitDate}T00:00:00`),
+        new Date(`${claimVisitRequestDto.visitDate}T23:59:59`),
+      );
+    }
+    if (Object.keys(claimVisitFilter).length === 0) {
+      return new BadRequestException('Missing Params');
+    }
+    return this.claimVisitRepository.find({
+      where: {
+        ...claimVisitFilter,
       },
     });
   }

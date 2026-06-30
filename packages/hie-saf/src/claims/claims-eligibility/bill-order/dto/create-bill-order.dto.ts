@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class CreateBillOrderDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -15,4 +15,52 @@ export class CreateBillOrderDto {
   @IsNotEmpty()
   @IsString()
   line_item_uuid!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  intervention_code?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  consent_token?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  service_type?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsBoolean()
+  requires_preauth?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsBoolean()
+  normal_preauth?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsBoolean()
+  elective_preauth?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsBoolean()
+  preauth_approved?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  required_documents?: string;
 }

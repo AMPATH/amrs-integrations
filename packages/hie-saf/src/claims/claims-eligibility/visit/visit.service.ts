@@ -5,7 +5,8 @@ import { ClaimsVisitReponse, ClaimVisitDto } from './types';
 import { CreateClaimVisitDto } from './dto/create-claim-visit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
+import { FacilityClaimVisitRequestDto } from './dto/facility-claim-visits-request.dto';
 
 @Injectable()
 export class ClaimsVisitService {
@@ -61,5 +62,24 @@ export class ClaimsVisitService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  async getFacilityClaimVisits(
+    facilityClaimVisitRequestDto: FacilityClaimVisitRequestDto,
+  ) {
+    if (!facilityClaimVisitRequestDto.locationUuid) {
+      throw new HttpException('Missing location uuid', HttpStatus.BAD_REQUEST);
+    }
+    if (!facilityClaimVisitRequestDto.visitDate) {
+      throw new HttpException('Missing visitData', HttpStatus.BAD_REQUEST);
+    }
+    return this.claimVisitRepository.find({
+      where: {
+        locationUuid: facilityClaimVisitRequestDto.locationUuid,
+        visitStart: Between(
+          new Date(`${facilityClaimVisitRequestDto.visitDate}T00:00:00`),
+          new Date(`${facilityClaimVisitRequestDto.visitDate}T23:59:59`),
+        ),
+      },
+    });
   }
 }

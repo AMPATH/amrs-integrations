@@ -1,8 +1,16 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ClaimsVisitService } from './visit.service';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { CreateClaimVisitDto } from './dto/create-claim-visit.dto';
-import { FacilityClaimVisitRequestDto } from './dto/facility-claim-visits-request.dto';
+import { ClaimVisitRequestDto } from './dto/get-claim-visit-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('claims-visit')
@@ -12,8 +20,11 @@ export class ClaimsVisitController {
   createClaimsVisit(@Body() body: CreateClaimVisitDto) {
     return this.claimsVisitService.createClaimsVisit(body);
   }
-  @Post('facility')
-  getFacilityClaimVisits(@Body() body: FacilityClaimVisitRequestDto) {
-    return this.claimsVisitService.getFacilityClaimVisits(body);
+  @Get()
+  getPatientClaimVisit(@Query() query: ClaimVisitRequestDto) {
+    if (Object.keys(query).length === 0) {
+      throw new BadRequestException('Missing params');
+    }
+    return this.claimsVisitService.find(query);
   }
 }

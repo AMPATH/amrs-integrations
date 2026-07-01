@@ -21,7 +21,8 @@ export class ClaimVisitRequestDto {
   visitDate?: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
-  patientId!: string;
+  patientId?: string;
 }

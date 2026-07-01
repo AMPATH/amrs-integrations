@@ -91,6 +91,9 @@ export class ClaimsVisitService {
   }
   async find(claimVisitRequestDto: ClaimVisitRequestDto) {
     const claimVisitFilter = {};
+    if (claimVisitRequestDto.patientId) {
+      claimVisitFilter['patientId'] = claimVisitRequestDto.patientId;
+    }
     if (claimVisitRequestDto.consentToken) {
       claimVisitFilter['authorizationCode'] = claimVisitRequestDto.consentToken;
     }

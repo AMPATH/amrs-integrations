@@ -12,15 +12,21 @@ export class ClaimLineController {
 
   @Post()
   public addClaimLine(@Body() body: AddClaimLineRequestDto) {
-    const addClaimLineDto: AddClaimLineDto = {
+    const addClaimLineDto: Partial<AddClaimLineDto> = {
       consent_token: body.consentToken,
       intervention_code: body.interventionCode,
-      service_name: body.serviceName,
-      service_identifier: body.serviceIdentifier,
       unit_price: body.unitPrice,
       quantity: body.quantity,
-      scheme_code: body.schemeCode,
     };
+    if (body?.serviceName) {
+      addClaimLineDto['service_name'] = body.serviceName;
+    }
+    if (body.serviceIdentifier) {
+      addClaimLineDto['service_identifier'] = body.serviceIdentifier;
+    }
+    if (body.schemeCode) {
+      addClaimLineDto['scheme_code'] = body.schemeCode;
+    }
     return this.claimLineService.addClaimLine(
       addClaimLineDto,
       body.locationUuid,

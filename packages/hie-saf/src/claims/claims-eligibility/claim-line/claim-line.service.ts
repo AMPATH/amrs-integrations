@@ -10,7 +10,7 @@ export class ClaimLineService {
     private readonly configService: ConfigService,
   ) {}
   async addClaimLine(
-    addClaimLineDto: AddClaimLineDto,
+    addClaimLineDto: Partial<AddClaimLineDto>,
     locationUuid: string,
   ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
@@ -21,6 +21,7 @@ export class ClaimLineService {
         addClaimLineDto,
         locationUuid,
       );
+      console.log({ addClaimLineDto });
       const data = await response.json();
       return data ?? null;
     } catch (error) {

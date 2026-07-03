@@ -1,33 +1,32 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
-import { SubmitClaimDto } from './types';
-import { ClaimsVisitReponse } from '../visit/types';
+import { CloseClaimDto } from './types/index';
 
 @Injectable()
-export class ClaimSubmissionService {
+export class ClaimClosureService {
   constructor(
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
   ) {}
-  async submitClaim(
-    submitClaimDto: SubmitClaimDto,
+  async closeClaim(
+    closeClaimDto: CloseClaimDto,
     locationUuid: string,
-  ): Promise<ClaimsVisitReponse> {
+  ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const submitClaimUrl = `${baseUrl}/api/v1/claims/submit`;
+    const closeClaimUrl = `${baseUrl}/api/v1/claims/close`;
     try {
       const response = await this.hieHttpRequests.sendPostRequest(
-        submitClaimUrl,
-        submitClaimDto,
+        closeClaimUrl,
+        closeClaimDto,
         locationUuid,
       );
-      const data = (await response.json()) as ClaimsVisitReponse;
+      const data = await response.json();
       return data ?? null;
     } catch (error) {
       Logger.error(error);
       throw new HttpException(
-        'Error Submitting claim',
+        'Error closing claim',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

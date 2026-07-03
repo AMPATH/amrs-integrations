@@ -35,6 +35,8 @@ import { ClaimSubmissionService } from './claims-eligibility/claim-submission/cl
 import { ClaimVisit } from '../core/database/entities/claim-visit.entity';
 import { ClaimIntervention } from '../core/database/entities/claim-intervention.entity';
 import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity';
+import { ClaimClosureService } from './claims-eligibility/claim-closure/claim-closure.service';
+import { ClaimClosureController } from './claims-eligibility/claim-closure/claim-closure.controller';
 
 @Module({
   imports: [
@@ -62,6 +64,7 @@ import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity
     ClaimResubmissionController,
     CombinedBillingController,
     ClaimSubmissionController,
+    ClaimClosureController,
   ],
   providers: [
     SubBenefitsService,
@@ -79,6 +82,7 @@ import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity
     ClaimResubmissionService,
     CombinedBillingService,
     ClaimSubmissionService,
+    ClaimClosureService,
   ],
 })
 export class ClaimsModule {}

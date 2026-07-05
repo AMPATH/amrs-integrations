@@ -12,3 +12,8 @@ export type RemoveClaimLineDto = {
   consent_token: string;
   line_guid: string;
 };
+
+export enum ClaimLineActions {
+  Add = 'ADD',
+  Remove = 'REMOVE',
+}

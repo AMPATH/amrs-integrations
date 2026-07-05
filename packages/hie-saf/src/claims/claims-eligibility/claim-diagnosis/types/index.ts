@@ -12,5 +12,5 @@ export type RemoveClaimDiagnosisDto = {
 
 export enum DiagnosisActions {
   Add = 'ADD',
-  Remove = 'Remove',
+  Remove = 'REMOVE',
 }

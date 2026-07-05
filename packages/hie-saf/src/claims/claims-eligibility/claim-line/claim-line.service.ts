@@ -1,11 +1,16 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
-import { AddClaimLineDto, RemoveClaimLineDto } from './types';
+import { AddClaimLineDto, ClaimLineActions, RemoveClaimLineDto } from './types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ClaimLine } from '../../../core/database/entities/claime-line.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ClaimLineService {
   constructor(
+    @InjectRepository(ClaimLine)
+    private claimLineRepository: Repository<ClaimLine>,
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
   ) {}
@@ -21,8 +26,25 @@ export class ClaimLineService {
         addClaimLineDto,
         locationUuid,
       );
-      console.log({ addClaimLineDto });
       const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const addClaimLineEntity = this.claimLineRepository.create({
+            locationUuid: locationUuid,
+            claimLineAction: ClaimLineActions.Add,
+            consentToken: addClaimLineDto.consent_token,
+            interventionCode: addClaimLineDto.intervention_code,
+            claimLineResponse: data,
+          });
+          await this.claimLineRepository.save(addClaimLineEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);
@@ -45,6 +67,20 @@ export class ClaimLineService {
         locationUuid,
       );
       const data = await response.json();
+      if (data) {
+        try {
+          const addClaimLineEntity = this.claimLineRepository.create({
+            locationUuid: locationUuid,
+            claimLineAction: ClaimLineActions.Remove,
+            consentToken: removeClaimLineDto.consent_token,
+            lineGuid: removeClaimLineDto.line_guid,
+            claimLineResponse: data,
+          });
+          await this.claimLineRepository.save(addClaimLineEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);

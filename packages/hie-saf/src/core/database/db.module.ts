@@ -7,6 +7,7 @@ import { HwrSync } from './entities/hwr_sync.entity';
 import { ClaimVisit } from './entities/claim-visit.entity';
 import { ClaimIntervention } from './entities/claim-intervention.entity';
 import { ClaimDiagnosis } from './entities/claim-diagnosis.entity';
+import { ClaimLine } from './entities/claime-line.entity';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ClaimDiagnosis } from './entities/claim-diagnosis.entity';
           ClaimVisit,
           ClaimIntervention,
           ClaimDiagnosis,
+          ClaimLine,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,

@@ -37,6 +37,7 @@ import { ClaimIntervention } from '../core/database/entities/claim-intervention.
 import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity';
 import { ClaimClosureService } from './claims-eligibility/claim-closure/claim-closure.service';
 import { ClaimClosureController } from './claims-eligibility/claim-closure/claim-closure.controller';
+import { ClaimLine } from '../core/database/entities/claime-line.entity';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ClaimClosureController } from './claims-eligibility/claim-closure/claim
       ClaimVisit,
       ClaimIntervention,
       ClaimDiagnosis,
+      ClaimLine,
     ]),
   ],
   controllers: [

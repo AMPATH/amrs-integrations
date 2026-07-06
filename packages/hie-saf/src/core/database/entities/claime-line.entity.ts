@@ -92,7 +92,7 @@ export class ClaimLine {
   })
   claimLineAction!: string;
 
-  @Column({ type: 'longtext', name: 'claim_line_response', nullable: false })
+  @Column({ type: 'json', name: 'claim_line_response', nullable: false })
   claimLineResponse!: string;
 
   @Column({

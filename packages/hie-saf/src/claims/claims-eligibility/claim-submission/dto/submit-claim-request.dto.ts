@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SubmitClaimRequestDto {
   @ApiProperty()
@@ -11,6 +11,28 @@ export class SubmitClaimRequestDto {
   @IsNotEmpty()
   @IsString()
   invoiceNumber!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  otp!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  dischargeAuthGuid?: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  dischargeReason!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  notes!: string;
 
   @ApiProperty()
   @IsNotEmpty()

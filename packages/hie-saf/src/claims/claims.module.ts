@@ -38,6 +38,7 @@ import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity
 import { ClaimClosureService } from './claims-eligibility/claim-closure/claim-closure.service';
 import { ClaimClosureController } from './claims-eligibility/claim-closure/claim-closure.controller';
 import { ClaimLine } from '../core/database/entities/claime-line.entity';
+import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.service';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { ClaimLine } from '../core/database/entities/claime-line.entity';
     CombinedBillingService,
     ClaimSubmissionService,
     ClaimClosureService,
+    OtpDischargeService,
   ],
 })
 export class ClaimsModule {}

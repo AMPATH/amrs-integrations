@@ -4,6 +4,7 @@ import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { InterventionsDto } from './dto/interventions.dto';
 import {
   AddInterventionDto,
+  CheckInterventionExistsDto,
   Intervention,
   InterventionActions,
   InterventionsApiResponse,
@@ -23,7 +24,7 @@ export class InterventionsService {
     private readonly configService: ConfigService,
     @InjectRepository(ClaimIntervention)
     private claimInterventionRepository: Repository<ClaimIntervention>,
-  ) {}
+  ) { }
   async fetchInterventions(fetchInterventionsDto: InterventionsDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const interventionsUrl = `${baseUrl}/api/v1/patients/benefits/interventions?patient_id=${fetchInterventionsDto.patient_id}&sub_benefit_code=${fetchInterventionsDto.sub_benefit_code}`;
@@ -225,6 +226,21 @@ export class InterventionsService {
       Logger.error(error);
       throw new HttpException(
         'Error restoring intervention',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async checkInterventionExists(checkInterventionExistsDto: CheckInterventionExistsDto) {
+    try {
+      const exists = await this.claimInterventionRepository.existsBy({
+        consentToken: checkInterventionExistsDto.consentToken,
+        interventionCode: checkInterventionExistsDto.interventionCode
+      });
+      return exists;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error checking if intervention exists',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

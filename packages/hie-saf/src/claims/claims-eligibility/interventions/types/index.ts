@@ -63,3 +63,8 @@ export enum InterventionActions {
   Restore = 'RESTORE',
   Retire = 'RETIRE',
 }
+
+export type CheckInterventionExistsDto = {
+  consentToken: string;
+  interventionCode: string;
+};

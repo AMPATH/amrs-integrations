@@ -12,6 +12,7 @@ import {
 import { SwitchInterventionsRequestDto } from './dto/switch-interventions-request.dto';
 import { RestoreInterventionsRequestDto } from './dto/restore-intervention-request.dto';
 import { RetireInterventionsRequestDto } from './dto/retire-intervention.dto';
+import { CheckInterventionExistsRequestDto } from './dto/check-intervention-exists.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('interventions')
@@ -70,5 +71,9 @@ export class InterventionsController {
       retireInterventionDto,
       body.locationUuid,
     );
+  }
+  @Get('check-intervention-exists')
+  checkInterventionExists(@Query() query: CheckInterventionExistsRequestDto) {
+    return this.interventionsService.checkInterventionExists(query);
   }
 }

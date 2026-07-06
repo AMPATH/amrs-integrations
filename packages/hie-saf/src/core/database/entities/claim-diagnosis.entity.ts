@@ -41,6 +41,30 @@ export class ClaimDiagnosis {
 
   @Column({
     type: 'varchar',
+    length: 50,
+    name: 'practitioner_identification_number',
+    nullable: true,
+  })
+  practitionerIdentificationNumber!: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    name: 'practitioner_identification_type',
+    nullable: true,
+  })
+  practitionerIdentificationType!: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    name: 'practitioner_regulation_body',
+    nullable: true,
+  })
+  practitionerRegulationBody!: string;
+
+  @Column({
+    type: 'varchar',
     length: 100,
     name: 'consent_token',
     nullable: false,

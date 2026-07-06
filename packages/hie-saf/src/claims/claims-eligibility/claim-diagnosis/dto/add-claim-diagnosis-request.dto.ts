@@ -15,6 +15,21 @@ export class AddClaimDiagnosisRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  practitionerIdentificationNumber!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  practitionerIdentificationType!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  practitionerRegulationBody!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
   icdCode!: string;
 
   @ApiProperty()

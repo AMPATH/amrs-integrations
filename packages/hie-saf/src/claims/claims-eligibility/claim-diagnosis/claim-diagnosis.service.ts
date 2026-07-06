@@ -44,6 +44,12 @@ export class ClaimDiagnosisService {
             icdCode: addClaimDiagnosisDto.icd_code,
             interventionCode: addClaimDiagnosisDto.intervention_code,
             diagnosisResponse: data,
+            practitionerIdentificationNumber:
+              addClaimDiagnosisDto.practitioner_identification_number,
+            practitionerIdentificationType:
+              addClaimDiagnosisDto.practitioner_identification_type,
+            practitionerRegulationBody:
+              addClaimDiagnosisDto.practitioner_regulation_body,
           });
           await this.claimDiagnosisRepository.save(addDiagnosisEntity);
         } catch (error) {
@@ -59,7 +65,7 @@ export class ClaimDiagnosisService {
       );
     }
   }
-  async removeClaimLine(
+  async removeClaimDiagnosis(
     removeClaimDiagnosisDto: RemoveClaimDiagnosisDto,
     locationUuid: string,
   ): Promise<any> {

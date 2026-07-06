@@ -16,7 +16,7 @@ export class SubmitClaimRequestDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  otp!: string;
+  otp?: string;
 
   @ApiProperty()
   @IsOptional()

@@ -18,14 +18,17 @@ import { PreviewPayerClaimRequestDto } from './dto/payer-claim-preview-request.d
 export class ClaimPreviewController {
   constructor(private readonly claimPreviewService: ClaimPreviewService) {}
 
-  @Post('provider')
-  public previewProviderClaim(@Body() body: PreviewProviderClaimRequestDto) {
+  @Get('provider')
+  public previewProviderClaim(@Query() query: PreviewProviderClaimRequestDto) {
+    if (!query?.consentToken && !query?.locationUuid) {
+      throw new BadRequestException('Missing token or locationUuid');
+    }
     const previewProviderClaimDto: PreviewProviderClaimDto = {
-      consent_token: body.consentToken,
+      consent_token: query.consentToken,
     };
     return this.claimPreviewService.previewProviderClaim(
       previewProviderClaimDto,
-      body.locationUuid,
+      query.locationUuid,
     );
   }
   @Get('payer')

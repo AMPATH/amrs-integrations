@@ -11,14 +11,17 @@ export class ClaimDiagnosisController {
   constructor(private readonly claimDiagnosisService: ClaimDiagnosisService) {}
 
   @Post()
-  public addClaimLine(@Body() body: AddClaimDiagnosisRequestDto) {
-    const addClaimLineDto: AddClaimDiagnosisDto = {
+  public addClaimDiagnosis(@Body() body: AddClaimDiagnosisRequestDto) {
+    const addClaimDiagnosisDto: AddClaimDiagnosisDto = {
       consent_token: body.consentToken,
       intervention_code: body.interventionCode,
       icd_code: body.icdCode,
+      practitioner_identification_number: body.practitionerIdentificationNumber,
+      practitioner_identification_type: body.practitionerIdentificationType,
+      practitioner_regulation_body: body.practitionerRegulationBody,
     };
     return this.claimDiagnosisService.addClaimDiagnosis(
-      addClaimLineDto,
+      addClaimDiagnosisDto,
       body.locationUuid,
     );
   }
@@ -29,7 +32,7 @@ export class ClaimDiagnosisController {
       icd_code: body.icdCode,
       intervention_code: body.interventionCode,
     };
-    return this.claimDiagnosisService.addClaimDiagnosis(
+    return this.claimDiagnosisService.removeClaimDiagnosis(
       removeClaimLineDto,
       body.locationUuid,
     );

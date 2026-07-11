@@ -39,6 +39,8 @@ import { ClaimClosureService } from './claims-eligibility/claim-closure/claim-cl
 import { ClaimClosureController } from './claims-eligibility/claim-closure/claim-closure.controller';
 import { ClaimLine } from '../core/database/entities/claime-line.entity';
 import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.service';
+import { ClaimDischargeController } from './claims-eligibility/claim-discharge/claim-discharge.controller';
+import { ClaimDischargeService } from './claims-eligibility/claim-discharge/claim-discharge.service';
 
 @Module({
   imports: [
@@ -68,6 +70,7 @@ import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.ser
     CombinedBillingController,
     ClaimSubmissionController,
     ClaimClosureController,
+    ClaimDischargeController,
   ],
   providers: [
     SubBenefitsService,
@@ -87,6 +90,7 @@ import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.ser
     ClaimSubmissionService,
     ClaimClosureService,
     OtpDischargeService,
+    ClaimDischargeService,
   ],
 })
 export class ClaimsModule {}

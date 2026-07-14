@@ -8,6 +8,7 @@ import { ClaimVisit } from './entities/claim-visit.entity';
 import { ClaimIntervention } from './entities/claim-intervention.entity';
 import { ClaimDiagnosis } from './entities/claim-diagnosis.entity';
 import { ClaimLine } from './entities/claime-line.entity';
+import { ClaimAttachment } from './entities/claim-attachment.entity';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ClaimLine } from './entities/claime-line.entity';
           ClaimIntervention,
           ClaimDiagnosis,
           ClaimLine,
+          ClaimAttachment,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,

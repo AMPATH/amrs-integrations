@@ -21,7 +21,7 @@ export class ClaimAttachmentController {
     private readonly claimAttachmentService: ClaimAttachmentService,
   ) {}
   @Post()
-  @UseInterceptors(FileInterceptor('file_blob'))
+  @UseInterceptors(FileInterceptor('fileBlob'))
   public createOtpWhitelistRequest(
     @UploadedFile() file: any,
     @Body() body: AddClaimAttachmentRequestDto,

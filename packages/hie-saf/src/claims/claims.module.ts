@@ -41,6 +41,7 @@ import { ClaimLine } from '../core/database/entities/claime-line.entity';
 import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.service';
 import { ClaimDischargeController } from './claims-eligibility/claim-discharge/claim-discharge.controller';
 import { ClaimDischargeService } from './claims-eligibility/claim-discharge/claim-discharge.service';
+import { ClaimAttachment } from '../core/database/entities/claim-attachment.entity';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ClaimDischargeService } from './claims-eligibility/claim-discharge/clai
       ClaimIntervention,
       ClaimDiagnosis,
       ClaimLine,
+      ClaimAttachment,
     ]),
   ],
   controllers: [

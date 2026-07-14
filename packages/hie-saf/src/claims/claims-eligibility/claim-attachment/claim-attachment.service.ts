@@ -8,11 +8,20 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { AddClaimAttachmentRequestDto } from './dto/add-claim-attachment-request.dto';
-import { RemoveClaimAttachmentDto } from './types';
+import {
+  type AddClaimAttachmentReponse,
+  ClaimAttachmentActions,
+  type RemoveClaimAttachmentDto,
+} from './types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ClaimAttachment } from '../../../core/database/entities/claim-attachment.entity';
 
 @Injectable()
 export class ClaimAttachmentService {
   constructor(
+    @InjectRepository(ClaimAttachment)
+    private claimAttachmentRepository: Repository<ClaimAttachment>,
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
   ) {}
@@ -32,7 +41,6 @@ export class ClaimAttachmentService {
           return false;
         }
         const originalname = (file?.originalname as unknown as string) ?? '';
-        console.log({ originalname });
         const fileBlob = new Blob([file.buffer], { type: file.mimetype });
         externalFormData.append('file_blob', fileBlob, originalname);
       }
@@ -63,7 +71,27 @@ export class ClaimAttachmentService {
         externalFormData,
         locationUuid,
       );
-      const data = await response.json();
+      const data = (await response.json()) as AddClaimAttachmentReponse;
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      if (data) {
+        try {
+          const addClaimAttachmentEntity =
+            this.claimAttachmentRepository.create({
+              locationUuid: locationUuid,
+              claimAttachmentAction: ClaimAttachmentActions.Add,
+              documentType: addClaimAttachmentRequestDto.documentType,
+              consentToken: addClaimAttachmentRequestDto.consentToken,
+              interventionCode: addClaimAttachmentRequestDto.interventionCode,
+              claimAttachmentResponse: data,
+            });
+          await this.claimAttachmentRepository.save(addClaimAttachmentEntity);
+        } catch (error) {
+          Logger.error(error);
+        }
+      }
       return data ?? [];
     } catch (error) {
       console.error(error);
@@ -86,11 +114,28 @@ export class ClaimAttachmentService {
         locationUuid,
       );
       const data = await response.json();
-      return data ?? null;
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      try {
+        const removeAttachmentEntity = this.claimAttachmentRepository.create({
+          locationUuid: locationUuid,
+          claimAttachmentAction: ClaimAttachmentActions.Remove,
+          consentToken: removeClaimAttachmentDto.consent_token,
+          interventionCode: removeClaimAttachmentDto.intervention_code,
+          attachmentId: removeClaimAttachmentDto.attachment_id,
+          claimAttachmentResponse: data,
+        });
+        await this.claimAttachmentRepository.save(removeAttachmentEntity);
+      } catch (error) {
+        Logger.error(error);
+      }
+      return data ?? [];
     } catch (error) {
-      Logger.error(error);
+      console.error(error);
       throw new HttpException(
-        'Error Removing claim attachment',
+        'Error remoing attachment',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

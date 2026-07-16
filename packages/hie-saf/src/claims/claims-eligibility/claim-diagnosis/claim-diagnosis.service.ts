@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import {
   AddClaimDiagnosisDto,
+  AddDiagnosisReponse,
   DiagnosisActions,
   RemoveClaimDiagnosisDto,
 } from './types';
@@ -30,7 +31,7 @@ export class ClaimDiagnosisService {
         addClaimDiagnosisDto,
         locationUuid,
       );
-      const data = await response.json();
+      const data = (await response.json()) as AddDiagnosisReponse;
       if ('error' in data) {
         Logger.error(data);
         return data;

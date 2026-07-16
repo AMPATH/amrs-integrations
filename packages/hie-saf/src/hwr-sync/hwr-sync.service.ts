@@ -19,6 +19,7 @@ export class HwrSyncService {
   private baseOpenMrsUrl = '';
   private licenseExpiryDateUuid = 'b6046157-40a0-4b7a-91b0-00d83b51a811';
   private basicAuth = '';
+  private licensingBodyUuid = '8d73f8d7-dded-44a0-9f72-e23523c96503';
   constructor(
     @InjectRepository(HwrSync) private hwrSyncRepository: Repository<HwrSync>,
     private readonly healthWorkerRegistryService: HealthWorkerRegistryService,
@@ -86,6 +87,9 @@ export class HwrSyncService {
     const speciality = hw.membership.specialty
       ? hw.membership.specialty
       : hw.professional_details.specialty;
+    const licensingBody = hw.membership?.licensing_body
+      ? hw.membership?.licensing_body
+      : '';
 
     let licenseExpiryDate: string = '';
 
@@ -133,13 +137,24 @@ export class HwrSyncService {
     }
 
     // update speciality
-    await this.handleAttributeCreateAndUpdate(
+    const specialityResp = await this.handleAttributeCreateAndUpdate(
       providerAttributes,
       this.specialityUuid,
       speciality,
       hwr.provider_uuid,
     );
-    console.log('Added Speciality', { statusResp });
+    console.log('Added Speciality', { specialityResp });
+
+    if (licensingBody) {
+      // update licensing body
+      const licensingBodyResp = await this.handleAttributeCreateAndUpdate(
+        providerAttributes,
+        this.licensingBodyUuid,
+        licensingBody,
+        hwr.provider_uuid,
+      );
+      console.log('Added Licensing body', { licensingBodyResp });
+    }
 
     console.log('Done...........############################');
   }

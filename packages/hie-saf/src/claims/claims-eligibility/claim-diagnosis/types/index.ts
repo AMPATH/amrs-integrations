@@ -7,6 +7,17 @@ export type AddClaimDiagnosisDto = {
   practitioner_regulation_body: string;
 };
 
+export type AddDiagnosisReponse = {
+  claim: string;
+  diagnosis: string;
+  recorded_on: string;
+  patient_number: string;
+  diagnosis_name: string;
+  diagnosis_code: string;
+  is_flagged_diagnosis: boolean;
+  intervention_code: string;
+};
+
 export type RemoveClaimDiagnosisDto = {
   consent_token: string;
   icd_code: string;

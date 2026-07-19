@@ -42,6 +42,8 @@ import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.ser
 import { ClaimDischargeController } from './claims-eligibility/claim-discharge/claim-discharge.controller';
 import { ClaimDischargeService } from './claims-eligibility/claim-discharge/claim-discharge.service';
 import { ClaimAttachment } from '../core/database/entities/claim-attachment.entity';
+import { ClaimAuthorizationService } from './claims-eligibility/claim-authorization/claim-authorization.service';
+import { ClaimAuthorizationController } from './claims-eligibility/claim-authorization/claim-authorization.controller';
 
 @Module({
   imports: [
@@ -73,6 +75,7 @@ import { ClaimAttachment } from '../core/database/entities/claim-attachment.enti
     ClaimSubmissionController,
     ClaimClosureController,
     ClaimDischargeController,
+    ClaimAuthorizationController,
   ],
   providers: [
     SubBenefitsService,
@@ -93,6 +96,7 @@ import { ClaimAttachment } from '../core/database/entities/claim-attachment.enti
     ClaimClosureService,
     OtpDischargeService,
     ClaimDischargeService,
+    ClaimAuthorizationService,
   ],
 })
 export class ClaimsModule {}

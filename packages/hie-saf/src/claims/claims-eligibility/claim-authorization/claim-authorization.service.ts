@@ -5,6 +5,7 @@ import {
   CancelPendingAuthorizationDto,
   ClaimAuthorizationsResponse,
 } from './types';
+import { ClaimAuthorizationsRequestDto } from './dto/claim-authorizations-request.dto';
 
 @Injectable()
 export class ClaimAuthorizationService {
@@ -13,17 +14,26 @@ export class ClaimAuthorizationService {
     private readonly configService: ConfigService,
   ) {}
   async getAuthorizations(
-    beneficiaryCode: string,
+    claimAuthorizationsRequestDto: ClaimAuthorizationsRequestDto,
     locationUuid: string,
   ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const authorizationsUrl = `${baseUrl}/api/v1/claims/authorizations?beneficiary_code=${beneficiaryCode}`;
+    let authorizationsUrl = '';
+    if (claimAuthorizationsRequestDto.beneficiaryCode) {
+      authorizationsUrl = `${baseUrl}/api/v1/claims/authorizations?beneficiary_code=${claimAuthorizationsRequestDto.beneficiaryCode}`;
+    }
+    if (claimAuthorizationsRequestDto.consentToken) {
+      authorizationsUrl = `${baseUrl}/api/v1/claims/authorizations?token=${claimAuthorizationsRequestDto.consentToken}`;
+    }
+
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         authorizationsUrl,
         locationUuid,
       );
-      const data = (await response.json()) as ClaimAuthorizationsResponse[];
+      const data = (await response.json()) as
+        | ClaimAuthorizationsResponse[]
+        | ClaimAuthorizationsResponse;
       return data ?? null;
     } catch (error) {
       Logger.error(error);

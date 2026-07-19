@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { ClaimAuthorizationService } from './claim-authorization.service';
 import { ClaimAuthorizationsRequestDto } from './dto/claim-authorizations-request.dto';
@@ -14,8 +22,13 @@ export class ClaimAuthorizationController {
 
   @Get()
   public getAuthorizations(@Query() query: ClaimAuthorizationsRequestDto) {
+    if (!query.beneficiaryCode && !query.consentToken) {
+      throw new BadRequestException(
+        'Missing beneficiary code or consent tokan',
+      );
+    }
     return this.claimAuthorizationService.getAuthorizations(
-      query.beneficiaryCode,
+      query,
       query.locationUuid,
     );
   }

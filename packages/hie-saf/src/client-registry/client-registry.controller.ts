@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -26,6 +28,8 @@ import { OtpWhitelistService } from '../consent/otp-whitelist/otp-whitelist.serv
 import { CreateBiometricsAuthorizationDto } from '../consent/biometrics/dto/create-biometrics-authorization.dto';
 import { BiometricsAuthorizationDto } from '../consent/biometrics/types';
 import { BiometricsService } from '../consent/biometrics/biometrics.service';
+import { ClientsOtpWhiteListRequestDto } from './dto/clients-otp-whitelist-request.dto';
+import { ClientsOtpWhitelistDto } from 'src/consent/otp-whitelist/types';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('client')
@@ -130,6 +134,30 @@ export class ClientRegistryController {
     return this.biometricsService.authorizeBiometrics(
       biometricsAuthorizationDto,
       body.locationUuid,
+    );
+  }
+  @Get('otp-whitelists')
+  async getClientsOtpWhitelist(@Query() query: ClientsOtpWhiteListRequestDto) {
+    const facility =
+      await this.locationFacilityHelper.getFacilityUsingLocationUuid(
+        query.locationUuid,
+      );
+    if (!facility) {
+      throw new HttpException('Missing facility', HttpStatus.BAD_REQUEST);
+    }
+    if (!facility.frCode) {
+      throw new HttpException('Missing facility code', HttpStatus.BAD_REQUEST);
+    }
+    const clientsOtpWhitelistDto: ClientsOtpWhitelistDto = {
+      beneficiary_cr_id: query.beneficiaryCrId,
+      facility_fr_code: facility.frCode,
+    };
+    if (query.guid) {
+      clientsOtpWhitelistDto['guid'] = query.guid;
+    }
+    return this.otpWhitelistService.fetchClientsOtpWhitelist(
+      clientsOtpWhitelistDto,
+      query.locationUuid,
     );
   }
 }

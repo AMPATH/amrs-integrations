@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
-import { SubmitClaimDto } from './types';
+import { SubmitClaimDto, SubmitInpatientClaimDto } from './types';
 import { ClaimsVisitReponse } from '../visit/types';
 
 @Injectable()
@@ -28,6 +28,29 @@ export class ClaimSubmissionService {
       Logger.error(error);
       throw new HttpException(
         'Error Submitting claim',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async submitInpatientClaim(
+    submitClaimDto: SubmitInpatientClaimDto,
+    locationUuid: string,
+  ): Promise<ClaimsVisitReponse> {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const submitClaimUrl = `${baseUrl}/api/v1/claims/discharge`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        submitClaimUrl,
+        submitClaimDto,
+        locationUuid,
+      );
+      const data = (await response.json()) as ClaimsVisitReponse;
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error Submitting Inpatient claim',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -18,3 +18,9 @@ export type WhiteListAttachment = {
   description: string;
   contentType: string;
 };
+
+export type ClientsOtpWhitelistDto = {
+  beneficiary_cr_id: string;
+  guid?: string;
+  facility_fr_code: string;
+};

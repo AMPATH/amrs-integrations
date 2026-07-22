@@ -16,6 +16,7 @@ import { VisitIntervention } from '../visit/types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimIntervention } from '../../../core/database/entities/claim-intervention.entity';
 import { Repository } from 'typeorm';
+import { BillOrder } from 'src/core/database/entities/bill-order.entity';
 
 @Injectable()
 export class InterventionsService {
@@ -24,6 +25,8 @@ export class InterventionsService {
     private readonly configService: ConfigService,
     @InjectRepository(ClaimIntervention)
     private claimInterventionRepository: Repository<ClaimIntervention>,
+    @InjectRepository(BillOrder)
+    private billOrderRepository: Repository<BillOrder>,
   ) { }
   async fetchInterventions(fetchInterventionsDto: InterventionsDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
@@ -232,9 +235,9 @@ export class InterventionsService {
   }
   async checkInterventionExists(checkInterventionExistsDto: CheckInterventionExistsDto) {
     try {
-      const exists = await this.claimInterventionRepository.existsBy({
-        consentToken: checkInterventionExistsDto.consentToken,
-        interventionCode: checkInterventionExistsDto.interventionCode
+      const exists = await this.billOrderRepository.existsBy({
+        consent_token: checkInterventionExistsDto.consentToken,
+        intervention_code: checkInterventionExistsDto.interventionCode
       });
       return exists;
     } catch (error) {

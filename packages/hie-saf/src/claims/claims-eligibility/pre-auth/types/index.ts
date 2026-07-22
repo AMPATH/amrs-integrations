@@ -39,3 +39,7 @@ export type PreAuthAttachment = {
   document_type: string;
   file_field_name: string;
 };
+
+export type PreAuthPreviewDto = {
+  consent_token: string;
+};

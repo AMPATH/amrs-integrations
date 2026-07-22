@@ -8,6 +8,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { CreateNormalPreAuthRequestDto } from './dto/create-normal-pre-auth.request.dto';
+import { PreAuthPreviewRequestDto } from './dto/pre-auth-preview-request.dto';
+import { PreAuthPreviewDto } from './types';
 
 @Injectable()
 export class PreAuthService {
@@ -102,6 +104,28 @@ export class PreAuthService {
       console.error(error);
       throw new HttpException(
         'Error adding file attachment',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async getPreAuthPreview(
+    preAuthPreviewDto: PreAuthPreviewDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const preAuthPreviewUrl = `${baseUrl}/api/preauths?consent_token=${preAuthPreviewDto.consent_token}`;
+
+    try {
+      const response = await this.hieHttpRequests.sendGetRequest(
+        preAuthPreviewUrl,
+        locationUuid,
+      );
+      const data = await response.json();
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error getting pre auth preview',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

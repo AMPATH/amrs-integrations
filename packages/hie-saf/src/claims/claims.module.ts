@@ -44,6 +44,8 @@ import { ClaimDischargeService } from './claims-eligibility/claim-discharge/clai
 import { ClaimAttachment } from '../core/database/entities/claim-attachment.entity';
 import { ClaimAuthorizationService } from './claims-eligibility/claim-authorization/claim-authorization.service';
 import { ClaimAuthorizationController } from './claims-eligibility/claim-authorization/claim-authorization.controller';
+import { PreAuthService } from './claims-eligibility/pre-auth/pre-auth.service';
+import { PreAuthController } from './claims-eligibility/pre-auth/pre-auth.controller';
 
 @Module({
   imports: [
@@ -76,6 +78,7 @@ import { ClaimAuthorizationController } from './claims-eligibility/claim-authori
     ClaimClosureController,
     ClaimDischargeController,
     ClaimAuthorizationController,
+    PreAuthController,
   ],
   providers: [
     SubBenefitsService,
@@ -97,6 +100,7 @@ import { ClaimAuthorizationController } from './claims-eligibility/claim-authori
     OtpDischargeService,
     ClaimDischargeService,
     ClaimAuthorizationService,
+    PreAuthService,
   ],
 })
 export class ClaimsModule {}

@@ -22,17 +22,23 @@ export class ClaimsVisitService {
     private readonly configService: ConfigService,
     @InjectRepository(ClaimVisit)
     private claimVisitRepository: Repository<ClaimVisit>,
-  ) {}
+  ) { }
   async createClaimsVisit(createClaimVisitDto: CreateClaimVisitDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const clientSearchUrl = `${baseUrl}/api/v1/claims/visit`;
     try {
-      const claimsVisitPayload: ClaimVisitDto = {
+      let claimsVisitPayload: ClaimVisitDto = {
         intervention_codes: createClaimVisitDto.intervention_codes,
         otp: createClaimVisitDto.otp,
         patient_id: createClaimVisitDto.patient_id,
         service_type: createClaimVisitDto.service_type,
       };
+      if (createClaimVisitDto.otp) {
+        claimsVisitPayload['otp'] = createClaimVisitDto.otp;
+      }
+      if (createClaimVisitDto.auth_guid) {
+        claimsVisitPayload['auth_guid'] = createClaimVisitDto.auth_guid;
+      }
       const response = await this.hieHttpRequests.sendPostRequest(
         clientSearchUrl,
         claimsVisitPayload,

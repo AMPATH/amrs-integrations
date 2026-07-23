@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ServiceType } from '../types';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -14,9 +14,16 @@ export class CreateClaimVisitDto {
   locationUuid!: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   otp!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  auth_guid!: string;
 
   @ApiProperty()
   @IsNotEmpty()

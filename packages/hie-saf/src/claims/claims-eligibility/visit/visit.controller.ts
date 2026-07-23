@@ -18,6 +18,9 @@ export class ClaimsVisitController {
   constructor(private readonly claimsVisitService: ClaimsVisitService) {}
   @Post()
   createClaimsVisit(@Body() body: CreateClaimVisitDto) {
+    if (!body.otp && !body.auth_guid) {
+      throw new BadRequestException('Missing OTP and Auth Guid');
+    }
     return this.claimsVisitService.createClaimsVisit(body);
   }
   @Get()

@@ -43,3 +43,13 @@ export type PreAuthAttachment = {
 export type PreAuthPreviewDto = {
   consent_token: string;
 };
+
+/** Multer uploaded file shape (avoid Express.Multer namespace typing issues). */
+export type UploadedPreauthFile = {
+  fieldname: string;
+  originalname: string;
+  encoding?: string;
+  mimetype: string;
+  size?: number;
+  buffer: Buffer;
+};

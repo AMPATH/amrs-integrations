@@ -103,4 +103,19 @@ export class BillOrderService {
       );
     }
   }
+
+  async updateBillOrderConsentToken(id: string, consent_token: string) {
+    const result = await this.billOrderRepository.update(
+      { id },
+      { consent_token },
+    );
+
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        'Bill order with the given id does not exist',
+      );
+    }
+
+    return { message: 'Consent token updated successfully', id, consent_token };
+  }
 }

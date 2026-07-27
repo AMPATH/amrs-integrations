@@ -8,6 +8,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = 3000;
+  // TODO(temp): allow local O3 SPA to call this instance cross-origin — remove before deploy
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
   app.use(logger);

@@ -15,11 +15,17 @@ export class BillOrder {
   @Column({ type: 'varchar', length: 100 })
   bill_uuid!: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  patient_uuid!: string;
+
   @Column({ type: 'varchar', length: 100, unique: true })
   order_no!: string;
 
   @Column({ type: 'varchar', length: 100, unique: true })
   line_item_uuid!: string;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  sub_benefit_code!: string;
 
   @Column({ type: 'varchar', length: 30, nullable: true })
   intervention_code!: string;

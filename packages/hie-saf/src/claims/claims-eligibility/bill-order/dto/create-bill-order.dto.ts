@@ -7,6 +7,12 @@ export class CreateBillOrderDto {
   bill_uuid!: string;
 
   @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  patient_uuid!: string;
+
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   order_no!: string;
@@ -15,6 +21,12 @@ export class CreateBillOrderDto {
   @IsNotEmpty()
   @IsString()
   line_item_uuid!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  sub_benefit_code?: string;
 
   @ApiProperty()
   @IsOptional()

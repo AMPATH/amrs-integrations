@@ -75,4 +75,32 @@ export class BillOrderService {
       );
     }
   }
+
+  async findBillOrderByPatientUuidWithBlankConsentToken(
+    patient_uuid: string,
+  ) {
+    const billOrder = await this.billOrderRepository
+      .createQueryBuilder('bill_order')
+      .where('bill_order.patient_uuid = :patient_uuid', {
+        patient_uuid,
+      })
+      .andWhere(
+        '(bill_order.consent_token IS NULL OR bill_order.consent_token = \'\')',
+      )
+      .andWhere(
+        'bill_order.sub_benefit_code IS NOT NULL AND bill_order.sub_benefit_code != \'\'',
+      )
+      .andWhere(
+        'bill_order.intervention_code IS NOT NULL AND bill_order.intervention_code != \'\'',
+      )
+      .getOne();
+
+    if (billOrder) {
+      return billOrder;
+    } else {
+      throw new NotFoundException(
+        'Bill with the given patient uuid does not exist',
+      );
+    }
+  }
 }

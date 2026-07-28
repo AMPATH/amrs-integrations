@@ -19,7 +19,7 @@ import { Repository } from 'typeorm';
 import { BillOrder } from 'src/core/database/entities/bill-order.entity';
 
 @Injectable()
-export class InterventionsService {
+export class xInterventionsService {
   constructor(
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,

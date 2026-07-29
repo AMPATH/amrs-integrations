@@ -93,7 +93,7 @@ export class BillOrderService {
       .andWhere(
         'bill_order.intervention_code IS NOT NULL AND bill_order.intervention_code != \'\'',
       )
-      .getOne();
+      .getMany();
 
     if (billOrder) {
       return billOrder;

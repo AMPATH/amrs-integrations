@@ -14,6 +14,7 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CreateNormalPreAuthRequestDto } from './dto/create-normal-pre-auth.request.dto';
 import { PreAuthService } from './pre-auth.service';
 import { PreAuthPreviewRequestDto } from './dto/pre-auth-preview-request.dto';
+import { ResendDoctorConsentDto } from './dto/resend-doctor-consent.dto';
 import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
 
 @UseGuards(OpenMrsAuthGuard)
@@ -39,6 +40,15 @@ export class PreAuthController {
       body.locationUuid,
       files ?? [],
     );
+  }
+
+  /**
+   * Resend doctor approval request (SMS) for a preauth awaiting doctor consent.
+   * @see https://hie-docs.dha.go.ke/eclaims/preauth-doctor-consent
+   */
+  @Post('doctor-consent')
+  public resendDoctorConsent(@Body() body: ResendDoctorConsentDto) {
+    return this.preAuthService.resendDoctorConsent(body);
   }
 
   @Get('preview')

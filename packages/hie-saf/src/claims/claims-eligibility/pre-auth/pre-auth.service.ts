@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { CreateNormalPreAuthRequestDto } from './dto/create-normal-pre-auth.request.dto';
+import { ResendDoctorConsentDto } from './dto/resend-doctor-consent.dto';
 import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
 
 /** Optional specialty fields forwarded to HIE when present on the multipart body. */
@@ -166,6 +167,61 @@ export class PreAuthService {
       Logger.error(error);
       throw new HttpException(
         'Error creating normal preauth',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Resend doctor approval SMS for a preauth stuck in PENDING_DOCTOR_APPROVAL.
+   * @see https://hie-docs.dha.go.ke/eclaims/preauth-doctor-consent
+   */
+  async resendDoctorConsent(dto: ResendDoctorConsentDto) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const url = `${baseUrl}/api/v1/claims/doctor-consent`;
+    const payload = {
+      practitioner_registration_number: dto.practitioner_registration_number,
+      request_type: dto.request_type,
+      consent_token: dto.consent_token,
+      intervention_code: dto.intervention_code,
+    };
+
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        url,
+        payload,
+        dto.locationUuid,
+      );
+      const text = await response.text();
+      let data: unknown = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+      if (!response.ok) {
+        Logger.error(
+          `HIE doctor-consent ${response.status}: ${typeof data === 'string' ? data : JSON.stringify(data)}`,
+        );
+        throw new HttpException(
+          typeof data === 'object' && data && 'message' in data
+            ? (data as { message: string }).message
+            : `HIE doctor-consent failed (${response.status})`,
+          response.status >= 400 && response.status < 600
+            ? response.status
+            : HttpStatus.BAD_GATEWAY,
+        );
+      }
+      return data ?? { status: 'success' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      Logger.error(error);
+      throw new HttpException(
+        `Error resending doctor consent: ${(error as Error)?.message ?? error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

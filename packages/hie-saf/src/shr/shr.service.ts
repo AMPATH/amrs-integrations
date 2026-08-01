@@ -5,6 +5,7 @@ import { LocationFacilityHelper } from '../shared/utils/location-facility.helper
 import { FetchPatientRecordsDto } from './dto/fetch-patient-records.dto';
 import { FetchResourceLabelsDto } from './dto/fetch-resource-labels.dto';
 import { RequestShrConsentDto } from './dto/request-shr-consent.dto';
+import { SubmitShrBundleDto } from './dto/submit-shr-bundle.dto';
 import { VerifyShrConsentDto } from './dto/verify-shr-consent.dto';
 import {
   ShrCloseVisitApiResponse,
@@ -14,6 +15,7 @@ import {
   ShrRefreshConsentApiResponse,
   ShrRequestConsentApiResponse,
   ShrResendConsentOtpApiResponse,
+  ShrSubmitBundleApiResponse,
   ShrVerifyConsentApiResponse,
   ShrVerifyConsentPayload,
 } from './types';
@@ -117,6 +119,25 @@ export class ShrService {
   }
 
   /**
+   * POST /shr/bundles — submit a FHIR collection Bundle for an open visit.
+   * Reuses the same consent token lifecycle as reads; the bundle is
+   * forwarded as-is, DHA validates its contents.
+   */
+  async submitBundle(
+    bundle: SubmitShrBundleDto,
+    locationUuid: string,
+    consentToken: string,
+  ) {
+    return this.post<ShrSubmitBundleApiResponse>(
+      '/shr/bundles',
+      bundle,
+      locationUuid,
+      'submit bundle',
+      { [CONSENT_TOKEN_HEADER]: consentToken },
+    );
+  }
+
+  /**
    * GET /shr/patient-records — the FHIR search Bundle is returned unchanged.
    * `practitionerId` is resolved from the logged in provider by the caller of
    * this method, never taken from the request body.
@@ -214,7 +235,7 @@ export class ShrService {
       if (this.configService.get<string>('APP_ENV') === 'development') {
         Logger.debug(`HIE ${context} response: ${JSON.stringify(data)}`);
       }
-      return await this.readResponse<T>(response, context);
+      return data;
     } catch (error) {
       throw this.asHttpException(error, context);
     }

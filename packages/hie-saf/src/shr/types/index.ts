@@ -80,6 +80,13 @@ export type ShrCloseVisitApiResponse = {
   visit_id: string;
 };
 
+/** POST /shr/bundles response. */
+export type ShrSubmitBundleApiResponse = {
+  mediator_id: string;
+  message: string;
+  status: string;
+};
+
 /** FHIR search Bundle / security labels — passed through from DHA unchanged. */
 export type ShrPassthroughResponse = Record<string, any>;
 

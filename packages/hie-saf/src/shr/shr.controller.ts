@@ -21,13 +21,16 @@ import {
   ShrConsentParamsDto,
   ShrVisitParamsDto,
 } from './dto/shr-path-params.dto';
+import { SubmitShrBundleDto } from './dto/submit-shr-bundle.dto';
+import { SubmitShrBundleQueryDto } from './dto/submit-shr-bundle-query.dto';
 import { VerifyShrConsentDto } from './dto/verify-shr-consent.dto';
 import { CONSENT_TOKEN_HEADER, ShrService } from './shr.service';
 import { PractitionerResolver } from './utils/practitioner-resolver.helper';
 
 /**
- * Shared Health Record read path. Consent tokens are handed back to the caller
- * and passed in again on the read — nothing is held server side.
+ * Shared Health Record read/write path. Consent tokens are handed back to
+ * the caller and passed in again on reads and writes — nothing is held
+ * server side.
  */
 @UseGuards(OpenMrsAuthGuard)
 @Controller('shr')
@@ -70,6 +73,27 @@ export class ShrController {
       params.consentId,
       body.locationUuid,
     );
+  }
+
+  @Post('bundles')
+  @ApiHeader({
+    name: CONSENT_TOKEN_HEADER,
+    required: false,
+    description:
+      'Per visit consent token from verify/refresh. Falls back to the consentToken query param.',
+  })
+  submitBundle(
+    @Body() body: SubmitShrBundleDto,
+    @Query() query: SubmitShrBundleQueryDto,
+    @Headers('x-consent-token') consentTokenHeader?: string,
+  ) {
+    const consentToken = consentTokenHeader ?? query.consentToken;
+    if (!consentToken) {
+      throw new BadRequestException(
+        `Missing consent token. Send it as the ${CONSENT_TOKEN_HEADER} header or the consentToken query param.`,
+      );
+    }
+    return this.shrService.submitBundle(body, query.locationUuid, consentToken);
   }
 
   @Get('patient-records')

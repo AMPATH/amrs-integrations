@@ -61,7 +61,7 @@ export class PractitionerResolver {
   private async getLoggedInProviderUuid(
     sessionCookie: string,
   ): Promise<string> {
-    const sessionUrl = `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/session?v=custom:(authenticated,user:(uuid,display),currentProvider:(uuid,identifier))`;
+    const sessionUrl = `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/session?v=custom:(authenticated,user:(uuid,display),currentProvider:(uuid,identifier))`;
     const session = await this.getFromOpenMrs<OpenMrsSessionWithProvider>(
       sessionUrl,
       sessionCookie,
@@ -83,7 +83,7 @@ export class PractitionerResolver {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const providerUrl = `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/provider?user=${encodeURIComponent(userUuid)}&v=custom:(uuid,identifier)`;
+    const providerUrl = `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/provider?user=${encodeURIComponent(userUuid)}&v=custom:(uuid,identifier)`;
     const search = await this.getFromOpenMrs<OpenMrsProviderSearchResponse>(
       providerUrl,
       sessionCookie,
@@ -101,7 +101,7 @@ export class PractitionerResolver {
 
   private async getProviderNationalId(providerUuid: string): Promise<string> {
     const hwr = await this.hwrSyncRepository.findOneBy({
-      provider_uuid: providerUuid,
+      provider_uuid: "b408cf01-5bcc-4c73-bfa6-88fc3cfc29c9",
     });
     if (!hwr?.national_id) {
       throw new HttpException(
@@ -149,6 +149,7 @@ export class PractitionerResolver {
     sessionCookie: string,
     context: string,
   ): Promise<T> {
+    console.log("sessionCookie", sessionCookie);
     try {
       const response = await fetch(url, {
         method: 'GET',

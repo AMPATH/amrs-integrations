@@ -163,6 +163,58 @@ describe('ShrService', () => {
     );
   });
 
+  it('forwards the bundle and consent token header when submitting a bundle', async () => {
+    const bundle = {
+      id: 'bundle-1',
+      resourceType: 'Bundle' as const,
+      type: 'collection' as const,
+      entry: [{ resource: { resourceType: 'Encounter', id: 'enc-1' } }],
+    };
+    hieHttpRequests.sendPostRequest.mockResolvedValue(
+      upstreamResponse({
+        mediator_id: 'med-1',
+        message: 'accepted',
+        status: 'success',
+      }),
+    );
+
+    const result = await service.submitBundle(bundle, 'loc-1', 'tok-1');
+
+    expect(hieHttpRequests.sendPostRequest).toHaveBeenCalledWith(
+      `${BASE_URL}/shr/bundles`,
+      bundle,
+      'loc-1',
+      { [CONSENT_TOKEN_HEADER]: 'tok-1' },
+    );
+    expect(result).toEqual({
+      mediator_id: 'med-1',
+      message: 'accepted',
+      status: 'success',
+    });
+  });
+
+  it('surfaces upstream errors when submitting a bundle', async () => {
+    hieHttpRequests.sendPostRequest.mockResolvedValue(
+      upstreamResponse({ message: 'invalid bundle' }, false, 400),
+    );
+
+    await expect(
+      service.submitBundle(
+        {
+          id: 'bundle-2',
+          resourceType: 'Bundle' as const,
+          type: 'collection' as const,
+          entry: [],
+        },
+        'loc-1',
+        'tok-1',
+      ),
+    ).rejects.toMatchObject({
+      status: 400,
+      message: 'invalid bundle',
+    });
+  });
+
   it('only sends the resource label filters that were supplied', async () => {
     hieHttpRequests.sendGetRequest.mockResolvedValue(upstreamResponse({}));
 

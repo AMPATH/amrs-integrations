@@ -16,3 +16,9 @@ export type SubBenefitsResponse = {
   endIndex: number;
   results: SubBenefit[];
 };
+
+export enum PreAuthRequestStatus {
+  Pending = 'PENDING',
+  Approved = 'APPROVED',
+  Rejected = 'REJECTED',
+}

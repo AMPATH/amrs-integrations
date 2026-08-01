@@ -9,6 +9,7 @@ import { ClaimIntervention } from './entities/claim-intervention.entity';
 import { ClaimDiagnosis } from './entities/claim-diagnosis.entity';
 import { ClaimLine } from './entities/claime-line.entity';
 import { ClaimAttachment } from './entities/claim-attachment.entity';
+import { PreAuthRequest } from './entities/pre-auth-request.entity';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ClaimAttachment } from './entities/claim-attachment.entity';
           ClaimDiagnosis,
           ClaimLine,
           ClaimAttachment,
+          PreAuthRequest,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,

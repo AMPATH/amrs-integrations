@@ -48,6 +48,7 @@ import { PreAuthService } from './claims-eligibility/pre-auth/pre-auth.service';
 import { PreAuthController } from './claims-eligibility/pre-auth/pre-auth.controller';
 import { PomsfBalanceController } from './claims-eligibility/pomsf-balance/pomsf-balance.controller';
 import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-balance.service';
+import { PreAuthRequest } from '../core/database/entities/pre-auth-request.entity';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
       ClaimDiagnosis,
       ClaimLine,
       ClaimAttachment,
+      PreAuthRequest,
     ]),
   ],
   controllers: [
@@ -81,7 +83,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     ClaimDischargeController,
     ClaimAuthorizationController,
     PreAuthController,
-    PomsfBalanceController
+    PomsfBalanceController,
   ],
   providers: [
     SubBenefitsService,
@@ -104,7 +106,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     ClaimDischargeService,
     ClaimAuthorizationService,
     PreAuthService,
-    PomsfBalanceService
+    PomsfBalanceService,
   ],
 })
 export class ClaimsModule {}

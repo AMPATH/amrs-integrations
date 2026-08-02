@@ -67,6 +67,22 @@ export class PreAuthRequest {
   })
   locationUuid!: string;
 
+  @Column({
+    name: 'billable_service_uuid',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  billableServiceUuid!: string;
+
+  @Column({
+    name: 'price_uuid',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  priceUuid!: string;
+
   @Column({ name: 'requires_preauth', type: 'boolean', nullable: true })
   requiresPreauth!: boolean;
 

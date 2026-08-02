@@ -416,6 +416,8 @@ export class PreAuthService {
     try {
       const preAuthRequestEntity = this.preAuthRequestRepository.create({
         locationUuid: createPreAuthRequest.locationUuid,
+        billableServiceUuid: createPreAuthRequest.billableServiceUuid,
+        priceUuid: createPreAuthRequest.priceUuid,
         patientUuid: createPreAuthRequest.patientUuid,
         orderNo: createPreAuthRequest.orderNo,
         consentToken: createPreAuthRequest.consentToken,

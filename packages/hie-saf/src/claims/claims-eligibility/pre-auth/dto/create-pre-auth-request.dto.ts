@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePreAuthRequestDto {
   @ApiProperty()
@@ -36,6 +36,16 @@ export class CreatePreAuthRequestDto {
   @IsNotEmpty()
   @IsString()
   locationUuid!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  billableServiceUuid!: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  priceUuid!: string;
 
   @ApiProperty()
   @IsNotEmpty()

@@ -30,6 +30,18 @@ export class SearchPreAuthDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
+  billableServiceUuid?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  priceUuid?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
   status?: string;
 
   @ApiProperty()

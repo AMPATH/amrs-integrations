@@ -31,4 +31,10 @@ export class SearchPreAuthDto {
   @IsNotEmpty()
   @IsString()
   status?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  orderNo?: string;
 }

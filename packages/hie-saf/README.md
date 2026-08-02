@@ -16,7 +16,36 @@ yarn
 ```
 
 ## Set up
-Create a .env file at the root of the project with the following variables
+Copy `.env.example` to `.env` at the package root and fill in values.
+
+```sh
+cp .env.example .env
+```
+
+### Local development — HIE endpoint override
+
+Preauth and claims traffic has two hops:
+
+1. **ESM app** → this service via OpenMRS config `hieBaseUrl` (e.g. `http://localhost:3000` when running `yarn start:dev` here).
+2. **This service** → DHA eClaims via `HIE_CLIAMS_BASE_URL` (UAT middleware or a local mock).
+
+Do not hardcode localhost into production ESM config defaults. Override only in your local spa/config:
+
+```json
+{
+  "@ampath/esm-dha-workflow-app": {
+    "hieBaseUrl": "http://localhost:3000"
+  }
+}
+```
+
+Keep `HIE_CLIAMS_BASE_URL` in `.env` pointed at DHA UAT (or your mock), for example:
+
+```env
+HIE_CLIAMS_BASE_URL=https://ilm-dev.dha.go.ke/uat-middleware
+```
+
+Required env keys (see `.env.example`):
 
 ```env
 HIE_AUTH_URL=<HIE_AUTH_URL>

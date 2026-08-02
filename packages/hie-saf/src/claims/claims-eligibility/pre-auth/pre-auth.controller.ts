@@ -40,9 +40,14 @@ export class PreAuthController {
     @UploadedFiles() files: UploadedPreauthFile[],
     @Body() body: CreateNormalPreAuthRequestDto,
   ) {
+    // Multipart text fields land on @Body() (including locationUuid). Required for
+    // x-facility-id routing — without it HIE may attribute the call to the OAuth client facility.
+    if (!body?.locationUuid?.trim()) {
+      throw new BadRequestException('Missing locationUuid');
+    }
     return this.preAuthService.createNormalPreauth(
       body,
-      body.locationUuid,
+      body.locationUuid.trim(),
       files ?? [],
     );
   }

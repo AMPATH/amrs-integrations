@@ -38,6 +38,11 @@ const SPECIALTY_FORWARD_FIELDS: Array<keyof CreateNormalPreAuthRequestDto> = [
   'new_or_replacement',
   'frequency_of_sessions',
   'start_date',
+  'expected_service_start_date',
+  'progress_report',
+  'is_condition_related_to_employment',
+  'is_condition_related_to_auto_or_other_accident',
+  'co_insurance_details',
 ];
 
 /** Surgical fields — accept camelCase or snake_case from clients; forward snake_case to HIE. */

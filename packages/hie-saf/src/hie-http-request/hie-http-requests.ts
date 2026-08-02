@@ -65,10 +65,15 @@ export class HieHttpRequests {
     locationUuid: string,
   ): Promise<any> {
     const headers = await this.getHeaders(locationUuid);
+    // Do not set content-type — fetch must set multipart boundary automatically.
+    // Still forward facility headers so HIE ties the preauth to the same facility
+    // as the claim (JSON posts already send these).
     const options = {
       method: 'POST',
       headers: {
         authorization: headers['authorization'],
+        'x-facility-id': headers['x-facility-id'],
+        'x-facility-id-type': headers['x-facility-id-type'],
       },
       body: payload,
     };

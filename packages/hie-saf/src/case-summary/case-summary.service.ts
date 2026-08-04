@@ -38,6 +38,7 @@ import {
   isAbnormal,
   readObsValue,
 } from './utils/lab-result.helper';
+import { SoapNoteHelper } from './utils/soap-note.helper';
 import {
   VisitWindowHelper,
   isoDatePart,
@@ -83,8 +84,11 @@ const VITAL_LABEL_TESTS: Array<(label: string) => boolean> = [
   (l) => /^weight/i.test(l),
   (l) => /^body mass index/i.test(l),
   (l) => /^triage early warning score/i.test(l),
-  (l) => /^systolic$/i.test(l),
-  (l) => /^diastolic$/i.test(l),
+  // Bare "SYSTOLIC"/"DIASTOLIC" per the reference frontend, but this server's
+  // triage form labels them "SYSTOLIC BLOOD PRESSURE"/"DIASTOLIC BLOOD PRESSURE" —
+  // match both, or blood pressure silently drops out of vitals.
+  (l) => /^systolic( blood pressure)?$/i.test(l),
+  (l) => /^diastolic( blood pressure)?$/i.test(l),
 ];
 
 function isVitalObs(label: string): boolean {
@@ -195,7 +199,7 @@ export function mapDrugOrder(row: OrderRow): CaseSummaryMedication {
     route: row.routeName ?? undefined,
     frequency: row.frequencyName ?? undefined,
     duration: formatQuantity(row.duration, row.durationUnitsName),
-    instructions: row.dosingInstructions ?? row.instructions ?? undefined,
+    instructions: row.instructions ?? undefined,
   };
 }
 
@@ -254,6 +258,8 @@ export function mapTestOrders(
       conceptId: row.conceptId,
       test: row.conceptName ?? '',
       orderedDate: toOpenMrsDatetime(row.dateActivated),
+      action: row.action ?? undefined,
+      fulfillerStatus: row.fulfillerStatus ?? undefined,
       results: [],
       pending: true,
     });
@@ -365,8 +371,8 @@ export function buildVitalsFromEncounters(
   const latest = (test: (label: string) => boolean) =>
     allObs.find((o) => test(o.label))?.value;
 
-  const systolic = latest((l) => /^systolic$/i.test(l));
-  const diastolic = latest((l) => /^diastolic$/i.test(l));
+  const systolic = latest((l) => /^systolic( blood pressure)?$/i.test(l));
+  const diastolic = latest((l) => /^diastolic( blood pressure)?$/i.test(l));
 
   return {
     temperature: latest((l) => /^temperature/i.test(l)),
@@ -493,7 +499,7 @@ const VISIT_SELECT = `
          v.date_stopped AS dateStopped,
          vt.name AS visitType,
          l.name AS locationName,
-         p.uuid AS patientUuid,
+         pe.uuid AS patientUuid,
          pn.given_name AS givenName,
          pn.middle_name AS middleName,
          pn.family_name AS familyName,
@@ -502,7 +508,6 @@ const VISIT_SELECT = `
     FROM visit v
     JOIN visit_type vt ON vt.visit_type_id = v.visit_type_id
     JOIN person pe ON pe.person_id = v.patient_id
-    JOIN patient p ON p.patient_id = v.patient_id
     LEFT JOIN location l ON l.location_id = v.location_id
     LEFT JOIN person_name pn ON pn.person_id = pe.person_id AND pn.preferred = 1 AND pn.voided = 0
 `;
@@ -525,6 +530,7 @@ export class CaseSummaryService {
     private readonly amrsDataSource: DataSource,
     private readonly labResultHelper: LabResultHelper,
     private readonly visitWindowHelper: VisitWindowHelper,
+    private readonly soapNoteHelper: SoapNoteHelper,
   ) {}
 
   async getVisitCaseSummary(
@@ -580,6 +586,9 @@ export class CaseSummaryService {
         return null;
       });
       const labOrders = this.attachLabResults(testOrders, labs, window);
+      const conditions = diagnosisRows.map(mapConditionEntry);
+      const vitals = buildVitalsFromEncounters(encounters);
+      const clinicalNotes = buildEncounterNotes(encounters);
 
       return {
         visit: {
@@ -594,22 +603,31 @@ export class CaseSummaryService {
         visitUuids,
         demographics: mapDemographics(anchor, identifiers),
         allergies: allergyRows.map(mapAllergy),
-        conditions: diagnosisRows.map(mapConditionEntry).map((condition) => ({
+        conditions: conditions.map((condition) => ({
           code: condition.code,
           description: condition.description,
           certainty: condition.certainty,
           primary: condition.primary ? true : undefined,
           onsetDate: condition.onsetDate,
         })),
-        vitals: buildVitalsFromEncounters(encounters),
+        vitals,
         medications,
-        clinicalNotes: buildEncounterNotes(encounters),
+        clinicalNotes,
+        soapNote: this.soapNoteHelper.build({
+          clinicalNotes,
+          vitals,
+          conditions,
+          medications,
+          labOrders,
+        }),
         labOrders: labOrders.map((order) => ({
           uuid: order.uuid,
           test: order.test,
           orderNumber: order.orderNumber,
           orderedDate: order.orderedDate,
           pending: order.pending ? true : undefined,
+          action: order.action,
+          fulfillerStatus: order.fulfillerStatus,
           results: order.results.map((result) => ({
             test: result.test,
             panel: result.panel,
@@ -684,8 +702,10 @@ export class CaseSummaryService {
   }
 
   private queryRecentVisits(patientUuid: string): Promise<Array<VisitRow>> {
+    // `patient` has no `uuid` column of its own — it lives on `person`, which
+    // `patient` extends (confirmed against the live schema).
     return this.amrsDataSource.query(
-      `${VISIT_SELECT} WHERE p.uuid = ? AND v.voided = 0 ORDER BY v.date_started DESC LIMIT 10`,
+      `${VISIT_SELECT} WHERE pe.uuid = ? AND v.voided = 0 ORDER BY v.date_started DESC LIMIT 10`,
       [patientUuid],
     );
   }
@@ -701,9 +721,9 @@ export class CaseSummaryService {
               pit.name AS identifierTypeName,
               pi.preferred AS preferred
          FROM patient_identifier pi
-         JOIN patient p ON p.patient_id = pi.patient_id
+         JOIN person pe ON pe.person_id = pi.patient_id
          JOIN patient_identifier_type pit ON pit.patient_identifier_type_id = pi.identifier_type
-        WHERE p.uuid = ? AND pi.voided = 0
+        WHERE pe.uuid = ? AND pi.voided = 0
         ORDER BY pi.preferred DESC`,
       [patientUuid],
     );
@@ -767,10 +787,11 @@ export class CaseSummaryService {
     return this.amrsDataSource.query(
       `SELECT ord.uuid AS uuid,
               ord.order_number AS orderNumber,
-              ord.action AS action,
+              ord.order_action AS action,
               ord.date_activated AS dateActivated,
               ord.date_stopped AS dateStopped,
               ord.auto_expire_date AS autoExpireDate,
+              ord.fulfiller_status AS fulfillerStatus,
               c.concept_id AS conceptId,
               c.uuid AS conceptUuid,
               cn.name AS conceptName,
@@ -784,8 +805,7 @@ export class CaseSummaryService {
               freqName.name AS frequencyName,
               do.duration AS duration,
               durationUnitsName.name AS durationUnitsName,
-              do.dosing_instructions AS dosingInstructions,
-              do.instructions AS instructions,
+              do.dosing_instructions AS instructions,
               drug.name AS drugName,
               drug.strength AS drugStrength
          FROM orders ord
@@ -801,7 +821,7 @@ export class CaseSummaryService {
          LEFT JOIN order_frequency freq ON freq.order_frequency_id = do.frequency
          LEFT JOIN concept_name freqName ON freqName.concept_id = freq.concept_id AND freqName.voided = 0 AND freqName.concept_name_type = 'FULLY_SPECIFIED' AND freqName.locale = 'en'
          LEFT JOIN concept_name durationUnitsName ON durationUnitsName.concept_id = do.duration_units AND durationUnitsName.voided = 0 AND durationUnitsName.concept_name_type = 'FULLY_SPECIFIED' AND durationUnitsName.locale = 'en'
-        WHERE v.uuid IN (?) AND ord.voided = 0`,
+        WHERE v.uuid IN (?) AND ord.voided = 0 group by ord.uuid`,
       [visitUuids],
     );
   }
@@ -816,13 +836,13 @@ export class CaseSummaryService {
               crt.code AS icd11Code
          FROM encounter_diagnosis ed
          JOIN encounter e ON e.encounter_id = ed.encounter_id
-         JOIN patient p ON p.patient_id = e.patient_id
+         JOIN person pe ON pe.person_id = e.patient_id
          JOIN concept c ON c.concept_id = ed.diagnosis_coded
          JOIN concept_name cn ON cn.concept_id = c.concept_id AND cn.voided = 0 AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.locale = 'en'
          LEFT JOIN concept_reference_map crm ON crm.concept_id = c.concept_id
          LEFT JOIN concept_reference_term crt ON crt.concept_reference_term_id = crm.concept_reference_term_id
-         LEFT JOIN concept_reference_source crs ON crs.concept_reference_source_id = crt.concept_source_id AND crs.name LIKE '%ICD%11%'
-        WHERE p.uuid = ? AND ed.voided = 0
+         LEFT JOIN concept_reference_source crs ON crs.concept_source_id = crt.concept_source_id AND crs.name LIKE '%ICD%11%'
+        WHERE pe.uuid = ? AND ed.voided = 0
         ORDER BY ed.dx_rank`,
       [patientUuid],
     );
@@ -835,14 +855,14 @@ export class CaseSummaryService {
               sevCn.name AS severity,
               GROUP_CONCAT(DISTINCT reactCn.name SEPARATOR ', ') AS reactions
          FROM allergy a
-         JOIN patient p ON p.patient_id = a.patient_id
+         JOIN person pe ON pe.person_id = a.patient_id
          JOIN concept c ON c.concept_id = a.coded_allergen
          JOIN concept_name cn ON cn.concept_id = c.concept_id AND cn.voided = 0 AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.locale = 'en'
          LEFT JOIN concept sev ON sev.concept_id = a.severity_concept_id
          LEFT JOIN concept_name sevCn ON sevCn.concept_id = sev.concept_id AND sevCn.voided = 0 AND sevCn.concept_name_type = 'FULLY_SPECIFIED' AND sevCn.locale = 'en'
          LEFT JOIN allergy_reaction ar ON ar.allergy_id = a.allergy_id
          LEFT JOIN concept_name reactCn ON reactCn.concept_id = ar.reaction_concept_id AND reactCn.voided = 0 AND reactCn.concept_name_type = 'FULLY_SPECIFIED' AND reactCn.locale = 'en'
-        WHERE p.uuid = ? AND a.voided = 0
+        WHERE pe.uuid = ? AND a.voided = 0
         GROUP BY a.allergy_id, cn.name, sevCn.name`,
       [patientUuid],
     );
@@ -919,7 +939,7 @@ export class CaseSummaryService {
               vcn.name AS valueCodedName
          FROM obs o
          LEFT JOIN concept_name vcn ON vcn.concept_id = o.value_coded AND vcn.voided = 0 AND vcn.concept_name_type = 'FULLY_SPECIFIED' AND vcn.locale = 'en'
-        WHERE o.person_id = (SELECT patient_id FROM patient WHERE uuid = ?)
+        WHERE o.person_id = (SELECT person_id FROM person WHERE uuid = ?)
           AND o.voided = 0
           AND o.obs_datetime >= ?
           AND o.obs_datetime <  ?

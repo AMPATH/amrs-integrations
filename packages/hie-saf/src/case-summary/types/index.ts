@@ -93,6 +93,10 @@ export type CaseSummaryResponse = {
     orderNumber?: string;
     orderedDate?: string;
     pending?: true;
+    /** OpenMRS `order_action` — e.g. `NEW`, `RENEW`, `DISCONTINUE`. */
+    action?: string;
+    /** OpenMRS's own fulfiller workflow status — e.g. `RECEIVED`, `COMPLETED`, `EXCEPTION`. */
+    fulfillerStatus?: string;
     results: Array<{
       test: string;
       panel?: string;
@@ -111,6 +115,19 @@ export type CaseSummaryResponse = {
     status?: string;
     dischargeDate?: string;
   };
+  /**
+   * A SOAP note assembled from everything else in this response — narrative
+   * text, not a new source of clinical data. Deterministic and template-based
+   * (see `utils/soap-note.helper.ts`), not model-generated: there is no LLM
+   * in this service, and a claims/print artifact should not depend on one.
+   * Each section is omitted when nothing categorised into it.
+   */
+  soapNote: {
+    subjective?: string;
+    objective?: string;
+    assessment?: string;
+    plan?: string;
+  };
 };
 
 /* ------------------------------------------------------------------ *
@@ -118,6 +135,7 @@ export type CaseSummaryResponse = {
  * `undefined`-scrubbing pass into the wire shape above.
  * ------------------------------------------------------------------ */
 
+export type CaseSummarySoapNote = CaseSummaryResponse['soapNote'];
 export type CaseSummaryDemographics = CaseSummaryResponse['demographics'];
 export type CaseSummaryAllergy = CaseSummaryResponse['allergies'][number];
 export type CaseSummaryMedication = CaseSummaryResponse['medications'][number];
@@ -159,6 +177,8 @@ export type CaseSummaryTestOrder = {
   conceptId: number;
   test: string;
   orderedDate?: string;
+  action?: string;
+  fulfillerStatus?: string;
   results: Array<CaseSummaryLabResult>;
   pending: boolean;
 };
@@ -291,6 +311,8 @@ export type OrderRow = {
   orderTypeUuid: string | null;
   orderTypeName: string | null;
   javaClassName: string | null;
+  /** OpenMRS's own fulfiller workflow status (e.g. `RECEIVED`, `COMPLETED`, `EXCEPTION`) — not currently used to decide pending/resulted, just surfaced. */
+  fulfillerStatus: string | null;
   encounterUuid: string;
   dose: number | null;
   doseUnitsName: string | null;
@@ -298,7 +320,6 @@ export type OrderRow = {
   frequencyName: string | null;
   duration: number | null;
   durationUnitsName: string | null;
-  dosingInstructions: string | null;
   instructions: string | null;
   drugName: string | null;
   drugStrength: string | null;

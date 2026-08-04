@@ -40,6 +40,7 @@ import {
   LabResultHelper,
   readObsValue,
 } from './utils/lab-result.helper';
+import { buildSoapNote, SoapNoteHelper } from './utils/soap-note.helper';
 import {
   isoDatePart,
   pickAnchorVisit,
@@ -80,6 +81,7 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
     orderTypeUuid: DRUG_ORDER_TYPE_UUID,
     orderTypeName: 'Drug',
     javaClassName: 'org.openmrs.DrugOrder',
+    fulfillerStatus: null,
     encounterUuid: 'enc-1',
     dose: null,
     doseUnitsName: null,
@@ -87,7 +89,6 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
     frequencyName: null,
     duration: null,
     durationUnitsName: null,
-    dosingInstructions: null,
     instructions: null,
     drugName: null,
     drugStrength: null,
@@ -821,7 +822,7 @@ describe('mapDrugOrder', () => {
           frequencyName: 'Twice daily',
           duration: 5,
           durationUnitsName: 'Days',
-          dosingInstructions: 'After food',
+          instructions: 'After food',
         }),
       ),
     ).toEqual({
@@ -992,6 +993,8 @@ describe('mapTestOrders', () => {
         dateActivated: '2026-01-01 08:00:00',
         conceptId: 10,
         conceptName: 'RANDOM BLOOD SUGAR',
+        action: 'NEW',
+        fulfillerStatus: 'COMPLETED',
         ...testType,
       }),
       orderRow({
@@ -1008,6 +1011,8 @@ describe('mapTestOrders', () => {
       conceptId: 10,
       test: 'RANDOM BLOOD SUGAR',
       pending: true,
+      action: 'NEW',
+      fulfillerStatus: 'COMPLETED',
       results: [],
     });
   });
@@ -1321,6 +1326,187 @@ describe('mapAllergy', () => {
   });
 });
 
+describe('buildSoapNote', () => {
+  const note = (
+    encounterType: string,
+    fields: Array<{ label: string; value: string }>,
+  ) => ({
+    encounterUuid: 'enc-1',
+    encounterType,
+    datetime: '2026-08-04T09:53:51.000+0300',
+    fields,
+  });
+
+  it('categorizes fields by label into Subjective, Objective, Assessment, and Plan', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [
+        note('GENCONSULTATION', [
+          { label: 'CHIEF COMPLAINT', value: 'HEADACHE' },
+          {
+            label: 'PHYSICAL EXAM NOTE, FREETEXT',
+            value: 'Patient alert and oriented.',
+          },
+          { label: 'DIAGNOSIS CATEGORY', value: 'NEW' },
+          { label: 'THERAPEUTIC PLAN NOTES', value: 'Admit for observation' },
+        ]),
+      ],
+      vitals: {},
+      conditions: [],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote.subjective).toBe('Chief Complaint: HEADACHE.');
+    expect(soapNote.objective).toBe(
+      'Physical Exam Note, Freetext: Patient alert and oriented.',
+    );
+    expect(soapNote.assessment).toBe('Diagnosis Category: NEW.');
+    expect(soapNote.plan).toBe('Therapeutic Plan Notes: Admit for observation.');
+  });
+
+  it('excludes ORDER-encounter notes entirely — that data is already in labOrders', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [
+        note('ORDER', [{ label: 'SERUM CREATININE', value: '11000' }]),
+      ],
+      vitals: {},
+      conditions: [],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote.subjective).toBeUndefined();
+    expect(soapNote.objective).toBeUndefined();
+  });
+
+  it('summarizes vitals and lab results under Objective', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [],
+      vitals: { temperature: '39', pulse: '100', bloodPressure: '130/90 mmHg' },
+      conditions: [],
+      medications: [],
+      labOrders: [
+        {
+          uuid: 'ord-1',
+          conceptId: 1,
+          test: 'SERUM CREATININE',
+          pending: false,
+          results: [
+            {
+              test: 'SERUM CREATININE',
+              value: '11000',
+              units: 'µmol/L',
+              interpretation: 'HIGH',
+            },
+          ],
+        },
+        {
+          uuid: 'ord-2',
+          conceptId: 2,
+          test: 'COMPLETE BLOOD COUNT',
+          pending: true,
+          results: [],
+        },
+      ],
+    });
+
+    expect(soapNote.objective).toContain(
+      'Temp 39°C, Pulse 100 bpm, BP 130/90 mmHg.',
+    );
+    expect(soapNote.objective).toContain(
+      'SERUM CREATININE: SERUM CREATININE 11000 µmol/L (HIGH)',
+    );
+    expect(soapNote.objective).toContain('COMPLETE BLOOD COUNT pending');
+  });
+
+  it('numbers conditions under Assessment, noting certainty and primary', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [],
+      vitals: {},
+      conditions: [
+        {
+          code: 'GB60.0',
+          description: 'Acute kidney failure, stage 1',
+          certainty: 'CONFIRMED',
+          primary: true,
+        },
+        {
+          code: '1F40.Z',
+          description: 'Malaria',
+          certainty: 'CONFIRMED',
+          primary: false,
+        },
+      ],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote.assessment).toBe(
+      '1. Acute kidney failure, stage 1 (GB60.0) — confirmed, primary. 2. Malaria (1F40.Z) — confirmed.',
+    );
+  });
+
+  it('lists medications and pending orders under Plan', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [],
+      vitals: {},
+      conditions: [],
+      medications: [
+        {
+          drug: 'ENALAPRIL 2.5mg TAB',
+          dose: '1 TABLET',
+          frequency: 'ONCE A DAY',
+          duration: '30 DAYS',
+        },
+      ],
+      labOrders: [
+        {
+          uuid: 'ord-2',
+          conceptId: 2,
+          test: 'COMPLETE BLOOD COUNT',
+          pending: true,
+          results: [],
+        },
+      ],
+    });
+
+    expect(soapNote.plan).toBe(
+      'Medications: ENALAPRIL 2.5mg TAB 1 TABLET ONCE A DAY for 30 DAYS. Pending: COMPLETE BLOOD COUNT.',
+    );
+  });
+
+  it('surfaces an unrecognised label under Objective as "Other notes" rather than dropping it', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [
+        note('GENCONSULTATION', [{ label: 'SOME UNMAPPED FIELD', value: 'x' }]),
+      ],
+      vitals: {},
+      conditions: [],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote.objective).toBe('Other notes: Some Unmapped Field: x.');
+  });
+
+  it('omits every section when there is nothing to report', () => {
+    const soapNote = buildSoapNote({
+      clinicalNotes: [],
+      vitals: {},
+      conditions: [],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote).toEqual({
+      subjective: undefined,
+      objective: undefined,
+      assessment: undefined,
+      plan: undefined,
+    });
+  });
+});
+
 /* ------------------------------------------------------------------ *
  * CaseSummaryService — orchestration, SQL parameters, error handling
  * ------------------------------------------------------------------ */
@@ -1337,6 +1523,7 @@ describe('CaseSummaryService', () => {
         CaseSummaryService,
         LabResultHelper,
         VisitWindowHelper,
+        SoapNoteHelper,
         {
           provide: getDataSourceToken(AMRS_CONNECTION),
           useValue: amrsDataSource,
@@ -1465,6 +1652,10 @@ describe('CaseSummaryService', () => {
     expect(summary.inpatientDetails).toBeUndefined();
     expect(summary.labResultsUnavailable).toBeUndefined();
     expect(summary.labOrders).toEqual([]);
+    expect(summary.soapNote.assessment).toBe(
+      '1. Secondary hypertension (BA04) — confirmed, primary.',
+    );
+    expect(summary.soapNote.objective).toBe('Vitals: Temp 37°C.');
 
     // rule 13: diagnoses/allergies are patient-level, never visit-scoped.
     const [, diagnosisParams] = amrsDataSource.query.mock.calls.find(
@@ -1532,6 +1723,8 @@ describe('CaseSummaryService', () => {
           orderTypeName: 'Test',
           javaClassName: 'org.openmrs.TestOrder',
           dateActivated: '2026-08-03 08:00:00',
+          action: 'NEW',
+          fulfillerStatus: 'COMPLETED',
         }),
       ],
       conceptTree: [
@@ -1568,6 +1761,10 @@ describe('CaseSummaryService', () => {
 
     expect(summary.labOrders).toHaveLength(1);
     expect(summary.labOrders[0].pending).toBeUndefined();
+    expect(summary.labOrders[0]).toMatchObject({
+      action: 'NEW',
+      fulfillerStatus: 'COMPLETED',
+    });
     expect(summary.labOrders[0].results[0]).toMatchObject({
       test: 'RANDOM BLOOD SUGAR',
       value: '9.1',

@@ -40,7 +40,11 @@ import {
   LabResultHelper,
   readObsValue,
 } from './utils/lab-result.helper';
-import { buildSoapNote, SoapNoteHelper } from './utils/soap-note.helper';
+import {
+  buildSoapNote,
+  SOAP_NOTE_ENCOUNTER_TYPES,
+  SoapNoteHelper,
+} from './utils/soap-note.helper';
 import {
   isoDatePart,
   pickAnchorVisit,
@@ -1361,7 +1365,9 @@ describe('buildSoapNote', () => {
       'Physical Exam Note, Freetext: Patient alert and oriented.',
     );
     expect(soapNote.assessment).toBe('Diagnosis Category: NEW.');
-    expect(soapNote.plan).toBe('Therapeutic Plan Notes: Admit for observation.');
+    expect(soapNote.plan).toBe(
+      'Therapeutic Plan Notes: Admit for observation.',
+    );
   });
 
   it('excludes ORDER-encounter notes entirely — that data is already in labOrders', () => {
@@ -1377,6 +1383,29 @@ describe('buildSoapNote', () => {
 
     expect(soapNote.subjective).toBeUndefined();
     expect(soapNote.objective).toBeUndefined();
+  });
+
+  it('only draws from the allowed encounter types, DOCTORNOTES/OPDTRIAGE/GENCONSULTATION for now', () => {
+    expect(SOAP_NOTE_ENCOUNTER_TYPES).toEqual([
+      'DOCTORNOTES',
+      'OPDTRIAGE',
+      'GENCONSULTATION',
+    ]);
+
+    const soapNote = buildSoapNote({
+      clinicalNotes: [
+        note('DOCTORNOTES', [{ label: 'CHIEF COMPLAINT', value: 'FEVER' }]),
+        note('VITALS', [
+          { label: 'CHIEF COMPLAINT', value: 'SHOULD NOT APPEAR' },
+        ]),
+      ],
+      vitals: {},
+      conditions: [],
+      medications: [],
+      labOrders: [],
+    });
+
+    expect(soapNote.subjective).toBe('Chief Complaint: FEVER.');
   });
 
   it('summarizes vitals and lab results under Objective', () => {

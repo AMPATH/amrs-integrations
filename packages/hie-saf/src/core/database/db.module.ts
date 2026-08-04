@@ -11,6 +11,9 @@ import { ClaimLine } from './entities/claime-line.entity';
 import { ClaimAttachment } from './entities/claim-attachment.entity';
 import { PreAuthRequest } from './entities/pre-auth-request.entity';
 
+/** Name of the read-only AMRS OpenMRS connection — see `CaseSummaryModule`. */
+export const AMRS_CONNECTION = 'amrsConnection';
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -35,6 +38,38 @@ import { PreAuthRequest } from './entities/pre-auth-request.entity';
           PreAuthRequest,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
+        synchronize: false,
+      }),
+      inject: [ConfigService],
+    }),
+    /**
+     * Read-only connection to the AMRS OpenMRS database, for `case-summary`'s
+     * direct SQL reads (see docs/case-summary-endpoint.md §2, §4.6). Credentials
+     * are `SELECT`-only and, per §5.1, should point at a read replica.
+     *
+     * `entities: []` and `synchronize: false` are both deliberate: mapping
+     * OpenMRS tables to entities would invite writes and schema coupling, so
+     * this connection is for `dataSource.query(sql, params)` reads only.
+     *
+     * `dateStrings: true` means every datetime/timestamp column comes back as
+     * the raw MySQL string, not a driver-parsed `Date` — required for the
+     * day-granular, no-timezone-reinterpretation comparisons documented in
+     * `utils/visit-window.helper.ts`.
+     */
+    TypeOrmModule.forRootAsync({
+      name: AMRS_CONNECTION,
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        name: AMRS_CONNECTION,
+        type: 'mysql',
+        host: configService.get<string>('AMRS_DATABASE_HOST'),
+        port: configService.get<number>('AMRS_DATABASE_PORT'),
+        username: configService.get<string>('AMRS_DATABASE_USER'),
+        password: configService.get<string>('AMRS_DATABASE_PASSWORD'),
+        database: configService.get<string>('AMRS_DATABASE_NAME'),
+        poolSize: configService.get<number>('AMRS_DATABASE_POOL_SIZE'),
+        dateStrings: true,
+        entities: [],
         synchronize: false,
       }),
       inject: [ConfigService],

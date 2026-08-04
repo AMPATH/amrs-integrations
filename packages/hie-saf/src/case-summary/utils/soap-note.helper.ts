@@ -18,13 +18,15 @@ import {
  * has no reference implementation to port from, since the frontend never had
  * this feature.
  *
- * Clinical notes recorded on an `ORDER`-type encounter are deliberately
- * excluded from every section: on this server an order's own encounter can
- * carry the ordered concept's obs directly (the same "obs on the order
- * encounter" case noted in docs/case-summary-endpoint.md §9 Q7), and that
- * value is already reported properly through `labOrders`. Repeating it here
- * as prose would just duplicate — often several times over, once per
- * re-order of the same test.
+ * Only clinical notes from `SOAP_NOTE_ENCOUNTER_TYPES` feed the note — an
+ * allowlist, not a blocklist. In particular an `ORDER`-type encounter is
+ * excluded: on this server an order's own encounter can carry the ordered
+ * concept's obs directly (the same "obs on the order encounter" case noted
+ * in docs/case-summary-endpoint.md §9 Q7), and that value is already
+ * reported properly through `labOrders` — repeating it here as prose would
+ * just duplicate, often several times over, once per re-order of the same
+ * test. The allowlist is deliberately narrow for now; widen it as other
+ * encounter types prove worth including.
  */
 @Injectable()
 export class SoapNoteHelper {
@@ -38,6 +40,13 @@ export class SoapNoteHelper {
     return buildSoapNote(input);
   }
 }
+
+/** Encounter types whose notes feed the SOAP note — an allowlist, deliberately narrow for now (see the class docblock). */
+export const SOAP_NOTE_ENCOUNTER_TYPES = [
+  'DOCTORNOTES',
+  'OPDTRIAGE',
+  'GENCONSULTATION',
+];
 
 /** A field label recognisable as part of the patient's own account of the visit. */
 const SUBJECTIVE_LABEL_TESTS: Array<(label: string) => boolean> = [
@@ -211,7 +220,11 @@ export function buildSoapNote(input: {
   };
 
   for (const note of input.clinicalNotes) {
-    if (note.encounterType === 'ORDER') continue;
+    if (
+      !note.encounterType ||
+      !SOAP_NOTE_ENCOUNTER_TYPES.includes(note.encounterType)
+    )
+      continue;
     for (const field of note.fields) {
       buckets[categorizeLabel(field.label)].push(field);
     }
@@ -248,7 +261,10 @@ export function buildSoapNote(input: {
   // than guessed into a section it may not belong in.
   const unclassifiedText = formatFields(buckets.unclassified);
   const objectiveWithUnclassified =
-    [objective, unclassifiedText ? `Other notes: ${unclassifiedText}` : undefined]
+    [
+      objective,
+      unclassifiedText ? `Other notes: ${unclassifiedText}` : undefined,
+    ]
       .filter(Boolean)
       .join(' ') || undefined;
 

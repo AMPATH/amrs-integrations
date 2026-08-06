@@ -25,7 +25,7 @@ import { SubmitShrBundleDto } from './dto/submit-shr-bundle.dto';
 import { SubmitShrBundleQueryDto } from './dto/submit-shr-bundle-query.dto';
 import { VerifyShrConsentDto } from './dto/verify-shr-consent.dto';
 import { CONSENT_TOKEN_HEADER, ShrService } from './shr.service';
-import { PractitionerResolver } from './utils/practitioner-resolver.helper';
+import { PractitionerResolver } from '../shared/utils/practitioner-resolver.helper';
 
 /**
  * Shared Health Record read/write path. Consent tokens are handed back to

@@ -20,6 +20,7 @@ import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
 import { BiometricsService } from './consent/biometrics/biometrics.service';
 import { ShrModule } from './shr/shr.module';
 import { CaseSummaryModule } from './case-summary/case-summary.module';
+import { EmtModule } from './emt/emt.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -58,7 +59,8 @@ import { CaseSummaryModule } from './case-summary/case-summary.module';
     TypeOrmModule.forFeature([FacilityLocation]),
     HwrSyncModule,
     ShrModule,
-    CaseSummaryModule
+    CaseSummaryModule,
+    EmtModule,
   ],
   controllers: [AppController],
   providers: [

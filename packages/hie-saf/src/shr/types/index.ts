@@ -89,19 +89,3 @@ export type ShrSubmitBundleApiResponse = {
 
 /** FHIR search Bundle / security labels — passed through from DHA unchanged. */
 export type ShrPassthroughResponse = Record<string, any>;
-
-/** OpenMRS shapes used to resolve the logged in provider. */
-export type OpenMrsProvider = {
-  uuid: string;
-  identifier?: string;
-};
-
-export type OpenMrsSessionWithProvider = {
-  authenticated: boolean;
-  user?: { uuid: string; display?: string } | null;
-  currentProvider?: OpenMrsProvider | null;
-};
-
-export type OpenMrsProviderSearchResponse = {
-  results?: OpenMrsProvider[];
-};

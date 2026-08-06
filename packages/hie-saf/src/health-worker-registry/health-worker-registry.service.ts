@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HieHttpRequests } from 'src/hie-http-request/hie-http-requests';
+import { HieHttpRequests } from '../hie-http-request/hie-http-requests';
 import { FetchHealthWorkerDto } from './dto/fetch-health-worker.dto';
 import { HealthWokerApiResponse } from './types';
 

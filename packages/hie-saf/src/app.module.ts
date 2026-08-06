@@ -18,8 +18,8 @@ import { FacilityLocation } from './core/database/entities/facility-locations.en
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
 import { BiometricsService } from './consent/biometrics/biometrics.service';
+import { ShrModule } from './shr/shr.module';
 import { CaseSummaryModule } from './case-summary/case-summary.module';
-
 @Module({
   imports: [
     HieAuthModule,
@@ -32,6 +32,7 @@ import { CaseSummaryModule } from './case-summary/case-summary.module';
         HIE_GRANT_TYPE: Joi.string().required(),
         HIE_BASE_URL: Joi.string().required(),
         HIE_CLIAMS_BASE_URL: Joi.string().required(),
+        HIE_SHR_BASE_URL: Joi.string().required(),
         DATABASE_HOST: Joi.string().required(),
         DATABASE_PORT: Joi.number().required(),
         DATABASE_USER: Joi.string().required(),
@@ -56,7 +57,8 @@ import { CaseSummaryModule } from './case-summary/case-summary.module';
     ClaimsModule,
     TypeOrmModule.forFeature([FacilityLocation]),
     HwrSyncModule,
-    CaseSummaryModule,
+    ShrModule,
+    CaseSummaryModule
   ],
   controllers: [AppController],
   providers: [

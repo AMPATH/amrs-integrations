@@ -30,14 +30,21 @@ export class HieHttpRequests {
       'x-facility-id-type': 'fr-code',
     };
   }
-  async sendGetRequest(url: string, locationUuid: string) {
+  async sendGetRequest(
+    url: string,
+    locationUuid: string,
+    extraHeaders?: Record<string, string>,
+  ) {
     const headers = await this.getHeaders(locationUuid);
     if (!headers) {
       throw new HttpException('Missing header params', HttpStatus.BAD_REQUEST);
     }
     const options = {
       method: 'GET',
-      headers: headers,
+      headers: {
+        ...headers,
+        ...extraHeaders,
+      },
     };
     return await fetch(url, options);
   }

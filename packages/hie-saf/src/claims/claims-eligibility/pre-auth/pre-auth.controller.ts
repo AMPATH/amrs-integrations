@@ -21,6 +21,7 @@ import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
 import { CreatePreAuthRequestDto } from './dto/create-pre-auth-request.dto';
 import { SearchPreAuthDto } from './dto/search-pre-auth-request.dto';
 import { UpdatePreAuthRequestDto } from './dto/update-pre-auth-request.dto';
+import { CancelPreAuthRequestDto } from './dto/cancel-pre-auth.request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('pre-auth')
@@ -93,5 +94,11 @@ export class PreAuthController {
       throw new BadRequestException();
     }
     return this.preAuthService.updatePreAuthRequest(body, id);
+  }
+  @Post('request/cancel')
+  public cancelPreAuthRequest(
+    @Body() cancelPreAuthRequestDto: CancelPreAuthRequestDto,
+  ) {
+    return this.preAuthService.cancelPreAuthRequest(cancelPreAuthRequestDto);
   }
 }

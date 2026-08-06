@@ -6,17 +6,21 @@ import { HwrSync } from '../../core/database/entities/hwr_sync.entity';
 import { HealthWorkerRegistryService } from '../../health-worker-registry/health-worker-registry.service';
 import {
   HealthWokerApiResponse,
+  Message,
   Regulators,
 } from '../../health-worker-registry/types';
-import { IdentifierTypes } from '../../shared/types';
 import {
+  IdentifierTypes,
   OpenMrsProviderSearchResponse,
   OpenMrsSessionWithProvider,
+  ResolvedPractitionerIdentity,
 } from '../types';
 
 /**
- * Resolves `practitioner_id` for SHR reads from the logged in provider, the way
- * `LocationFacilityHelper` resolves `facility_id` from a location.
+ * Resolves the logged in provider's identity from the Health Worker Registry —
+ * `practitioner_id` for SHR reads, and the full registration identity for EMT
+ * handover-initiate — the way `LocationFacilityHelper` resolves `facility_id`
+ * from a location.
  *
  * Chain: JSESSIONID -> OpenMRS session (`currentProvider`, else the provider
  * linked to the session user) -> `hwr_sync.national_id` for that provider ->
@@ -29,6 +33,8 @@ import {
  *    has run (see `HwrSyncService`).
  *  - DHA's "Health Worker Registry identifier" is read as the HWR record id,
  *    falling back to the regulator registration number.
+ *  - EMT handover-initiate's `regulator` is hardcoded to KMPDC, matching the
+ *    only regulator this resolver currently queries against.
  */
 @Injectable()
 export class PractitionerResolver {
@@ -47,6 +53,53 @@ export class PractitionerResolver {
     sessionCookie: string | undefined,
     locationUuid: string,
   ): Promise<string> {
+    const healthWorker = await this.resolveHealthWorker(
+      sessionCookie,
+      locationUuid,
+    );
+    const practitionerId =
+      healthWorker.membership?.id || healthWorker.membership?.registration_id;
+    if (!practitionerId) {
+      throw new HttpException(
+        'Health Worker Registry record has no practitioner identifier',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return practitionerId;
+  }
+
+  /**
+   * Full regulator identity for the logged in practitioner — used where a
+   * request must carry `identifier`/`identifier_type`/`regulator` rather than
+   * just an HWR id (e.g. EMT handover-initiate). Never take these values from
+   * the client; resolve them here instead.
+   */
+  public async resolveLoggedInPractitionerIdentity(
+    sessionCookie: string | undefined,
+    locationUuid: string,
+  ): Promise<ResolvedPractitionerIdentity> {
+    const healthWorker = await this.resolveHealthWorker(
+      sessionCookie,
+      locationUuid,
+    );
+    const registrationId = healthWorker.membership?.registration_id;
+    if (!registrationId) {
+      throw new HttpException(
+        'Health Worker Registry record has no registration number',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return {
+      identifier: registrationId,
+      identifierType: 'registration_number',
+      regulator: 'KMPDC',
+    };
+  }
+
+  private async resolveHealthWorker(
+    sessionCookie: string | undefined,
+    locationUuid: string,
+  ): Promise<Message> {
     if (!sessionCookie) {
       throw new HttpException(
         'Cannot resolve the logged in practitioner: OpenMRS session cookie (JSESSIONID) is missing',
@@ -55,7 +108,7 @@ export class PractitionerResolver {
     }
     const providerUuid = await this.getLoggedInProviderUuid(sessionCookie);
     const nationalId = await this.getProviderNationalId(providerUuid);
-    return this.getRegistryPractitionerId(nationalId, locationUuid);
+    return this.getRegistryHealthWorker(nationalId, locationUuid);
   }
 
   private async getLoggedInProviderUuid(
@@ -101,7 +154,7 @@ export class PractitionerResolver {
 
   private async getProviderNationalId(providerUuid: string): Promise<string> {
     const hwr = await this.hwrSyncRepository.findOneBy({
-      provider_uuid: "b408cf01-5bcc-4c73-bfa6-88fc3cfc29c9",
+      provider_uuid: providerUuid,
     });
     if (!hwr?.national_id) {
       throw new HttpException(
@@ -112,10 +165,10 @@ export class PractitionerResolver {
     return hwr.national_id;
   }
 
-  private async getRegistryPractitionerId(
+  private async getRegistryHealthWorker(
     nationalId: string,
     locationUuid: string,
-  ): Promise<string> {
+  ): Promise<Message> {
     const response: HealthWokerApiResponse =
       await this.healthWorkerRegistryService.fetchHealthWorkerFromRegistry({
         identifierNumber: nationalId,
@@ -133,15 +186,7 @@ export class PractitionerResolver {
         HttpStatus.NOT_FOUND,
       );
     }
-    const practitionerId =
-      healthWorker.membership?.id || healthWorker.membership?.registration_id;
-    if (!practitionerId) {
-      throw new HttpException(
-        'Health Worker Registry record has no practitioner identifier',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return practitionerId;
+    return healthWorker;
   }
 
   private async getFromOpenMrs<T>(
@@ -149,7 +194,6 @@ export class PractitionerResolver {
     sessionCookie: string,
     context: string,
   ): Promise<T> {
-    console.log("sessionCookie", sessionCookie);
     try {
       const response = await fetch(url, {
         method: 'GET',

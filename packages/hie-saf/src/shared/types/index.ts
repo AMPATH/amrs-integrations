@@ -42,8 +42,7 @@ export type TiberbuRequestOtpApiResponse = {
   maskedPhone: string;
 };
 export type ValidateConsentApiResponse =
-  | ValidateConsentApiSuccessResponse
-  | ValidateConsentApiErrorResponse;
+  ValidateConsentApiSuccessResponse | ValidateConsentApiErrorResponse;
 export type ValidateConsentApiSuccessResponse = {
   token: string;
   issued: number;
@@ -93,4 +92,31 @@ export type ProviderAttribute = {
 export type AttributeDto = {
   attributeType: string;
   value: string;
+};
+
+/** OpenMRS shapes used to resolve the logged in provider. */
+export type OpenMrsProvider = {
+  uuid: string;
+  identifier?: string;
+};
+
+export type OpenMrsSessionWithProvider = {
+  authenticated: boolean;
+  user?: { uuid: string; display?: string } | null;
+  currentProvider?: OpenMrsProvider | null;
+};
+
+export type OpenMrsProviderSearchResponse = {
+  results?: OpenMrsProvider[];
+};
+
+/**
+ * Regulator identity resolved for the logged in practitioner — used where a
+ * request must carry the practitioner's own registration details (e.g. EMT
+ * handover-initiate) rather than just an HWR id.
+ */
+export type ResolvedPractitionerIdentity = {
+  identifier: string;
+  identifierType: 'registration_number';
+  regulator: string;
 };

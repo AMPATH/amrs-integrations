@@ -61,8 +61,8 @@ export interface Identifiers {
 }
 
 export enum Regulators {
-  Ppb = 'ppb',
-  Nck = 'nck',
-  Coc = 'coc',
-  Kmpdc = 'kmpdc',
+  Ppb = 'PPB',
+  Nck = 'NCK',
+  Coc = 'COC',
+  Kmpdc = 'KMPDC',
 }

@@ -11,7 +11,11 @@ import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { CreateNormalPreAuthRequestDto } from './dto/create-normal-pre-auth.request.dto';
 import { ResendDoctorConsentDto } from './dto/resend-doctor-consent.dto';
-import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
+import {
+  CancelPreAuthDto,
+  PreAuthPreviewDto,
+  type UploadedPreauthFile,
+} from './types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PreAuthRequest } from '../../../core/database/entities/pre-auth-request.entity';
 import { Repository } from 'typeorm';
@@ -19,6 +23,7 @@ import { CreatePreAuthRequestDto } from './dto/create-pre-auth-request.dto';
 import { SearchPreAuthDto } from './dto/search-pre-auth-request.dto';
 import { UpdatePreAuthRequestDto } from './dto/update-pre-auth-request.dto';
 import { PreAuthRequestStatus } from 'src/claims/types';
+import { CancelPreAuthRequestDto } from './dto/cancel-pre-auth.request.dto';
 
 /** Optional specialty fields forwarded to HIE when present on the multipart body. */
 const SPECIALTY_FORWARD_FIELDS: Array<keyof CreateNormalPreAuthRequestDto> = [
@@ -471,6 +476,43 @@ export class PreAuthService {
       return this.preAuthRequestRepository.save(record);
     } else {
       throw new NotFoundException('Request with the id does not exist');
+    }
+  }
+  public async cancelPreAuthRequest(
+    cancelPreAuthRequestDto: CancelPreAuthRequestDto,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const cancelPreAuthUrl = `${baseUrl}/api/v1/preauths/cancel`;
+
+    if (
+      !cancelPreAuthRequestDto.consentToken ||
+      !cancelPreAuthRequestDto.interventionCode ||
+      !cancelPreAuthRequestDto.locationUuid
+    ) {
+      throw new BadRequestException(
+        'Missing consent token or intervention code or location params',
+      );
+    }
+
+    const cancelPreAuthDto: CancelPreAuthDto = {
+      consent_token: cancelPreAuthRequestDto.consentToken,
+      intervention_code: cancelPreAuthRequestDto.interventionCode,
+    };
+
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        cancelPreAuthUrl,
+        cancelPreAuthDto,
+        cancelPreAuthRequestDto.locationUuid,
+      );
+      const data = await response.json();
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error closing pre-auth request',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

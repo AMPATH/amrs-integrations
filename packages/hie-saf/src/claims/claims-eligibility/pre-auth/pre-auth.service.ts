@@ -5,12 +5,25 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { CreateNormalPreAuthRequestDto } from './dto/create-normal-pre-auth.request.dto';
 import { ResendDoctorConsentDto } from './dto/resend-doctor-consent.dto';
-import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
+import {
+  CancelPreAuthDto,
+  PreAuthPreviewDto,
+  type UploadedPreauthFile,
+} from './types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PreAuthRequest } from '../../../core/database/entities/pre-auth-request.entity';
+import { Repository } from 'typeorm';
+import { CreatePreAuthRequestDto } from './dto/create-pre-auth-request.dto';
+import { SearchPreAuthDto } from './dto/search-pre-auth-request.dto';
+import { UpdatePreAuthRequestDto } from './dto/update-pre-auth-request.dto';
+import { PreAuthRequestStatus } from 'src/claims/types';
+import { CancelPreAuthRequestDto } from './dto/cancel-pre-auth.request.dto';
 
 /** Optional specialty fields forwarded to HIE when present on the multipart body. */
 const SPECIALTY_FORWARD_FIELDS: Array<keyof CreateNormalPreAuthRequestDto> = [
@@ -30,6 +43,11 @@ const SPECIALTY_FORWARD_FIELDS: Array<keyof CreateNormalPreAuthRequestDto> = [
   'new_or_replacement',
   'frequency_of_sessions',
   'start_date',
+  'expected_service_start_date',
+  'progress_report',
+  'is_condition_related_to_employment',
+  'is_condition_related_to_auto_or_other_accident',
+  'co_insurance_details',
 ];
 
 /** Surgical fields — accept camelCase or snake_case from clients; forward snake_case to HIE. */
@@ -38,7 +56,11 @@ const SURGICAL_HIE_FIELDS: Array<{
   camel: keyof CreateNormalPreAuthRequestDto;
   snake: keyof CreateNormalPreAuthRequestDto;
 }> = [
-  { hieKey: 'chief_complaint', camel: 'chiefComplaint', snake: 'chief_complaint' },
+  {
+    hieKey: 'chief_complaint',
+    camel: 'chiefComplaint',
+    snake: 'chief_complaint',
+  },
   { hieKey: 'vital_signs', camel: 'vitalSigns', snake: 'vital_signs' },
   {
     hieKey: 'history_of_present_illness',
@@ -55,7 +77,11 @@ const SURGICAL_HIE_FIELDS: Array<{
     camel: 'investigationReportDetails',
     snake: 'investigation_report_details',
   },
-  { hieKey: 'type_of_anaesthesia', camel: 'typeOfAnaesthesia', snake: 'type_of_anaesthesia' },
+  {
+    hieKey: 'type_of_anaesthesia',
+    camel: 'typeOfAnaesthesia',
+    snake: 'type_of_anaesthesia',
+  },
   { hieKey: 'surgery_date', camel: 'surgeryDate', snake: 'surgery_date' },
 ];
 
@@ -81,6 +107,8 @@ export class PreAuthService {
   constructor(
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
+    @InjectRepository(PreAuthRequest)
+    private preAuthRequestRepository: Repository<PreAuthRequest>,
   ) {}
 
   /**
@@ -313,14 +341,15 @@ export class PreAuthService {
     const pairs: Pair[] = [];
 
     metaList.forEach((meta, arrayIndex) => {
-      const title = String(meta.document_title ?? meta.documentTitle ?? '').trim();
+      const title = String(
+        meta.document_title ?? meta.documentTitle ?? '',
+      ).trim();
       const type = String(meta.document_type ?? meta.documentType ?? '').trim();
       const declared =
         meta.file_field_name ??
         meta.fileFieldName ??
         attachmentFieldName(arrayIndex);
-      const preferredIndex =
-        parseAttachmentIndex(declared) ?? arrayIndex;
+      const preferredIndex = parseAttachmentIndex(declared) ?? arrayIndex;
       const file =
         filesByField.get(declared) ??
         filesByField.get(attachmentFieldName(preferredIndex)) ??
@@ -377,7 +406,9 @@ export class PreAuthService {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? (parsed as AttachmentMeta[]) : [];
       } catch {
-        throw new BadRequestException('attachments must be a JSON array string');
+        throw new BadRequestException(
+          'attachments must be a JSON array string',
+        );
       }
     }
     return [];
@@ -388,5 +419,100 @@ export class PreAuthService {
       return value;
     }
     return JSON.stringify(value ?? []);
+  }
+  public async createPreAuthRequest(
+    createPreAuthRequest: CreatePreAuthRequestDto,
+  ) {
+    try {
+      const preAuthRequestEntity = this.preAuthRequestRepository.create({
+        locationUuid: createPreAuthRequest.locationUuid,
+        billableServiceUuid: createPreAuthRequest.billableServiceUuid,
+        priceUuid: createPreAuthRequest.priceUuid,
+        patientUuid: createPreAuthRequest.patientUuid,
+        orderNo: createPreAuthRequest.orderNo,
+        consentToken: createPreAuthRequest.consentToken,
+        interventionCode: createPreAuthRequest.interventionCode,
+        subBenefitCode: createPreAuthRequest.subBenefitCode,
+        serviceType: createPreAuthRequest.serviceType,
+        requiresPreauth: createPreAuthRequest.requiresPreauth,
+        normalPreauth: createPreAuthRequest.normalPreauth,
+        electivePreauth: createPreAuthRequest.electivePreauth,
+        applicableDocumentTypes: createPreAuthRequest.applicableDocumentTypes,
+        requiredPreauthDocumentTypes:
+          createPreAuthRequest.requiredPreauthDocumentTypes,
+        status: PreAuthRequestStatus.Pending,
+      });
+      const data =
+        await this.preAuthRequestRepository.save(preAuthRequestEntity);
+      return data;
+    } catch (error) {
+      Logger.error(error);
+    }
+  }
+  public async getPreAuthRequest(searchPreAuthDto: SearchPreAuthDto) {
+    return this.preAuthRequestRepository.find({
+      where: {
+        ...searchPreAuthDto,
+      },
+    });
+  }
+  public async updatePreAuthRequest(
+    updatePreAuthRequestDto: UpdatePreAuthRequestDto,
+    id: number,
+  ) {
+    const existing = await this.preAuthRequestRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    let record;
+
+    if (existing) {
+      record = {
+        ...existing,
+        ...updatePreAuthRequestDto,
+      };
+      return this.preAuthRequestRepository.save(record);
+    } else {
+      throw new NotFoundException('Request with the id does not exist');
+    }
+  }
+  public async cancelPreAuthRequest(
+    cancelPreAuthRequestDto: CancelPreAuthRequestDto,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const cancelPreAuthUrl = `${baseUrl}/api/v1/preauths/cancel`;
+
+    if (
+      !cancelPreAuthRequestDto.consentToken ||
+      !cancelPreAuthRequestDto.interventionCode ||
+      !cancelPreAuthRequestDto.locationUuid
+    ) {
+      throw new BadRequestException(
+        'Missing consent token or intervention code or location params',
+      );
+    }
+
+    const cancelPreAuthDto: CancelPreAuthDto = {
+      consent_token: cancelPreAuthRequestDto.consentToken,
+      intervention_code: cancelPreAuthRequestDto.interventionCode,
+    };
+
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        cancelPreAuthUrl,
+        cancelPreAuthDto,
+        cancelPreAuthRequestDto.locationUuid,
+      );
+      const data = await response.json();
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error closing pre-auth request',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

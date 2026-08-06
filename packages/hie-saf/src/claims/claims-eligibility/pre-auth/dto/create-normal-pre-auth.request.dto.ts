@@ -208,4 +208,29 @@ export class CreateNormalPreAuthRequestDto {
   @IsOptional()
   @IsString()
   surgery_date?: string;
+
+  @ApiPropertyOptional({ description: 'Required for elective preauths' })
+  @IsOptional()
+  @IsString()
+  expected_service_start_date?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  progress_report?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  is_condition_related_to_employment?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  is_condition_related_to_auto_or_other_accident?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  co_insurance_details?: string;
 }

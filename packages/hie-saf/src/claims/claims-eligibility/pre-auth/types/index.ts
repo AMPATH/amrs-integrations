@@ -53,3 +53,8 @@ export type UploadedPreauthFile = {
   size?: number;
   buffer: Buffer;
 };
+
+export type CancelPreAuthDto = {
+  consent_token: string;
+  intervention_code: string;
+};

@@ -48,6 +48,9 @@ import { PreAuthService } from './claims-eligibility/pre-auth/pre-auth.service';
 import { PreAuthController } from './claims-eligibility/pre-auth/pre-auth.controller';
 import { PomsfBalanceController } from './claims-eligibility/pomsf-balance/pomsf-balance.controller';
 import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-balance.service';
+import { PreAuthRequest } from '../core/database/entities/pre-auth-request.entity';
+import { ClaimsAuthorizeController } from './claims-eligibility/authorize/claims-authorize.controller';
+import { ClaimsAuthorizeService } from './claims-eligibility/authorize/claims-authorize.service';
 
 @Module({
   imports: [
@@ -60,6 +63,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
       ClaimDiagnosis,
       ClaimLine,
       ClaimAttachment,
+      PreAuthRequest,
     ]),
   ],
   controllers: [
@@ -70,6 +74,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     BillOrderController,
     ClaimsVisitController,
     ClaimsOtpController,
+    ClaimsAuthorizeController,
     ClaimLineController,
     ClaimDiagnosisController,
     ClaimAttachmentController,
@@ -81,7 +86,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     ClaimDischargeController,
     ClaimAuthorizationController,
     PreAuthController,
-    PomsfBalanceController
+    PomsfBalanceController,
   ],
   providers: [
     SubBenefitsService,
@@ -92,6 +97,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     BillOrderService,
     ClaimsVisitService,
     ClaimsOtpService,
+    ClaimsAuthorizeService,
     ClaimLineService,
     ClaimDiagnosisService,
     ClaimAttachmentService,
@@ -104,7 +110,7 @@ import { PomsfBalanceService } from './claims-eligibility/pomsf-balance/pomsf-ba
     ClaimDischargeService,
     ClaimAuthorizationService,
     PreAuthService,
-    PomsfBalanceService
+    PomsfBalanceService,
   ],
 })
 export class ClaimsModule {}

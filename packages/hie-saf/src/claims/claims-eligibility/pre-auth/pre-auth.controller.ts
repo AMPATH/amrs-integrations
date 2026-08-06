@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Query,
   UploadedFiles,
@@ -16,6 +18,10 @@ import { PreAuthService } from './pre-auth.service';
 import { PreAuthPreviewRequestDto } from './dto/pre-auth-preview-request.dto';
 import { ResendDoctorConsentDto } from './dto/resend-doctor-consent.dto';
 import { PreAuthPreviewDto, type UploadedPreauthFile } from './types';
+import { CreatePreAuthRequestDto } from './dto/create-pre-auth-request.dto';
+import { SearchPreAuthDto } from './dto/search-pre-auth-request.dto';
+import { UpdatePreAuthRequestDto } from './dto/update-pre-auth-request.dto';
+import { CancelPreAuthRequestDto } from './dto/cancel-pre-auth.request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('pre-auth')
@@ -35,9 +41,14 @@ export class PreAuthController {
     @UploadedFiles() files: UploadedPreauthFile[],
     @Body() body: CreateNormalPreAuthRequestDto,
   ) {
+    // Multipart text fields land on @Body() (including locationUuid). Required for
+    // x-facility-id routing — without it HIE may attribute the call to the OAuth client facility.
+    if (!body?.locationUuid?.trim()) {
+      throw new BadRequestException('Missing locationUuid');
+    }
     return this.preAuthService.createNormalPreauth(
       body,
-      body.locationUuid,
+      body.locationUuid.trim(),
       files ?? [],
     );
   }
@@ -63,5 +74,31 @@ export class PreAuthController {
       preAuthPreviewDto,
       query.locationUuid,
     );
+  }
+  @Post('request')
+  public createPreAuthRequest(
+    @Body() createPreAuthRequest: CreatePreAuthRequestDto,
+  ) {
+    return this.preAuthService.createPreAuthRequest(createPreAuthRequest);
+  }
+  @Get('request')
+  public async getPreAuthRequest(@Query() query: SearchPreAuthDto) {
+    return this.preAuthService.getPreAuthRequest(query);
+  }
+  @Patch('request/:id')
+  public updatePreAuthRequest(
+    @Body() body: UpdatePreAuthRequestDto,
+    @Param('id') id: number,
+  ) {
+    if (!id || !body) {
+      throw new BadRequestException();
+    }
+    return this.preAuthService.updatePreAuthRequest(body, id);
+  }
+  @Post('request/cancel')
+  public cancelPreAuthRequest(
+    @Body() cancelPreAuthRequestDto: CancelPreAuthRequestDto,
+  ) {
+    return this.preAuthService.cancelPreAuthRequest(cancelPreAuthRequestDto);
   }
 }

@@ -19,7 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { HwrSyncModule } from './hwr-sync/hwr-sync.module';
 import { BiometricsService } from './consent/biometrics/biometrics.service';
 import { ShrModule } from './shr/shr.module';
-
+import { CaseSummaryModule } from './case-summary/case-summary.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -39,6 +39,12 @@ import { ShrModule } from './shr/shr.module';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_NAME: Joi.string().required(),
         APP_ENV: Joi.string().required(),
+        AMRS_DATABASE_HOST: Joi.string().required(),
+        AMRS_DATABASE_PORT: Joi.number().required(),
+        AMRS_DATABASE_USER: Joi.string().required(),
+        AMRS_DATABASE_PASSWORD: Joi.string().required(),
+        AMRS_DATABASE_NAME: Joi.string().required(),
+        AMRS_DATABASE_POOL_SIZE: Joi.number().default(4),
       }),
     }),
     DatabaseModule,
@@ -52,6 +58,7 @@ import { ShrModule } from './shr/shr.module';
     TypeOrmModule.forFeature([FacilityLocation]),
     HwrSyncModule,
     ShrModule,
+    CaseSummaryModule
   ],
   controllers: [AppController],
   providers: [

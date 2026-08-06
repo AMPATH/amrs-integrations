@@ -13,15 +13,8 @@ export class HealthWorkerRegistryService {
   async fetchHealthWorkerFromRegistry(
     fetchHealthWorkerDto: FetchHealthWorkerDto,
   ): Promise<any> {
-    const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';
-    const encodedParams = new URLSearchParams();
-    encodedParams.set('identifierType', fetchHealthWorkerDto.identifierType);
-    encodedParams.set(
-      'identifierNumber',
-      fetchHealthWorkerDto.identifierNumber,
-    );
-    encodedParams.set('regulator', fetchHealthWorkerDto.regulator);
-    const hwrSearchUrl = `${baseUrl}/hie/api/v1/professional?${encodedParams.toString()}`;
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const hwrSearchUrl = `${baseUrl}/api/v1/professionals?identification_number=${fetchHealthWorkerDto.identifierNumber}&identification_type=${fetchHealthWorkerDto.identifierType}&regulator=${fetchHealthWorkerDto.regulator}`;
     try {
       const resp = await this.hieHttpRequests.sendGetRequest(
         hwrSearchUrl,

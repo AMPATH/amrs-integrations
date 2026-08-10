@@ -114,7 +114,7 @@ export class PractitionerResolver {
   private async getLoggedInProviderUuid(
     sessionCookie: string,
   ): Promise<string> {
-    const sessionUrl = `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/session?v=custom:(authenticated,user:(uuid,display),currentProvider:(uuid,identifier))`;
+    const sessionUrl = `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/session?v=custom:(authenticated,user:(uuid,display),currentProvider:(uuid,identifier))`;
     const session = await this.getFromOpenMrs<OpenMrsSessionWithProvider>(
       sessionUrl,
       sessionCookie,
@@ -136,7 +136,7 @@ export class PractitionerResolver {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const providerUrl = `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/provider?user=${encodeURIComponent(userUuid)}&v=custom:(uuid,identifier)`;
+    const providerUrl = `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1/provider?user=${encodeURIComponent(userUuid)}&v=custom:(uuid,identifier)`;
     const search = await this.getFromOpenMrs<OpenMrsProviderSearchResponse>(
       providerUrl,
       sessionCookie,

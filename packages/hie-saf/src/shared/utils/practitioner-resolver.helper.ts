@@ -31,8 +31,10 @@ import {
  *    fetched again here with the caller's cookie (no shared code changed).
  *  - the provider must already be in `hwr_sync`, i.e. the facility's HWR sync
  *    has run (see `HwrSyncService`).
- *  - DHA's "Health Worker Registry identifier" is read as the HWR record id,
- *    falling back to the regulator registration number.
+ *  - `membership.id`/`registration_id` are internal HWR/PUID identifiers, used
+ *    for SHR's generic `practitioner_id`. `membership.external_reference_id`
+ *    is the actual KMPDC-issued regulator registration number and is the only
+ *    field that belongs in EMT handover-initiate's `identifier`.
  *  - EMT handover-initiate's `regulator` is hardcoded to KMPDC, matching the
  *    only regulator this resolver currently queries against.
  */
@@ -82,15 +84,15 @@ export class PractitionerResolver {
       sessionCookie,
       locationUuid,
     );
-    const registrationId = healthWorker.membership?.registration_id;
-    if (!registrationId) {
+    const externalReferenceId = healthWorker.membership?.external_reference_id;
+    if (!externalReferenceId) {
       throw new HttpException(
         'Health Worker Registry record has no registration number',
         HttpStatus.NOT_FOUND,
       );
     }
     return {
-      identifier: registrationId,
+      identifier: externalReferenceId,
       identifierType: 'registration_number',
       regulator: 'KMPDC',
     };

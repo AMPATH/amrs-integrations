@@ -1,52 +1,69 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SearchPreAuthDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   consentToken?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   patientUuid?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   interventionCode?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   locationUuid?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   billableServiceUuid?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   priceUuid?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   status?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNotEmpty()
   @IsString()
   orderNo?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  encounterUuid?: string;
+
+  @ApiPropertyOptional({ description: 'Filter elective holding rows' })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === true || value === 'true' || value === '1') return true;
+    if (value === false || value === 'false' || value === '0') return false;
+    return value;
+  })
+  @IsBoolean()
+  electivePreauth?: boolean;
 }

@@ -14,7 +14,11 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
   app.use(logger);
   const config = new DocumentBuilder()
     .setTitle('HIE Safaricom Integration')

@@ -30,7 +30,22 @@ export class InterventionsService {
   ) { }
   async fetchInterventions(fetchInterventionsDto: InterventionsDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const interventionsUrl = `${baseUrl}/api/v1/patients/benefits/interventions?patient_id=${fetchInterventionsDto.patient_id}&sub_benefit_code=${fetchInterventionsDto.sub_benefit_code}`;
+    const params = new URLSearchParams({
+      patient_id: fetchInterventionsDto.patient_id,
+    });
+    if (fetchInterventionsDto.sub_benefit_code) {
+      params.set('sub_benefit_code', fetchInterventionsDto.sub_benefit_code);
+    }
+    if (fetchInterventionsDto.code) {
+      params.set('code', fetchInterventionsDto.code);
+    }
+    if (!fetchInterventionsDto.sub_benefit_code && !fetchInterventionsDto.code) {
+      throw new HttpException(
+        'Provide sub_benefit_code and/or code',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const interventionsUrl = `${baseUrl}/api/v1/patients/benefits/interventions?${params.toString()}`;
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         interventionsUrl,

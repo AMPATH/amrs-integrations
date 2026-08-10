@@ -10,10 +10,6 @@ export class ClaimsAuthorizeService {
     private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * Pre-visit / elective OTP authorize → HIE POST /api/v1/claims/authorize.
-   * Returns authorization with token (AUTHORIZED_PENDING_VISIT) and optional guid.
-   */
   async authorizeWithOtp(dto: CreateOtpAuthorizationDto) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const url = `${baseUrl}/api/v1/claims/authorize`;
@@ -26,6 +22,12 @@ export class ClaimsAuthorizeService {
     if (dto.beneficiary_contact_id) {
       payload.beneficiary_contact_id = dto.beneficiary_contact_id;
     }
+
+    Logger.log(
+      `HIE claims/authorize (pre-visit) patient=${dto.patient_id} interventions=${JSON.stringify(
+        dto.interventions,
+      )} service_type=${dto.service_type} contact=${dto.beneficiary_contact_id ?? ''}`,
+    );
 
     try {
       const response = await this.hieHttpRequests.sendPostRequest(

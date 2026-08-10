@@ -47,9 +47,24 @@ export class PreAuthRequest {
     name: 'consent_token',
     type: 'varchar',
     length: 200,
-    nullable: false,
+    nullable: true,
   })
-  consentToken!: string;
+  consentToken?: string;
+
+  @Column({
+    name: 'encounter_uuid',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+  })
+  encounterUuid?: string;
+
+  @Column({
+    name: 'expected_service_start_date',
+    type: 'timestamp',
+    nullable: true,
+  })
+  expectedServiceStartDate?: Date;
 
   @Column({
     name: 'service_type',

@@ -1,11 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePreAuthRequestDto {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  consentToken!: string;
+  consentToken?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -37,15 +43,25 @@ export class CreatePreAuthRequestDto {
   @IsString()
   locationUuid!: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  billableServiceUuid!: string;
+  billableServiceUuid?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  priceUuid!: string;
+  priceUuid?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  encounterUuid?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  expectedServiceStartDate?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -62,11 +78,13 @@ export class CreatePreAuthRequestDto {
   @IsBoolean()
   electivePreauth!: boolean;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  applicableDocumentTypes!: string;
+  applicableDocumentTypes?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  requiredPreauthDocumentTypes!: string;
+  requiredPreauthDocumentTypes?: string;
 }

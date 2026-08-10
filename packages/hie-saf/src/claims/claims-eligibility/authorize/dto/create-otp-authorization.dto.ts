@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 /** OTP variant of POST /api/v1/claims/authorize (pre-visit elective consent). */
 export class CreateOtpAuthorizationDto {
@@ -31,4 +31,18 @@ export class CreateOtpAuthorizationDto {
   @IsOptional()
   @IsString()
   beneficiary_contact_id?: string;
+
+  /**
+   * Accepted from callers but NOT forwarded to HIE.
+   * is_elective on authorize means day-of elective visit (requires approved preauth).
+   */
+  @ApiPropertyOptional({ deprecated: true })
+  @IsOptional()
+  @IsBoolean()
+  isElective?: boolean;
+
+  @ApiPropertyOptional({ deprecated: true })
+  @IsOptional()
+  @IsBoolean()
+  is_elective?: boolean;
 }

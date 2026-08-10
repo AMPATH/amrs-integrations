@@ -18,7 +18,7 @@ import {
 } from './types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PreAuthRequest } from '../../../core/database/entities/pre-auth-request.entity';
-import { Repository } from 'typeorm';
+import { type FindOptionsWhere, Repository } from 'typeorm';
 import { CreatePreAuthRequestDto } from './dto/create-pre-auth-request.dto';
 import { SearchPreAuthDto } from './dto/search-pre-auth-request.dto';
 import { UpdatePreAuthRequestDto } from './dto/update-pre-auth-request.dto';
@@ -431,15 +431,20 @@ export class PreAuthService {
         patientUuid: createPreAuthRequest.patientUuid,
         orderNo: createPreAuthRequest.orderNo,
         consentToken: createPreAuthRequest.consentToken,
+        encounterUuid: createPreAuthRequest.encounterUuid,
+        expectedServiceStartDate: createPreAuthRequest.expectedServiceStartDate
+          ? new Date(createPreAuthRequest.expectedServiceStartDate)
+          : undefined,
         interventionCode: createPreAuthRequest.interventionCode,
         subBenefitCode: createPreAuthRequest.subBenefitCode,
         serviceType: createPreAuthRequest.serviceType,
         requiresPreauth: createPreAuthRequest.requiresPreauth,
         normalPreauth: createPreAuthRequest.normalPreauth,
         electivePreauth: createPreAuthRequest.electivePreauth,
-        applicableDocumentTypes: createPreAuthRequest.applicableDocumentTypes,
+        applicableDocumentTypes:
+          createPreAuthRequest.applicableDocumentTypes ?? '',
         requiredPreauthDocumentTypes:
-          createPreAuthRequest.requiredPreauthDocumentTypes,
+          createPreAuthRequest.requiredPreauthDocumentTypes ?? '',
         status: PreAuthRequestStatus.Pending,
       });
       const data =
@@ -450,10 +455,45 @@ export class PreAuthService {
     }
   }
   public async getPreAuthRequest(searchPreAuthDto: SearchPreAuthDto) {
+    const where: FindOptionsWhere<PreAuthRequest> = {};
+
+    if (searchPreAuthDto.consentToken) {
+      where.consentToken = searchPreAuthDto.consentToken;
+    }
+    if (searchPreAuthDto.patientUuid) {
+      where.patientUuid = searchPreAuthDto.patientUuid;
+    }
+    if (searchPreAuthDto.interventionCode) {
+      where.interventionCode = searchPreAuthDto.interventionCode;
+    }
+    if (searchPreAuthDto.locationUuid) {
+      where.locationUuid = searchPreAuthDto.locationUuid;
+    }
+    if (searchPreAuthDto.billableServiceUuid) {
+      where.billableServiceUuid = searchPreAuthDto.billableServiceUuid;
+    }
+    if (searchPreAuthDto.priceUuid) {
+      where.priceUuid = searchPreAuthDto.priceUuid;
+    }
+    if (searchPreAuthDto.status) {
+      where.status = searchPreAuthDto.status;
+    }
+    if (searchPreAuthDto.orderNo) {
+      where.orderNo = searchPreAuthDto.orderNo;
+    }
+    if (searchPreAuthDto.encounterUuid) {
+      where.encounterUuid = searchPreAuthDto.encounterUuid;
+    }
+    if (searchPreAuthDto.electivePreauth !== undefined && searchPreAuthDto.electivePreauth !== null) {
+      // Query strings arrive as "true"/"false"; MySQL treats "true" as 0 and returns no rows.
+      const raw = searchPreAuthDto.electivePreauth as boolean | string;
+      where.electivePreauth =
+        raw === true || raw === 'true' || raw === '1';
+    }
+
     return this.preAuthRequestRepository.find({
-      where: {
-        ...searchPreAuthDto,
-      },
+      where,
+      order: { dateCreated: 'DESC' },
     });
   }
   public async updatePreAuthRequest(

@@ -17,6 +17,7 @@ export class ClaimLineController {
       intervention_code: body.interventionCode,
       unit_price: body.unitPrice,
       quantity: body.quantity,
+      order_no: body.orderNo
     };
     if (body?.serviceName) {
       addClaimLineDto['service_name'] = body.serviceName;
@@ -26,6 +27,9 @@ export class ClaimLineController {
     }
     if (body.schemeCode) {
       addClaimLineDto['scheme_code'] = body.schemeCode;
+    }
+    if (body.orderNo) {
+      addClaimLineDto['order_no'] = body.orderNo;
     }
     return this.claimLineService.addClaimLine(
       addClaimLineDto,

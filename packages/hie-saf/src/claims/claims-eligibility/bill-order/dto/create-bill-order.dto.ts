@@ -10,7 +10,7 @@ export class CreateBillOrderDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  patient_uuid!: string;
+  patient_uuid?: string;
 
   @ApiProperty()
   @IsNotEmpty()

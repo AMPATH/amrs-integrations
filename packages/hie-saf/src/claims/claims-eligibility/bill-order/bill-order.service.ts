@@ -16,7 +16,7 @@ export class BillOrderService {
     @InjectRepository(BillOrder)
     private billOrderRepository: Repository<BillOrder>,
   ) {}
-  async createBillOrder(createBillOrderDto: CreateBillOrderDto) {
+  async createBillOrder(createBillOrderDto: Partial<CreateBillOrderDto>) {
     if ('order_no' in createBillOrderDto) {
       const existingOrder = await this.billOrderRepository.findOne({
         where: {

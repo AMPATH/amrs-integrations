@@ -38,6 +38,7 @@ export class ClaimLineService {
             claimLineAction: ClaimLineActions.Add,
             consentToken: addClaimLineDto.consent_token,
             interventionCode: addClaimLineDto.intervention_code,
+            orderNo: addClaimLineDto.order_no,
             claimLineResponse: data,
           });
           await this.claimLineRepository.save(addClaimLineEntity);

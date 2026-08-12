@@ -6,6 +6,7 @@ export type AddClaimLineDto = {
   unit_price: string;
   quantity: string;
   scheme_code: string;
+  order_no: string;
 };
 
 export type RemoveClaimLineDto = {

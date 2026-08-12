@@ -78,6 +78,15 @@ export class ClaimLine {
   @Column({
     type: 'varchar',
     length: 100,
+    name: 'order_no',
+    nullable: true,
+    default: null,
+  })
+  orderNo!: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
     name: 'line_guid',
     nullable: true,
     default: null,

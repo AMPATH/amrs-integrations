@@ -46,7 +46,6 @@ export class AddClaimLineRequestDto {
   locationUuid!: string;
 
   @ApiProperty()
-  @IsOptional()
   @IsNotEmpty()
   @IsString()
   orderNo?: string;

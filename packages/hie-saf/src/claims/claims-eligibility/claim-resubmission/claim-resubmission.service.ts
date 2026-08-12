@@ -14,7 +14,7 @@ export class ClaimResubmissionService {
     locationUuid: string,
   ): Promise<any> {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
-    const resubmitClaimUrl = `${baseUrl}/api/v1/claims/resubmit`;
+    const resubmitClaimUrl = `${baseUrl}/api/v1/claims/submit`;
     try {
       const response = await this.hieHttpRequests.sendPostRequest(
         resubmitClaimUrl,

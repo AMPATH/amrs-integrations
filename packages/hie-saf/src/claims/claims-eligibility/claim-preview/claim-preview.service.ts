@@ -7,12 +7,14 @@ import {
   PreviewProviderClaimDto,
   ProviderClaimPreviewResponse,
 } from './types';
+import { ClaimsVisitService } from '../visit/visit.service';
 
 @Injectable()
 export class ClaimPreviewService {
   constructor(
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
+    private readonly claimVisitService: ClaimsVisitService,
   ) {}
   async previewProviderClaim(
     previewProviderClaimDto: PreviewProviderClaimDto,
@@ -27,6 +29,15 @@ export class ClaimPreviewService {
         locationUuid,
       );
       const data = (await response.json()) as ProviderClaimPreviewResponse;
+      try {
+        await this.claimVisitService.updateVisitClaimStatus({
+          consentToken: previewProviderClaimDto.consent_token,
+          payerStatus: undefined,
+          providerStatus: data.workflow_state,
+        });
+      } catch (error) {
+        Logger.error(error);
+      }
       return data ?? null;
     } catch (error) {
       Logger.error(error);

@@ -17,24 +17,18 @@ export class ClaimsPayerStatusService {
     claimsPayerStateTransitionDto: ClaimPayerStateTransitionDto,
   ) {
     try {
-      console.log('DTO: ', claimsPayerStateTransitionDto);
       const entity = this.claimPayerStateTransitionEntityRepository.create({
         ...claimsPayerStateTransitionDto,
       });
 
-      console.log('ENTITY: ', entity);
-
       const res =
         await this.claimPayerStateTransitionEntityRepository.save(entity);
 
-      console.log('RES: ', res);
+      const res2 = await this.visitService.updateVisitClaimStatus({
+        consentToken: res.consent_token,
+        payerStatus: res.to_state,
+      });
 
-      const res2 = await this.visitService.updateVisitClaimStatus(
-        res.to_state,
-        res.consent_token,
-      );
-
-      console.log('RES2: ', res2);
       return res2;
     } catch (err) {
       return err;

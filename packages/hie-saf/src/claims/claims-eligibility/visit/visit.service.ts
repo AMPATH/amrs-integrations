@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
-import { ClaimsVisitReponse, ClaimVisitDto } from './types';
+import {
+  ClaimsVisitReponse,
+  ClaimVisitDto,
+  UpdateVisitClaimStatusDto,
+} from './types';
 import { CreateClaimVisitDto } from './dto/create-claim-visit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
@@ -122,7 +126,11 @@ export class ClaimsVisitService {
     });
   }
 
-  async updateVisitClaimStatus(status: string, consentToken: string) {
+  async updateVisitClaimStatus({
+    consentToken,
+    payerStatus,
+    providerStatus,
+  }: UpdateVisitClaimStatusDto) {
     try {
       const visit = await this.claimVisitRepository.findOne({
         where: {
@@ -134,17 +142,18 @@ export class ClaimsVisitService {
         throw new Error('Claim not found');
       }
 
-      const updatedVisit = {
-        ...visit,
-        status: status,
-      };
-      try {
-        await this.claimVisitRepository.save(updatedVisit);
-      } catch (err) {
-        console.log(err);
+      if (payerStatus !== undefined) {
+        visit.payerStatus = payerStatus;
       }
+
+      if (providerStatus !== undefined) {
+        visit.providerStatus = providerStatus;
+      }
+
+      return await this.claimVisitRepository.save(visit);
     } catch (err) {
       console.log(err);
+      throw err;
     }
   }
 }

@@ -20,11 +20,12 @@ export class ClaimsProviderStateTransitionService {
         ...claimProviderStateTransitionDto,
       });
 
-      await this.claimProviderStateTransitionEntityRepository.save(entity);
-      return await this.visitService.updateVisitClaimStatus(
-        claimProviderStateTransitionDto.to_state,
-        claimProviderStateTransitionDto.consent_token,
-      );
+      const res =
+        await this.claimProviderStateTransitionEntityRepository.save(entity);
+      return await this.visitService.updateVisitClaimStatus({
+        consentToken: res.consent_token,
+        providerStatus: res.to_state,
+      });
     } catch (err) {
       console.log(err);
       return err;

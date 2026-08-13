@@ -111,3 +111,9 @@ export type ClaimsVisitReponse = {
   updated_by_name: string;
   notes: string;
 };
+
+export interface UpdateVisitClaimStatusDto {
+  consentToken: string;
+  payerStatus?: string;
+  providerStatus?: string;
+}

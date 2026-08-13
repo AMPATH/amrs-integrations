@@ -13,7 +13,6 @@ export class PreauthProviderStateTransitionService {
   async createPreauthProviderStateTransition(
     preauthProviderStateTransitionDto: PreauthProviderStateTransitionDto,
   ) {
-    console.log('DTO: ', preauthProviderStateTransitionDto);
     const entity = this.preauthProviderStateTransitionEntityRepository.create({
       ...preauthProviderStateTransitionDto,
     });

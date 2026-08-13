@@ -60,6 +60,7 @@ export class ClaimsVisitService {
             authorizationCode: data.authorization_code,
             authorizationGuid: data.authorization_guid,
             visitResponse: data,
+            providerStatus: data.workflow_state,
           });
           await this.claimVisitRepository.save(claimVisitEntity);
         }

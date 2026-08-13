@@ -21,6 +21,7 @@ import { BiometricsService } from './consent/biometrics/biometrics.service';
 import { ShrModule } from './shr/shr.module';
 import { CaseSummaryModule } from './case-summary/case-summary.module';
 import { EmtModule } from './emt/emt.module';
+import { CallbackModule } from './callbacks/callbacks.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -61,6 +62,7 @@ import { EmtModule } from './emt/emt.module';
     ShrModule,
     CaseSummaryModule,
     EmtModule,
+    CallbackModule,
   ],
   controllers: [AppController],
   providers: [

@@ -121,4 +121,30 @@ export class ClaimsVisitService {
       },
     });
   }
+
+  async updateVisitClaimStatus(status: string, consentToken: string) {
+    try {
+      const visit = await this.claimVisitRepository.findOne({
+        where: {
+          authorizationCode: consentToken,
+        },
+      });
+
+      if (!visit) {
+        throw new Error('Claim not found');
+      }
+
+      const updatedVisit = {
+        ...visit,
+        status: status,
+      };
+      try {
+        await this.claimVisitRepository.save(updatedVisit);
+      } catch (err) {
+        console.log(err);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 }

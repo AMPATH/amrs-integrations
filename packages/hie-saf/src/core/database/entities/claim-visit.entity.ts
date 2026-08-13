@@ -57,6 +57,22 @@ export class ClaimVisit {
 
   @Column({
     type: 'varchar',
+    length: 100,
+    name: 'provider_status',
+    nullable: true,
+  })
+  providerStatus?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'payer_status',
+    nullable: true,
+  })
+  payerStatus?: string;
+
+  @Column({
+    type: 'varchar',
     length: 255,
     name: 'authorization_guid',
     nullable: false,

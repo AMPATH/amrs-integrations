@@ -65,6 +65,11 @@ export class ClaimsVisitService {
             authorizationGuid: data.authorization_guid,
             visitResponse: data,
             providerStatus: data.workflow_state,
+            providerAuthStatus: data.claim_auth_status,
+            totalClaimAmount: data.total_claim_amount,
+            totalClaimDiscount: data.total_claim_discount,
+            totalClaimCoPay: data.total_claim_copay,
+            totalClaimNetAmount: data.total_claim_net_amount,
           });
           await this.claimVisitRepository.save(claimVisitEntity);
         }

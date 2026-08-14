@@ -61,7 +61,15 @@ export class ClaimVisit {
     name: 'provider_status',
     nullable: true,
   })
-  providerStatus?: string;
+  providerStatus!: string;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'provider_auth_status',
+    nullable: true,
+  })
+  providerAuthStatus!: string;
 
   @Column({
     type: 'varchar',
@@ -70,6 +78,54 @@ export class ClaimVisit {
     nullable: true,
   })
   payerStatus?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'payer_auth_status',
+    nullable: true,
+  })
+  payerAuthStatus!: string;
+
+  @Column({
+    name: 'total_claim_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+    nullable: true,
+  })
+  totalClaimAmount!: string;
+
+  @Column({
+    name: 'total_claim_net_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+    nullable: true,
+  })
+  totalClaimNetAmount!: string;
+
+  @Column({
+    name: 'total_claim_copay',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+    nullable: true,
+  })
+  totalClaimCoPay!: string;
+
+  @Column({
+    name: 'total_claim_discount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0.0,
+    nullable: true,
+  })
+  totalClaimDiscount!: string;
 
   @Column({
     type: 'varchar',

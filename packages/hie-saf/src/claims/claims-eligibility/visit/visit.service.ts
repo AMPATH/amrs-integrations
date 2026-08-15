@@ -18,6 +18,8 @@ import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
 import { Between, Repository } from 'typeorm';
 import { FacilityClaimVisitRequestDto } from './dto/facility-claim-visits-request.dto';
 import { ClaimVisitRequestDto } from './dto/get-claim-visit-request.dto';
+import { UpdateClaimVisitDto } from './dto/update-claim-visit.dto';
+import { QueryClaimVisitDto } from './dto/query-claim-visit.dto';
 
 @Injectable()
 export class ClaimsVisitService {
@@ -131,15 +133,18 @@ export class ClaimsVisitService {
     });
   }
 
-  async updateVisitClaimStatus({
-    consentToken,
-    payerStatus,
-    providerStatus,
-  }: UpdateVisitClaimStatusDto) {
+  async updateVisit(
+    queryBy: QueryClaimVisitDto,
+    updateClaimVisitDto: UpdateClaimVisitDto,
+  ) {
+    console.log(queryBy, updateClaimVisitDto);
+    if (queryBy && Object.values(queryBy).length === 0) {
+      throw new BadRequestException('missing query by values');
+    }
     try {
       const visit = await this.claimVisitRepository.findOne({
         where: {
-          authorizationCode: consentToken,
+          ...queryBy,
         },
       });
 
@@ -147,15 +152,12 @@ export class ClaimsVisitService {
         throw new Error('Claim not found');
       }
 
-      if (payerStatus !== undefined) {
-        visit.payerStatus = payerStatus;
-      }
+      const newVisit: ClaimVisit = {
+        ...visit,
+        ...updateClaimVisitDto,
+      };
 
-      if (providerStatus !== undefined) {
-        visit.providerStatus = providerStatus;
-      }
-
-      return await this.claimVisitRepository.save(visit);
+      return await this.claimVisitRepository.save(newVisit);
     } catch (err) {
       console.log(err);
       throw err;

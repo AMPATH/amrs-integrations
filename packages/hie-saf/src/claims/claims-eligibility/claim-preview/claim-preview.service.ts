@@ -8,6 +8,8 @@ import {
   ProviderClaimPreviewResponse,
 } from './types';
 import { ClaimsVisitService } from '../visit/visit.service';
+import { QueryClaimVisitDto } from '../visit/dto/query-claim-visit.dto';
+import { UpdateClaimVisitDto } from '../visit/dto/update-claim-visit.dto';
 
 @Injectable()
 export class ClaimPreviewService {
@@ -29,12 +31,19 @@ export class ClaimPreviewService {
         locationUuid,
       );
       const data = (await response.json()) as ProviderClaimPreviewResponse;
+      console.log({ data });
       try {
-        await this.claimVisitService.updateVisitClaimStatus({
-          consentToken: previewProviderClaimDto.consent_token,
-          payerStatus: undefined,
+        const queryClaimBy: QueryClaimVisitDto = {
+          authorizationCode: previewProviderClaimDto.consent_token,
+        };
+        const updateClaimVisitDto: UpdateClaimVisitDto = {
           providerStatus: data.workflow_state,
-        });
+          providerAuthStatus: data.claim_auth_status,
+        };
+        await this.claimVisitService.updateVisit(
+          queryClaimBy,
+          updateClaimVisitDto,
+        );
       } catch (error) {
         Logger.error(error);
       }

@@ -135,6 +135,14 @@ export class ClaimVisit {
   })
   authorizationGuid!: string;
 
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'invoice_no',
+    nullable: true,
+  })
+  invoiceNo!: string;
+
   @Column({ type: 'json', name: 'visit_response', nullable: false })
   visitResponse!: Record<string, any>;
 

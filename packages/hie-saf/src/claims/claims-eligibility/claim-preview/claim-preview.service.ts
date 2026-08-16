@@ -39,6 +39,7 @@ export class ClaimPreviewService {
         const updateClaimVisitDto: UpdateClaimVisitDto = {
           providerStatus: data.workflow_state,
           providerAuthStatus: data.claim_auth_status,
+          invoiceNo: data.invoices[0]?.invoice_number ?? '',
         };
         await this.claimVisitService.updateVisit(
           queryClaimBy,
@@ -63,6 +64,7 @@ export class ClaimPreviewService {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const queryString = new URLSearchParams(previewPayerClaimDto).toString();
     const previewPayerClaimUrl = `${baseUrl}/api/v1/claims/preview/payer?${queryString}`;
+    console.log({previewPayerClaimUrl});
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         previewPayerClaimUrl,

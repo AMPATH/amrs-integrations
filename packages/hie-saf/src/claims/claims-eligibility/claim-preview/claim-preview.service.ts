@@ -40,6 +40,10 @@ export class ClaimPreviewService {
           providerStatus: data.workflow_state,
           providerAuthStatus: data.claim_auth_status,
           invoiceNo: data.invoices[0]?.invoice_number ?? '',
+          totalClaimAmount: data.total_claim_amount,
+          totalClaimDiscount: data.total_claim_discount,
+          totalClaimCoPay: data.total_claim_copay,
+          totalClaimNetAmount: data.total_claim_net_amount,
         };
         await this.claimVisitService.updateVisit(
           queryClaimBy,
@@ -77,12 +81,10 @@ export class ClaimPreviewService {
           const queryClaimBy: QueryClaimVisitDto = {
             invoiceNo: previewPayerClaimDto.provider_claim_no,
           };
-          console.log({queryClaimBy});
           const updateClaimVisitDto: UpdateClaimVisitDto = {
             payerStatus: results[0]?.workflowState ?? '',
             payerAuthStatus: results[0].authorization.status,
           };
-          console.log({updateClaimVisitDto});
           await this.claimVisitService.updateVisit(
             queryClaimBy,
             updateClaimVisitDto,

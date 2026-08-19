@@ -147,7 +147,6 @@ export class ClaimsVisitService {
       if (!visit) {
         throw new Error('Claim not found');
       }
-
       const newVisit: ClaimVisit = {
         ...visit,
         ...updateClaimVisitDto,

@@ -25,4 +25,28 @@ export class ClaimVisitRequestDto {
   @IsNotEmpty()
   @IsString()
   patientId?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  providerStatus?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  providerAuthStatus?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  payerStatus?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  payerAuthStatus?: string;
 }

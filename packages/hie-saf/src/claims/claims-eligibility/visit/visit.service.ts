@@ -113,6 +113,20 @@ export class ClaimsVisitService {
     if (claimVisitRequestDto.locationUuid) {
       claimVisitFilter['locationUuid'] = claimVisitRequestDto.locationUuid;
     }
+    if (claimVisitRequestDto.providerStatus) {
+      claimVisitFilter['providerStatus'] = claimVisitRequestDto.providerStatus;
+    }
+    if (claimVisitRequestDto.providerAuthStatus) {
+      claimVisitFilter['providerAuthStatus'] =
+        claimVisitRequestDto.providerAuthStatus;
+    }
+    if (claimVisitRequestDto.payerStatus) {
+      claimVisitFilter['payerStatus'] = claimVisitRequestDto.payerStatus;
+    }
+    if (claimVisitRequestDto.payerAuthStatus) {
+      claimVisitFilter['payerAuthStatus'] =
+        claimVisitRequestDto.payerAuthStatus;
+    }
     if (claimVisitRequestDto.visitDate) {
       claimVisitFilter['visitStart'] = Between(
         new Date(`${claimVisitRequestDto.visitDate}T00:00:00`),

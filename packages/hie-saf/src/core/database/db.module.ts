@@ -13,6 +13,7 @@ import { PreAuthRequest } from './entities/pre-auth-request.entity';
 import { ClaimPayerStateTransitionEntity } from './entities/claim-payer-preview-state-transition.entity';
 import { ClaimProviderStateTransitionEntity } from './entities/claim-provider-state-transition.entity';
 import { PreauthProviderStateTransitionEntity } from './entities/preauth-provider-state-transition.entity';
+import { ShrConsentSession } from './entities/shr-consent-session.entity';
 
 /** Name of the read-only AMRS OpenMRS connection — see `CaseSummaryModule`. */
 export const AMRS_CONNECTION = 'amrsConnection';
@@ -42,6 +43,7 @@ export const AMRS_CONNECTION = 'amrsConnection';
           ClaimPayerStateTransitionEntity,
           ClaimProviderStateTransitionEntity,
           PreauthProviderStateTransitionEntity,
+          ShrConsentSession,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,

@@ -3,12 +3,14 @@ import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmr
 import { CreateEmergencyUnidentifiedClaimRequestDto } from './dto/create-emergency-unidentified-claim-request.dto';
 import { EmergencyClaimService } from './emergency-claim.service';
 import {
+  IdentifyUknownEmergencyCaseDto,
   SubmitUnIdentifiedClaimDto,
   type CreateEmergencyIdentifiedClaimDto,
   type CreateEmergencyUnidentifiedClaimDto,
 } from './types';
 import { CreateEmergencyIdentifiedClaimRequestDto } from './dto/create-emergency-identified-claim-request.dto';
 import { SubmitUnIdentifiedClaimRequestDto } from './dto/submit-unidentified-claim-request.dto';
+import { IdentifyUknownEmergencyCaseRequestDto } from './dto/identify-uknown-emergency-case-patient-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('emergency')
@@ -76,5 +78,33 @@ export class EmergencyClaimController {
   @Get('claim/interventions')
   public getEmergencyClaimInterventions() {
     return this.emergencyClaimService.getSHAEmergencyInterventions();
+  }
+
+  @Post('claim/unidentified/identified')
+  public identifyUnidentifiedClaimPatient(
+    @Body() body: IdentifyUknownEmergencyCaseRequestDto,
+  ) {
+    const payload: IdentifyUknownEmergencyCaseDto = {
+      interventions: body.interventionCodes,
+      mode_of_arrival: body.modeOfArrival,
+      brought_by: body.broughtBy,
+      reference_number: body.referenceNumber,
+      identification_number: body.identificationNumber,
+      identification_type: body.identificationType,
+      regulation_body: body.regulationBody,
+      beneficiary_cr_id: body.beneficiaryCrId,
+      otp: body.otp,
+      consent_token: body.consentToken,
+    };
+    if (body.beneficiaryContactId) {
+      payload['beneficiary_contact_id'] = body.beneficiaryContactId;
+    }
+    if (body.notes) {
+      payload['notes'] = body.notes;
+    }
+    return this.emergencyClaimService.identifyUnidentifiedClaimPatient(
+      payload,
+      body.locationUuid,
+    );
   }
 }

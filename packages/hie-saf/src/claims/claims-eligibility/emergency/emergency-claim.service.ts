@@ -6,6 +6,7 @@ import { ClaimLine } from '../../../core/database/entities/claime-line.entity';
 import { Repository } from 'typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
 import {
+  IdentifyUknownEmergencyCaseDto,
   SubmitUnIdentifiedClaimDto,
   type CreateEmergencyIdentifiedClaimDto,
   type CreateEmergencyUnidentifiedClaimDto,
@@ -157,5 +158,31 @@ export class EmergencyClaimService {
       endIndex: 11,
       results: SHA_EMERGENCY_INTERVENTIONS,
     };
+  }
+  async identifyUnidentifiedClaimPatient(
+    identifyUknownEmergencyCaseDto: IdentifyUknownEmergencyCaseDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const identifyUknownEmergencyCaseUrl = `${baseUrl}/api/v1/claims/emergency`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        identifyUknownEmergencyCaseUrl,
+        identifyUknownEmergencyCaseDto,
+        locationUuid,
+      );
+      const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error identifying emergency case patient',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

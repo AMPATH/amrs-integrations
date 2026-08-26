@@ -10,6 +10,7 @@ import {
   type CreateEmergencyIdentifiedClaimDto,
   type CreateEmergencyUnidentifiedClaimDto,
 } from './types';
+import { SHA_EMERGENCY_INTERVENTIONS } from './constants';
 
 @Injectable()
 export class EmergencyClaimService {
@@ -145,5 +146,16 @@ export class EmergencyClaimService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  getSHAEmergencyInterventions() {
+    return {
+      count: 11,
+      pageSize: 10000,
+      currentPage: 1,
+      totalPages: 1,
+      startIndex: 1,
+      endIndex: 11,
+      results: SHA_EMERGENCY_INTERVENTIONS,
+    };
   }
 }

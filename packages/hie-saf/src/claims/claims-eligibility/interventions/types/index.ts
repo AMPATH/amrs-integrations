@@ -6,7 +6,9 @@ export type Intervention = {
   paymentMechanism: string;
   needsPreauth: boolean;
   needsManualPreauthApproval: boolean;
+  needsDoctorAuthorization: boolean;
   overallTariff: string;
+  globalPeriod: number;
   kephLevelTarriff: string;
   fund: string;
   fallBackOverallTariff: string;
@@ -23,6 +25,13 @@ export type Intervention = {
   requiresRadiologyPreauth: boolean;
   requiresOpticalPreauth: boolean;
   applicableSchemes: string[];
+  applicableDocumentTypes: string[];
+  optionalPreauthDocumentTypes: string[];
+  requiredClaimDocuments: {
+    key: string;
+    label: string;
+    anyOf: string[];
+  }[];
 };
 
 export type InterventionsApiResponse = {

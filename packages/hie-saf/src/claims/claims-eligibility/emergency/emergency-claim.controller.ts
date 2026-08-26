@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { CreateEmergencyUnidentifiedClaimRequestDto } from './dto/create-emergency-unidentified-claim-request.dto';
 import { EmergencyClaimService } from './emergency-claim.service';
@@ -71,5 +71,10 @@ export class EmergencyClaimController {
       payload,
       body.locationUuid,
     );
+  }
+
+  @Get('claim/interventions')
+  public getEmergencyClaimInterventions() {
+    return this.emergencyClaimService.getSHAEmergencyInterventions();
   }
 }

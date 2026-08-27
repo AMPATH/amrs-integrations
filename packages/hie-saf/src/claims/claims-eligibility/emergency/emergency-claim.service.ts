@@ -2,11 +2,12 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from '../../../hie-http-request/hie-http-requests';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ClaimLine } from '../../../core/database/entities/claime-line.entity';
 import { Repository } from 'typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
 import {
   AddEmergencyClaimDoctorDto,
+  AddEmergencyClaimProtocolsDto,
+  GetEmergencyClaimProtocolsDto,
   IdentifyUknownEmergencyCaseDto,
   RemoveEmergencyClaimDoctorDto,
   SubmitUnIdentifiedClaimDto,
@@ -18,7 +19,6 @@ import { SHA_EMERGENCY_INTERVENTIONS } from './constants';
 @Injectable()
 export class EmergencyClaimService {
   constructor(
-    @InjectRepository(ClaimLine)
     private readonly hieHttpRequests: HieHttpRequests,
     private readonly configService: ConfigService,
     @InjectRepository(ClaimVisit)
@@ -235,6 +235,58 @@ export class EmergencyClaimService {
       Logger.error(error);
       throw new HttpException(
         'Error removing emergency claim doctors',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async fetchEmergencyClaimProtocols(
+    getEmergencyClaimProtocolsDto: GetEmergencyClaimProtocolsDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const getEmergencyClaimProtocolsUrl = `${baseUrl}/api/v1/claims/emergency/protocols?active=${getEmergencyClaimProtocolsDto.active}&intervention_code=${getEmergencyClaimProtocolsDto.intervention_code}`;
+    console.log({getEmergencyClaimProtocolsUrl});
+    try {
+      const response = await this.hieHttpRequests.sendGetRequest(
+        getEmergencyClaimProtocolsUrl,
+        locationUuid,
+      );
+      const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error fetching emergency claim protocols',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async addEmergencyClaimProtocol(
+    addEmergencyClaimProtocolsDto: AddEmergencyClaimProtocolsDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const addEmergencyClaimProtocolUrl = `${baseUrl}/api/v1/claims/emergency/protocols`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        addEmergencyClaimProtocolUrl,
+        addEmergencyClaimProtocolsDto,
+        locationUuid,
+      );
+      const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error adding emergency claim protocol',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

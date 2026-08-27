@@ -1,9 +1,19 @@
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { CreateEmergencyUnidentifiedClaimRequestDto } from './dto/create-emergency-unidentified-claim-request.dto';
 import { EmergencyClaimService } from './emergency-claim.service';
 import {
   AddEmergencyClaimDoctorDto,
+  AddEmergencyClaimProtocolsDto,
+  GetEmergencyClaimProtocolsDto,
   IdentifyUknownEmergencyCaseDto,
   RemoveEmergencyClaimDoctorDto,
   SubmitUnIdentifiedClaimDto,
@@ -15,6 +25,8 @@ import { SubmitUnIdentifiedClaimRequestDto } from './dto/submit-unidentified-cla
 import { IdentifyUknownEmergencyCaseRequestDto } from './dto/identify-uknown-emergency-case-patient-request.dto';
 import { AddEmergencyClaimDoctorRequestDto } from './dto/add-emergency-claim-doctor-request.dto';
 import { RemoveEmergencyClaimDoctorRequestDto } from './dto/remove-emergency-claim-doctors-request.dto';
+import { GetEmergencyClaimProtocolsRequestDto } from './dto/get-emergency-protocols-request.dto';
+import { AddEmergencyClaimProtocolsRequestDto } from './dto/add-emergency-claim-protocols-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('emergency')
@@ -135,6 +147,35 @@ export class EmergencyClaimController {
       consent_token: body.consentToken,
     };
     return this.emergencyClaimService.removeEmergencyClaimDoctor(
+      payload,
+      body.locationUuid,
+    );
+  }
+  @Get('claim/protocols')
+  public getEmergencyClaimProtocols(
+    @Query() query: GetEmergencyClaimProtocolsRequestDto,
+  ) {
+    const payload: GetEmergencyClaimProtocolsDto = {
+      intervention_code: query.interventionCode,
+      active: query.active,
+    };
+    return this.emergencyClaimService.fetchEmergencyClaimProtocols(
+      payload,
+      query.locationUuid,
+    );
+  }
+  @Post('claim/protocols')
+  public addEmergencyClaimProtocols(
+    @Body() body: AddEmergencyClaimProtocolsRequestDto,
+  ) {
+    const payload: AddEmergencyClaimProtocolsDto = {
+      intervention_code: body.interventionCode,
+      protocol_code: body.protocolCode,
+      unit_price: body.unitPrice,
+      quantity: body.unitPrice,
+      consent_token: body.consentToken,
+    };
+    return this.emergencyClaimService.addEmergencyClaimProtocol(
       payload,
       body.locationUuid,
     );

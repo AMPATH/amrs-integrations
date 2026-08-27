@@ -52,3 +52,14 @@ export type AddEmergencyClaimDoctorDto = {
 export type RemoveEmergencyClaimDoctorDto = {
   consent_token: string;
 };
+export type GetEmergencyClaimProtocolsDto = {
+  intervention_code: string;
+  active: string;
+};
+export type AddEmergencyClaimProtocolsDto = {
+  consent_token: string;
+  protocol_code: string;
+  intervention_code: string;
+  unit_price: number;
+  quantity: number;
+};

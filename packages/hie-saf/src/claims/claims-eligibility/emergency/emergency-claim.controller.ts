@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { OpenMrsAuthGuard } from '../../../auth/guards/openmrs-auth-guard/openmrs-auth.guard';
 import { CreateEmergencyUnidentifiedClaimRequestDto } from './dto/create-emergency-unidentified-claim-request.dto';
 import { EmergencyClaimService } from './emergency-claim.service';
 import {
+  AddEmergencyClaimDoctorDto,
   IdentifyUknownEmergencyCaseDto,
+  RemoveEmergencyClaimDoctorDto,
   SubmitUnIdentifiedClaimDto,
   type CreateEmergencyIdentifiedClaimDto,
   type CreateEmergencyUnidentifiedClaimDto,
@@ -11,6 +13,8 @@ import {
 import { CreateEmergencyIdentifiedClaimRequestDto } from './dto/create-emergency-identified-claim-request.dto';
 import { SubmitUnIdentifiedClaimRequestDto } from './dto/submit-unidentified-claim-request.dto';
 import { IdentifyUknownEmergencyCaseRequestDto } from './dto/identify-uknown-emergency-case-patient-request.dto';
+import { AddEmergencyClaimDoctorRequestDto } from './dto/add-emergency-claim-doctor-request.dto';
+import { RemoveEmergencyClaimDoctorRequestDto } from './dto/remove-emergency-claim-doctors-request.dto';
 
 @UseGuards(OpenMrsAuthGuard)
 @Controller('emergency')
@@ -103,6 +107,34 @@ export class EmergencyClaimController {
       payload['notes'] = body.notes;
     }
     return this.emergencyClaimService.identifyUnidentifiedClaimPatient(
+      payload,
+      body.locationUuid,
+    );
+  }
+
+  @Post('claim/doctors')
+  public addEmergencyClaimDoctor(
+    @Body() body: AddEmergencyClaimDoctorRequestDto,
+  ) {
+    const payload: AddEmergencyClaimDoctorDto = {
+      consent_token: body.consentToken,
+      identification_number: body.identificationNumber,
+      identification_type: body.identificationType,
+      regulation_body: body.regulationBody,
+    };
+    return this.emergencyClaimService.addEmergencyClaimDoctor(
+      payload,
+      body.locationUuid,
+    );
+  }
+  @Delete('claim/doctors')
+  public removeEmergencyClaimDoctors(
+    @Body() body: RemoveEmergencyClaimDoctorRequestDto,
+  ) {
+    const payload: RemoveEmergencyClaimDoctorDto = {
+      consent_token: body.consentToken,
+    };
+    return this.emergencyClaimService.removeEmergencyClaimDoctor(
       payload,
       body.locationUuid,
     );

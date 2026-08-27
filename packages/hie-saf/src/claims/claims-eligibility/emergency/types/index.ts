@@ -41,3 +41,14 @@ export type IdentifyUknownEmergencyCaseDto = {
   otp: string;
   consent_token: string;
 };
+
+export type AddEmergencyClaimDoctorDto = {
+  consent_token: string;
+  identification_number: string;
+  identification_type: string;
+  regulation_body: string;
+};
+
+export type RemoveEmergencyClaimDoctorDto = {
+  consent_token: string;
+};

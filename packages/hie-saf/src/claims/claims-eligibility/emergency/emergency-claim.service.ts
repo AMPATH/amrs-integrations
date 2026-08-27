@@ -6,7 +6,9 @@ import { ClaimLine } from '../../../core/database/entities/claime-line.entity';
 import { Repository } from 'typeorm';
 import { ClaimVisit } from '../../../core/database/entities/claim-visit.entity';
 import {
+  AddEmergencyClaimDoctorDto,
   IdentifyUknownEmergencyCaseDto,
+  RemoveEmergencyClaimDoctorDto,
   SubmitUnIdentifiedClaimDto,
   type CreateEmergencyIdentifiedClaimDto,
   type CreateEmergencyUnidentifiedClaimDto,
@@ -181,6 +183,58 @@ export class EmergencyClaimService {
       Logger.error(error);
       throw new HttpException(
         'Error identifying emergency case patient',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async addEmergencyClaimDoctor(
+    addEmergencyClaimDoctorDto: AddEmergencyClaimDoctorDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const addEmergencyClaimDoctorUrl = `${baseUrl}/api/v1/claims/doctors`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        addEmergencyClaimDoctorUrl,
+        addEmergencyClaimDoctorDto,
+        locationUuid,
+      );
+      const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error adding emergency claim doctor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async removeEmergencyClaimDoctor(
+    removeEmergencyClaimDoctorDto: RemoveEmergencyClaimDoctorDto,
+    locationUuid: string,
+  ) {
+    const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
+    const removeEmergencyClaimDoctorUrl = `${baseUrl}/api/v1/claims/doctors`;
+    try {
+      const response = await this.hieHttpRequests.sendPostRequest(
+        removeEmergencyClaimDoctorUrl,
+        removeEmergencyClaimDoctorDto,
+        locationUuid,
+      );
+      const data = await response.json();
+      if ('error' in data) {
+        Logger.error(data);
+        return data;
+      }
+      return data ?? null;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        'Error removing emergency claim doctors',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

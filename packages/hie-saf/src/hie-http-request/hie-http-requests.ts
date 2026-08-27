@@ -104,4 +104,21 @@ export class HieHttpRequests {
     };
     return await fetch(url, options);
   }
+  async sendDeleteRequest(
+    url: string,
+    payload: any,
+    locationUuid: string,
+    extraHeaders?: Record<string, string>,
+  ): Promise<any> {
+    const headers = await this.getHeaders(locationUuid);
+    const options = {
+      method: 'DELETE',
+      headers: {
+        ...headers,
+        ...extraHeaders,
+      },
+      body: JSON.stringify(payload),
+    };
+    return await fetch(url, options);
+  }
 }

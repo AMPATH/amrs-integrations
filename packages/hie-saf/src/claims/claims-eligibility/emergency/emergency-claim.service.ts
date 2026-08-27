@@ -220,7 +220,7 @@ export class EmergencyClaimService {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const removeEmergencyClaimDoctorUrl = `${baseUrl}/api/v1/claims/doctors`;
     try {
-      const response = await this.hieHttpRequests.sendPostRequest(
+      const response = await this.hieHttpRequests.sendDeleteRequest(
         removeEmergencyClaimDoctorUrl,
         removeEmergencyClaimDoctorDto,
         locationUuid,

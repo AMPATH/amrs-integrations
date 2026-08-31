@@ -43,6 +43,11 @@ export class CreateEmergencyIdentifiedClaimRequestDto {
   regulationBody!: string;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  otp!: string;
+
+  @ApiProperty()
   @IsOptional()
   @IsNotEmpty()
   @IsString()

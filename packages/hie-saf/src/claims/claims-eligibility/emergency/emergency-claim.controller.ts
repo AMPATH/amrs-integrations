@@ -67,11 +67,12 @@ export class EmergencyClaimController {
       identification_type: body.identificationType,
       regulation_body: body.regulationBody,
       beneficiary_cr_id: body.beneficiaryCrId,
+      otp: body.otp,
     };
     if (body.notes) {
       payload['notes'] = body.notes;
     }
-    return this.emergencyClaimService.createEmergencyUnidentifiedClaim(
+    return this.emergencyClaimService.createEmergencyIdentifiedClaim(
       payload,
       body.locationUuid,
     );

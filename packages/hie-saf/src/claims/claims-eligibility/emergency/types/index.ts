@@ -19,6 +19,7 @@ export type CreateEmergencyIdentifiedClaimDto = {
   identification_type: string;
   regulation_body: string;
   notes?: string;
+  otp: string;
 };
 
 export type SubmitUnIdentifiedClaimDto = {

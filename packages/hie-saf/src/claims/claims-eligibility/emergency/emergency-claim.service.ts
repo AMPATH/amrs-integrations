@@ -15,6 +15,7 @@ import {
   type CreateEmergencyUnidentifiedClaimDto,
 } from './types';
 import { SHA_EMERGENCY_INTERVENTIONS } from './constants';
+import { ClaimsVisitReponse } from '../visit/types';
 
 @Injectable()
 export class EmergencyClaimService {
@@ -45,8 +46,8 @@ export class EmergencyClaimService {
         try {
           const claimVisitEntity = this.claimVisitRepository.create({
             locationUuid: locationUuid,
-            patientId: '',
-            serviceType: '',
+            patientId: data?.member_number ?? '',
+            serviceType: data?.service_type ?? '',
             claimVisitId: data.id,
             claimVisitNumber: data.visit_number,
             visitStart: data.visit_start,
@@ -86,7 +87,7 @@ export class EmergencyClaimService {
         createEmergencyIdentifiedClaimDto,
         locationUuid,
       );
-      const data = await response.json();
+      const data = (await response.json()) as ClaimsVisitReponse;
       if ('error' in data) {
         Logger.error(data);
         return data;
@@ -95,8 +96,8 @@ export class EmergencyClaimService {
         try {
           const claimVisitEntity = this.claimVisitRepository.create({
             locationUuid: locationUuid,
-            patientId: '',
-            serviceType: '',
+            patientId: data?.member_number ?? '',
+            serviceType: data?.service_type ?? '',
             claimVisitId: data.id,
             claimVisitNumber: data.visit_number,
             visitStart: data.visit_start,
@@ -245,7 +246,6 @@ export class EmergencyClaimService {
   ) {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const getEmergencyClaimProtocolsUrl = `${baseUrl}/api/v1/claims/emergency/protocols?active=${getEmergencyClaimProtocolsDto.active}&intervention_code=${getEmergencyClaimProtocolsDto.intervention_code}`;
-    console.log({getEmergencyClaimProtocolsUrl});
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         getEmergencyClaimProtocolsUrl,

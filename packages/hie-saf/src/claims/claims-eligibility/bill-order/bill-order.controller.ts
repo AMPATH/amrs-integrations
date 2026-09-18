@@ -100,6 +100,9 @@ export class BillOrderController {
       payload['required_preauth_document_types'] =
         body.required_preauth_document_types;
     }
+    if (body.protocal_code) {
+      payload['protocal_code'] = body.protocal_code;
+    }
     return this.billOrderService.createBillOrder(payload);
   }
 }

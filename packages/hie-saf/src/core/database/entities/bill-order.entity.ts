@@ -57,6 +57,9 @@ export class BillOrder {
   @Column({ type: 'text', default: false, nullable: true })
   required_preauth_document_types!: string;
 
+  @Column({ type: 'text', default: false, nullable: true })
+  protocal_code!: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

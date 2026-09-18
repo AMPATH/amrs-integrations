@@ -87,4 +87,10 @@ export class CreateBillOrderDto {
   @IsNotEmpty()
   @IsString()
   required_preauth_document_types?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  protocal_code?: string;
 }

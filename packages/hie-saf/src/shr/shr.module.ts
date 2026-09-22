@@ -10,6 +10,10 @@ import { LocationFacilityHelper } from '../shared/utils/location-facility.helper
 import { ShrConsentSessionStore } from './shr-consent-session.store';
 import { ShrController } from './shr.controller';
 import { ShrService } from './shr.service';
+import { OpenMrsVisitClient } from './visit-submission/openmrs-visit.client';
+import { ShaFhirClient } from './visit-submission/sha-fhir.client';
+import { ShrVisitSubmissionController } from './visit-submission/shr-visit-submission.controller';
+import { ShrVisitSubmissionService } from './visit-submission/shr-visit-submission.service';
 import { PractitionerResolver } from '../shared/utils/practitioner-resolver.helper';
 
 @Module({
@@ -18,13 +22,17 @@ import { PractitionerResolver } from '../shared/utils/practitioner-resolver.help
     HealthWorkerRegistryModule,
     TypeOrmModule.forFeature([FacilityLocation, HwrSync, ShrConsentSession]),
   ],
-  controllers: [ShrController],
+  controllers: [ShrController, ShrVisitSubmissionController],
   providers: [
     ShrService,
     ShrConsentSessionStore,
     LocationFacilityHelper,
     PractitionerResolver,
     HealthWorkerRegistryService,
+    // Closed-visit → SHR bundle submission (POST /shr/visit-submission)
+    ShrVisitSubmissionService,
+    OpenMrsVisitClient,
+    ShaFhirClient,
   ],
 })
 export class ShrModule {}

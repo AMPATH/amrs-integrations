@@ -38,32 +38,28 @@ export function isKnownTerminologyDefect(diagnostics?: string): boolean {
  * `$validate` never writes, which is also why it is safe to point at a live
  * SHR.
  *
- * Auth: a static `SHA_FHIR_BEARER_TOKEN` when supplied, else OAuth2 client
- * credentials with a cached token refreshed 30 s before expiry (the same shape
- * `HieAuthService` uses for the middleware token).
+ * Deliberately NOT `HieHttpRequests` (the shared DHA-middleware client): that
+ * client stamps a DHA-IdP bearer token and facility headers on every call —
+ * credentials for a different trust domain. The SHA FHIR server needed NO
+ * auth for `$validate` on UAT (verified live), and presenting a foreign-IdP
+ * bearer could turn a working call into a 401.
+ *
+ * Auth: none by default (the UAT-verified case), or a static
+ * `SHA_FHIR_BEARER_TOKEN`. If a SHA environment ever requires OAuth2, the
+ * DRY move is to generalize `HieAuthService` (today hardwired to the HIE_*
+ * env keys) rather than fork a second client-credentials implementation
+ * here.
  */
 @Injectable()
 export class ShaFhirClient {
   private readonly shaFhirBaseUrl: string;
   private readonly shaBearerToken: string;
-  private readonly shaOAuthTokenUrl: string;
-  private readonly shaOAuthClientId: string;
-  private readonly shaOAuthClientSecret: string;
-
-  /** Cached OAuth2 token, refreshed 30 s before its reported expiry. */
-  private cachedToken: { token: string; expiresAt: number } | null = null;
 
   constructor(private readonly configService: ConfigService) {
     this.shaFhirBaseUrl =
       this.configService.get<string>('SHA_FHIR_BASE_URL') ?? '';
     this.shaBearerToken =
       this.configService.get<string>('SHA_FHIR_BEARER_TOKEN') ?? '';
-    this.shaOAuthTokenUrl =
-      this.configService.get<string>('SHA_FHIR_OAUTH_TOKEN_URL') ?? '';
-    this.shaOAuthClientId =
-      this.configService.get<string>('SHA_FHIR_OAUTH_CLIENT_ID') ?? '';
-    this.shaOAuthClientSecret =
-      this.configService.get<string>('SHA_FHIR_OAUTH_CLIENT_SECRET') ?? '';
   }
 
   /**
@@ -87,7 +83,7 @@ export class ShaFhirClient {
         headers: {
           'Content-Type': 'application/fhir+json',
           Accept: 'application/fhir+json',
-          ...(await this.authHeaders()),
+          ...this.authHeaders(),
         },
         body: JSON.stringify(bundle),
       });
@@ -118,57 +114,11 @@ export class ShaFhirClient {
     };
   }
 
-  /** Authorization header: static bearer, OAuth2 client credentials, or none. */
-  private async authHeaders(): Promise<Record<string, string>> {
-    if (this.shaBearerToken) {
-      return { Authorization: `Bearer ${this.shaBearerToken}` };
-    }
-    if (
-      this.shaOAuthTokenUrl &&
-      this.shaOAuthClientId &&
-      this.shaOAuthClientSecret
-    ) {
-      return { Authorization: `Bearer ${await this.getOAuthToken()}` };
-    }
-    return {};
-  }
-
-  private async getOAuthToken(): Promise<string> {
-    const now = Date.now();
-    if (this.cachedToken && this.cachedToken.expiresAt > now + 30_000) {
-      return this.cachedToken.token;
-    }
-    const response = await fetch(this.shaOAuthTokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Accept: 'application/json',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: this.shaOAuthClientId,
-        client_secret: this.shaOAuthClientSecret,
-      }).toString(),
-    });
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(
-        `SHA OAuth2 token request failed (${response.status})${body ? `: ${body.slice(0, 500)}` : ''}`,
-      );
-    }
-    const parsed = (await response.json()) as {
-      access_token?: string;
-      expires_in?: number;
-    };
-    if (!parsed.access_token) {
-      throw new Error('SHA OAuth2 token response had no access_token');
-    }
-    this.cachedToken = {
-      token: parsed.access_token,
-      // `expires_in` is seconds; default to 5 min when the server omits it.
-      expiresAt: now + (parsed.expires_in ?? 300) * 1000,
-    };
-    return parsed.access_token;
+  /** Authorization header: the static bearer when configured, else none. */
+  private authHeaders(): Record<string, string> {
+    return this.shaBearerToken
+      ? { Authorization: `Bearer ${this.shaBearerToken}` }
+      : {};
   }
 
   /** Collect an OperationOutcome's issues as summaries, defect-classified. */

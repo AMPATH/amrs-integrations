@@ -1,8 +1,8 @@
 /**
  * ShaFhirClient tests — the $validate pre-flight (the only direct SHA FHIR
  * interaction; submission rides DHA's middleware via ShrService.submitBundle),
- * auth (static bearer + cached OAuth2), and the classification of the known
- * UAT terminology defect.
+ * auth (static bearer, or none — the UAT-verified case), and the classification
+ * of the known UAT terminology defect.
  */
 
 import { ConfigService } from '@nestjs/config';
@@ -212,85 +212,27 @@ describe('ShaFhirClient.validateBundle', () => {
   });
 });
 
-describe('ShaFhirClient OAuth2', () => {
+describe('ShaFhirClient auth', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  function oauthSetup() {
-    const tokenRequests: string[] = [];
+  it('sends no Authorization header when no bearer token is configured (the UAT-verified case)', async () => {
+    // Presenting a foreign-IdP bearer where none is needed could 401 — so the
+    // unauthenticated shape is a contract, not just a default.
     const { fetchImpl, calls } = recordingFetch([
-      {
-        match: (url) => url === 'https://auth.test/token',
-        respond: () => {
-          tokenRequests.push('hit');
-          return jsonResponse(200, {
-            access_token: `tok-${tokenRequests.length}`,
-            expires_in: 3600,
-          });
-        },
-      },
       {
         match: (url) => url.endsWith('/Bundle/$validate'),
         respond: () => jsonResponse(200, OPERATION_OUTCOME),
       },
     ]);
-    const client = new ShaFhirClient(
-      configService({
-        SHA_FHIR_BASE_URL: 'https://sha.test/fhir',
-        SHA_FHIR_OAUTH_TOKEN_URL: 'https://auth.test/token',
-        SHA_FHIR_OAUTH_CLIENT_ID: 'client-1',
-        SHA_FHIR_OAUTH_CLIENT_SECRET: 'secret-1',
-      }),
-    );
-    return { client, calls, fetchImpl, tokenRequests };
-  }
-
-  it('requests a client-credentials token and uses it on the $validate POST', async () => {
-    const { client, calls, fetchImpl, tokenRequests } = oauthSetup();
     jest.spyOn(global, 'fetch').mockImplementation(fetchImpl);
+    const client = new ShaFhirClient(
+      configService({ SHA_FHIR_BASE_URL: 'https://sha.test/fhir' }),
+    );
     await client.validateBundle(bundleFixture());
-    expect(tokenRequests.length).toBe(1);
     expect(
-      (
-        calls.find((call) => call.url.endsWith('/Bundle/$validate'))?.init
-          ?.headers as Record<string, string>
-      ).Authorization,
-    ).toBe('Bearer tok-1');
-    const tokenCall = calls.find(
-      (call) => call.url === 'https://auth.test/token',
-    )!;
-    const tokenBody = tokenCall.init?.body as URLSearchParams;
-    expect(tokenBody.toString()).toMatch(/grant_type=client_credentials/);
-    expect(tokenBody.toString()).toMatch(/client_id=client-1/);
-  });
-
-  it('caches the token across validations', async () => {
-    const { client, fetchImpl, tokenRequests } = oauthSetup();
-    jest.spyOn(global, 'fetch').mockImplementation(fetchImpl);
-    await client.validateBundle(bundleFixture());
-    await client.validateBundle(bundleFixture());
-    expect(tokenRequests.length).toBe(1);
-  });
-
-  it('throws a descriptive error when the token endpoint fails', async () => {
-    const { fetchImpl } = recordingFetch([
-      {
-        match: (url) => url === 'https://auth.test/token',
-        respond: () => jsonResponse(401, { error: 'invalid_client' }),
-      },
-    ]);
-    jest.spyOn(global, 'fetch').mockImplementation(fetchImpl);
-    const client = new ShaFhirClient(
-      configService({
-        SHA_FHIR_BASE_URL: 'https://sha.test/fhir',
-        SHA_FHIR_OAUTH_TOKEN_URL: 'https://auth.test/token',
-        SHA_FHIR_OAUTH_CLIENT_ID: 'client-1',
-        SHA_FHIR_OAUTH_CLIENT_SECRET: 'wrong',
-      }),
-    );
-    await expect(client.validateBundle(bundleFixture())).rejects.toThrow(
-      /OAuth2 token request failed \(401\)/,
-    );
+      (calls[0].init?.headers as Record<string, string>).Authorization,
+    ).toBeUndefined();
   });
 });

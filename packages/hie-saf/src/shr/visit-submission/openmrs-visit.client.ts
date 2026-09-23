@@ -54,13 +54,7 @@ export class OpenMrsVisitClient {
     'attributes:(uuid,value,valueReference,attributeType:(uuid,display)))';
 
   /** Encounter rep: everything the mapper turns into FHIR, one request wide. */
-  private static readonly ENCOUNTER_REP =
-    'custom:(uuid,encounterDatetime,encounterType:(uuid,display),location:(uuid,display),visit:(uuid),' +
-    'encounterProviders:(uuid,provider:(uuid,display)),' +
-    'diagnoses:(uuid,rank,certainty,diagnosis:(coded:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),nonCoded:(display))),' +
-    'obs:(uuid,voided,obsDatetime,concept:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),' +
-    'value,valueText,valueNumeric,valueCoded:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),valueDate,valueDatetime,valueBoolean,' +
-    'groupMembers:(uuid,voided,obsDatetime,concept:(uuid,display,datatype:(display)),value,valueText,valueNumeric,valueCoded:(uuid,display)))))';
+  private static readonly ENCOUNTER_REP ='custom:(uuid,encounterDatetime,encounterType:(uuid,display),location:(uuid,display),visit:(uuid),encounterProviders:(uuid,provider:(uuid,display)),diagnoses:(uuid,rank,certainty,diagnosis:(coded:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),nonCoded:(display))),obs:(uuid,voided,obsDatetime,concept:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),value,valueText,valueNumeric,valueCoded:(uuid,display,datatype:(display),mappings:(conceptMapType:(display),conceptReferenceTerm:(code,conceptSource:(name)))),valueDate,valueDatetime,valueBoolean,groupMembers:(uuid,voided,obsDatetime,concept:(uuid,display,datatype:(display)),value,valueText,valueNumeric,valueCoded:(uuid,display))))';
 
   private async getFromOpenMrs<T>(
     path: string,
@@ -74,7 +68,7 @@ export class OpenMrsVisitClient {
     }
     try {
       const response = await fetch(
-        `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1${path}`,
+        `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1${path}`,
         {
           method: 'GET',
           headers: {

@@ -22,6 +22,7 @@ import { ShrModule } from './shr/shr.module';
 import { CaseSummaryModule } from './case-summary/case-summary.module';
 import { EmtModule } from './emt/emt.module';
 import { CallbackModule } from './callbacks/callbacks.module';
+import { ClaimSyncModule } from './claim-sync/claim-sync.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -63,6 +64,7 @@ import { CallbackModule } from './callbacks/callbacks.module';
     CaseSummaryModule,
     EmtModule,
     CallbackModule,
+    ClaimSyncModule,
   ],
   controllers: [AppController],
   providers: [

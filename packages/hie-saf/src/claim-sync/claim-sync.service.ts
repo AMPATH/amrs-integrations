@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimVisit } from '../core/database/entities/claim-visit.entity';
-import { Between, In, Not, Repository } from 'typeorm';
+import { Between, In, IsNull, Not, Repository } from 'typeorm';
 import { ClaimsBatchSync } from './types';
 import { ClaimPreviewService } from '../claims/claims-eligibility/claim-preview/claim-preview.service';
 import {
@@ -19,6 +19,8 @@ export class ClaimSyncService {
   ) {}
 
   public async batchSyncClaims(claimsBatchSyncDto: ClaimsBatchSyncDto) {
+    const startDate = new Date(`${claimsBatchSyncDto.startDate}T00:00:00`);
+    const endDate = new Date(`${claimsBatchSyncDto.endDate}T00:00:00`);
     const claimsToSync = await this.claimVisitRepository.find({
       select: {
         patientId: true,
@@ -28,15 +30,18 @@ export class ClaimSyncService {
         providerStatus: true,
         payerStatus: true,
       },
-      where: {
-        providerStatus: Not(In(['DRAFT', 'CLOSED'])),
-        payerStatus: Not(In(['APPROVED'])),
-        visitStart: Between(
-          new Date(`${claimsBatchSyncDto.startDate}T00:00:00`),
-          new Date(`${claimsBatchSyncDto.endDate}T23:59:59`),
-        ),
-        locationUuid: claimsBatchSyncDto?.location_uuid ?? '',
-      },
+      where: [
+        {
+          providerStatus: Not(In(['DRAFT', 'CLOSED'])),
+          payerStatus: Not('APPROVED'),
+          visitStart: Between(startDate, endDate),
+        },
+        {
+          providerStatus: Not(In(['DRAFT', 'CLOSED'])),
+          payerStatus: IsNull(),
+          visitStart: Between(startDate, endDate),
+        },
+      ],
     });
     Logger.log(`Claims to sync ...${claimsToSync.length}`);
     const results: any = [];
@@ -49,7 +54,9 @@ export class ClaimSyncService {
       const res = await this.syncClaim(
         consentToken,
         invoiceNo,
-        claimsBatchSyncDto?.location_uuid ?? '',
+        currentClaim.locationUuid
+          ? currentClaim.locationUuid
+          : (claimsBatchSyncDto?.location_uuid ?? ''),
         currentProviderStatus,
         currentPayerStatus,
       );
@@ -87,7 +94,7 @@ export class ClaimSyncService {
         locationUuid,
       );
       syncStatus.push(providerSyncStatus);
-      const payerSyncStatus = `${authorizationCode} payer status updated...current status ${currentPayerStatus} new status ${resp2.results[0]?.workflowState}`;
+      const payerSyncStatus = `${authorizationCode} payer status updated...current status ${currentPayerStatus} new status ${resp2.results ? resp2.results[0]?.workflowState : ''}`;
       Logger.log(payerSyncStatus);
       syncStatus.push(payerSyncStatus);
     } catch (error) {

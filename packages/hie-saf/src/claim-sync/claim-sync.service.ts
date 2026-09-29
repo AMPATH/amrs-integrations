@@ -19,8 +19,8 @@ export class ClaimSyncService {
   ) {}
 
   public async batchSyncClaims(claimsBatchSyncDto: ClaimsBatchSyncDto) {
-    const startDate = new Date(`${claimsBatchSyncDto.startDate}T00:00:00`);
-    const endDate = new Date(`${claimsBatchSyncDto.endDate}T00:00:00`);
+    const startDate = claimsBatchSyncDto.startDate;
+    const endDate = claimsBatchSyncDto.endDate;
     const claimsToSync = await this.claimVisitRepository.find({
       select: {
         patientId: true,
@@ -32,14 +32,27 @@ export class ClaimSyncService {
       },
       where: [
         {
-          providerStatus: Not(In(['DRAFT', 'CLOSED'])),
-          payerStatus: Not('APPROVED'),
-          visitStart: Between(startDate, endDate),
+          providerStatus: In(['FAILED_TO_SUBMIT', 'SUBMISSION_READY']),
+          visitStart: Between(
+            new Date(startDate),
+            new Date(`${endDate} 23:59:59`),
+          ),
         },
         {
-          providerStatus: Not(In(['DRAFT', 'CLOSED'])),
+          providerStatus: 'SUBMITTED',
+          payerStatus: Not('APPROVED'),
+          visitStart: Between(
+            new Date(startDate),
+            new Date(`${endDate} 23:59:59`),
+          ),
+        },
+        {
+          providerStatus: 'SUBMITTED',
           payerStatus: IsNull(),
-          visitStart: Between(startDate, endDate),
+          visitStart: Between(
+            new Date(startDate),
+            new Date(`${endDate} 23:59:59`),
+          ),
         },
       ],
     });

@@ -25,7 +25,7 @@ export class AddEmergencyClaimProtocolsRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  quantity!: string;
+  quantity!: number;
 
   @ApiProperty()
   @IsNotEmpty()

@@ -25,7 +25,7 @@ export type CreateEmergencyIdentifiedClaimDto = {
 export type SubmitUnIdentifiedClaimDto = {
   consent_token: string;
   invoice_number: string;
-  reason_for_unknown_patient: string;
+  reason_for_unknown_patient?: string;
 };
 
 export type IdentifyUknownEmergencyCaseDto = {

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SubmitUnIdentifiedClaimRequestDto {
   @ApiProperty()
@@ -12,10 +12,10 @@ export class SubmitUnIdentifiedClaimRequestDto {
   @IsString()
   invoiceNumber!: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  reasonForUnknownPatient!: string;
+  reasonForUnknownPatient?: string;
 
   @ApiProperty()
   @IsNotEmpty()

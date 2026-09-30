@@ -173,7 +173,7 @@ export class EmergencyClaimController {
       intervention_code: body.interventionCode,
       protocol_code: body.protocolCode,
       unit_price: body.unitPrice,
-      quantity: body.unitPrice,
+      quantity: body.quantity,
       consent_token: body.consentToken,
     };
     return this.emergencyClaimService.addEmergencyClaimProtocol(

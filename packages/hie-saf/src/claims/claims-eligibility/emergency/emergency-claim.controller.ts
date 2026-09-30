@@ -84,8 +84,13 @@ export class EmergencyClaimController {
     const payload: SubmitUnIdentifiedClaimDto = {
       consent_token: body.consentToken,
       invoice_number: body.invoiceNumber,
-      reason_for_unknown_patient: body.reasonForUnknownPatient,
     };
+    if (
+      body.reasonForUnknownPatient !== undefined &&
+      body.reasonForUnknownPatient !== null
+    ) {
+      payload.reason_for_unknown_patient = body.reasonForUnknownPatient;
+    }
     return this.emergencyClaimService.submitEmergencyUnIdentifiedClaim(
       payload,
       body.locationUuid,

@@ -23,6 +23,7 @@ import { CaseSummaryModule } from './case-summary/case-summary.module';
 import { EmtModule } from './emt/emt.module';
 import { CallbackModule } from './callbacks/callbacks.module';
 import { ClaimSyncModule } from './claim-sync/claim-sync.module';
+import { TelemedicineModule } from './telemedicine/telemedicine.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -65,6 +66,7 @@ import { ClaimSyncModule } from './claim-sync/claim-sync.module';
     EmtModule,
     CallbackModule,
     ClaimSyncModule,
+    TelemedicineModule,
   ],
   controllers: [AppController],
   providers: [

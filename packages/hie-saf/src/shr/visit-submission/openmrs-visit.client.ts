@@ -68,7 +68,7 @@ export class OpenMrsVisitClient {
     }
     try {
       const response = await fetch(
-        `http://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1${path}`,
+        `https://${this.baseOpenMrsUrl}/openmrs/ws/rest/v1${path}`,
         {
           method: 'GET',
           headers: {
@@ -81,7 +81,10 @@ export class OpenMrsVisitClient {
         throw new NotFoundException(`OpenMRS ${context} lookup failed (404)`);
       }
       if (!response.ok) {
-        Logger.error(`OpenMRS ${context} lookup ${response.status}`);
+        const body = await response.text().catch(() => '');
+        Logger.error(
+          `OpenMRS ${context} lookup ${response.status}: ${body || '(no response body)'}`,
+        );
         throw new HttpException(
           `OpenMRS ${context} lookup failed (${response.status})`,
           HttpStatus.BAD_GATEWAY,

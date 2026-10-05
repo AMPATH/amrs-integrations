@@ -47,12 +47,15 @@ export class ClaimSubmissionController {
     if (!body.otp && !body.dischargeAuthGuid) {
       throw new BadRequestException('Missing both otp and discharge auth guid');
     }
+    console.log('inpatient claim dto', body);
+    const date = new Date(body.dischargeDate);
+    const updatedDate = new Date(date.getTime() - 5 * 60 * 1000);
     const submitClaimDto: SubmitInpatientClaimDto = {
       consent_token: body.consentToken,
       invoice_number: body.invoiceNumber,
       discharge_reason: body.dischargeReason,
       notes: body.notes,
-      discharge_date: body.dischargeDate,
+      discharge_date: updatedDate.toISOString(),
     };
     if (body.otp) {
       submitClaimDto['otp'] = body.otp;
@@ -60,6 +63,8 @@ export class ClaimSubmissionController {
     if (body.dischargeAuthGuid) {
       submitClaimDto['discharge_auth_guid'] = body.dischargeAuthGuid;
     }
+
+    console.log('submitClaimDto', submitClaimDto);
 
     return this.claimSubmissionService.submitInpatientClaim(
       submitClaimDto,

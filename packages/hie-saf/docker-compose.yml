@@ -1,0 +1,17 @@
+# Deploy the hie-saf integration service.
+# Keep this file in the server directory that holds .env.kibana.
+#
+# Pin the image version in a .env file next to this one (used for variable
+# interpolation, separate from the container's .env.kibana):
+#   HIE_SAF_IMAGE_TAG=v4.7
+#
+# Then: docker compose pull && docker compose up -d
+services:
+  hie-saf-integration:
+    image: ampathke/hie-saf-integration:${HIE_SAF_IMAGE_TAG:-latest}
+    container_name: hie-saf-integration-kibana
+    restart: unless-stopped
+    ports:
+      - "9200:3000"
+    env_file:
+      - .env.kibana

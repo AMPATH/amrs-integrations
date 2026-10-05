@@ -91,15 +91,47 @@ yarn run build
 
 ## Docker
 
-To create a docker image
+### Image builds (CI)
+
+Merges to `main` build and push the image to Docker Hub automatically via
+[.github/workflows/hie-saf-docker.yml](../../.github/workflows/hie-saf-docker.yml):
+
+- `ampathke/hie-saf-integration:latest` — tracks `main`
+- `ampathke/hie-saf-integration:sha-<commit>` — pinned to a commit
+
+To cut a release, tag the merge commit and push the tag:
+
+```sh
+git tag v4.7 && git push origin v4.7
+```
+
+That publishes `ampathke/hie-saf-integration:v4.7` (a `sha-` tag is pushed alongside it). You can also run the workflow manually from the Actions tab and pass an extra version tag (e.g. `4.7` publishes `v4.7`).
+
+The workflow requires the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub access token).
+
+### Server deployment (docker compose)
+
+Copy `docker-compose.yml` from this folder to the server directory that holds `.env.kibana`. One-time migration off the old manually-created container:
+
+```sh
+sudo docker container stop hie-saf-integration-kibana
+sudo docker container rm hie-saf-integration-kibana
+```
+
+From then on, deploying a version is two commands:
+
+```sh
+# pin the image version in .env (compose interpolation file, separate from .env.kibana)
+echo 'HIE_SAF_IMAGE_TAG=v4.7' > .env
+
+sudo docker compose pull
+sudo docker compose up -d
+```
+
+`docker compose up -d` recreates the container whenever the pinned image changed — no manual stop/rm needed. To roll back, point `HIE_SAF_IMAGE_TAG` at an older tag and re-run `up -d`.
+
+### Local build (fallback)
 
 ```sh
 docker build --platform linux/amd64 -f Dockerfile -t ampathke/hie-saf-integration:<version> .
-
-```
-
-To deploy the image
-
-```sh
-sudo docker run -d --name <CONTAINER_NAME> -p <HOST_PORT>:3000 --env-file=<ENV_PATH> ampathke/hie-saf-integration:<version>
 ```

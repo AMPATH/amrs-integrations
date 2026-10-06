@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClaimVisit } from '../core/database/entities/claim-visit.entity';
 import { Between, In, IsNull, Not, Repository } from 'typeorm';
-import { ClaimsBatchSync } from './types';
+import { Cron } from '@nestjs/schedule';
 import { ClaimPreviewService } from '../claims/claims-eligibility/claim-preview/claim-preview.service';
 import {
   PreviewPayerClaimDto,
@@ -12,6 +12,7 @@ import { ClaimsBatchSyncDto } from './dto/claims-batch-sync.dto';
 
 @Injectable()
 export class ClaimSyncService {
+  private readonly logger = new Logger('ClaimSyncService');
   constructor(
     @InjectRepository(ClaimVisit)
     private readonly claimVisitRepository: Repository<ClaimVisit>,
@@ -19,6 +20,7 @@ export class ClaimSyncService {
   ) {}
 
   public async batchSyncClaims(claimsBatchSyncDto: ClaimsBatchSyncDto) {
+    Logger.log('batchSyncClaims...', claimsBatchSyncDto);
     const startDate = claimsBatchSyncDto.startDate;
     const endDate = claimsBatchSyncDto.endDate;
     const claimsToSync = await this.claimVisitRepository.find({
@@ -114,5 +116,19 @@ export class ClaimSyncService {
       Logger.error(error);
     }
     return syncStatus;
+  }
+
+  @Cron('05 * * * *')
+  public async syncClaimsCron() {
+    this.logger.debug(`start claim sync job ${new Date().toISOString()}`);
+    try {
+      await this.batchSyncClaims({
+        startDate: '2026-07-01',
+        endDate: new Date().toISOString(),
+      });
+    } catch (error) {
+      this.logger.error(error);
+    }
+    this.logger.debug(`end claim sync job ${new Date().toISOString()}`);
   }
 }

@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class ClaimsBatchSyncDto {
   @IsNotEmpty()
   @IsString()
-  location_uuid!: string;
+  location_uuid?: string;
 
   @IsNotEmpty()
   @IsString()

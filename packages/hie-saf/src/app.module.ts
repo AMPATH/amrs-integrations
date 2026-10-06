@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HieAuthModule } from './auth/hie-auth/hie-auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ClientRegistryModule } from './client-registry/client-registry.module';
 import { EligibilityModule } from './eligibility/eligibility.module';
 import { FacilityRegistryModule } from './facility-registry/facility-registry.module';
@@ -52,6 +53,7 @@ import { TelemedicineModule } from './telemedicine/telemedicine.module';
       }),
     }),
     DatabaseModule,
+    ScheduleModule.forRoot(),
     ClientRegistryModule,
     EligibilityModule,
     FacilityRegistryModule,

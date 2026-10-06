@@ -53,6 +53,8 @@ import { ClaimsAuthorizeController } from './claims-eligibility/authorize/claims
 import { ClaimsAuthorizeService } from './claims-eligibility/authorize/claims-authorize.service';
 import { EmergencyClaimController } from './claims-eligibility/emergency/emergency-claim.controller';
 import { EmergencyClaimService } from './claims-eligibility/emergency/emergency-claim.service';
+import { PomsfCoverageController } from './claims-eligibility/pomsf-coverage/pomsf-coverage.contoller';
+import { PomsfCoverageService } from './claims-eligibility/pomsf-coverage/pomsf-coverage.service';
 
 @Module({
   imports: [
@@ -90,6 +92,7 @@ import { EmergencyClaimService } from './claims-eligibility/emergency/emergency-
     PreAuthController,
     PomsfBalanceController,
     EmergencyClaimController,
+    PomsfCoverageController,
   ],
   providers: [
     SubBenefitsService,
@@ -115,6 +118,7 @@ import { EmergencyClaimService } from './claims-eligibility/emergency/emergency-
     PreAuthService,
     PomsfBalanceService,
     EmergencyClaimService,
+    PomsfCoverageService,
   ],
 })
 export class ClaimsModule {}

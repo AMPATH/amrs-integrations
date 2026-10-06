@@ -31,6 +31,7 @@ export class ClaimSyncService {
         invoiceNo: true,
         providerStatus: true,
         payerStatus: true,
+        locationUuid: true,
       },
       where: [
         {
@@ -66,17 +67,21 @@ export class ClaimSyncService {
       const invoiceNo = currentClaim.invoiceNo;
       const currentProviderStatus = currentClaim.providerStatus ?? '';
       const currentPayerStatus = currentClaim.payerStatus ?? '';
-      const res = await this.syncClaim(
-        consentToken,
-        invoiceNo,
-        currentClaim.locationUuid
-          ? currentClaim.locationUuid
-          : (claimsBatchSyncDto?.location_uuid ?? ''),
-        currentProviderStatus,
-        currentPayerStatus,
-      );
-      console.log(`${i} done...`);
-      results.push(res);
+      if (currentClaim?.locationUuid) {
+        const res = await this.syncClaim(
+          consentToken,
+          invoiceNo,
+          currentClaim.locationUuid
+            ? currentClaim.locationUuid
+            : (claimsBatchSyncDto?.location_uuid ?? ''),
+          currentProviderStatus,
+          currentPayerStatus,
+        );
+        console.log(`${i} done...`);
+        results.push(res);
+      }else{
+        Logger.log('No location Uuid set');
+      }
     }
     return {
       claimsToSync: claimsToSync,
@@ -118,13 +123,13 @@ export class ClaimSyncService {
     return syncStatus;
   }
 
-  @Cron('05 * * * *')
+  @Cron('30 * * * *')
   public async syncClaimsCron() {
     this.logger.debug(`start claim sync job ${new Date().toISOString()}`);
     try {
       await this.batchSyncClaims({
         startDate: '2026-07-01',
-        endDate: new Date().toISOString(),
+        endDate: new Date().toISOString().split('T')[0],
       });
     } catch (error) {
       this.logger.error(error);

@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { HieHttpRequests } from 'src/hie-http-request/hie-http-requests';
 import { PomsfCoverageDto } from './dto/pomsf-coverage.dto';
 
+type PomsfCoveragePayload = {
+  principal_cr_id: string;
+  consent_token?: string;
+  policy_number?: string;
+};
+
 @Injectable()
 export class PomsfCoverageService {
   constructor(
@@ -16,9 +22,15 @@ export class PomsfCoverageService {
     const baseUrl = this.configService.get<string>('HIE_CLIAMS_BASE_URL') ?? '';
     const pomsfCoverageUrl = `${baseUrl}/api/v1/authorizations/covers`;
     try {
+      const payload: PomsfCoveragePayload = {
+        principal_cr_id: pomsfCoverageDto.principalCrId,
+        consent_token: pomsfCoverageDto.consentToken,
+        policy_number: pomsfCoverageDto.policyNumber,
+      };
+
       const response = await this.httpRequests.sendPostRequest(
         pomsfCoverageUrl,
-        pomsfCoverageDto,
+        payload,
         pomsfCoverageDto.locationUuid,
       );
       const data = await response.json();

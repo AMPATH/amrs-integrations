@@ -13,11 +13,11 @@ import { ClaimDischargeDto } from './types';
 @UseGuards(OpenMrsAuthGuard)
 @Controller('claim-discharge')
 export class ClaimDischargeController {
-  constructor(private readonly claimDischargeService: ClaimDischargeService) {}
+  constructor(private readonly claimDischargeService: ClaimDischargeService) { }
 
   @Post()
   public dichargeClaim(@Body() body: ClaimDischargeRequestDto) {
-    if (!body.otp && !body.dischargeAuthGuid) {
+    if ((!body.otp && !body.dischargeAuthGuid) && body.dischargeReason?.toUpperCase() != "DECEASED") {
       throw new BadRequestException('Missing both otp and discharge auth guid');
     }
     const claimDischargeDto: ClaimDischargeDto = {
@@ -32,6 +32,13 @@ export class ClaimDischargeController {
     }
     if (body.dischargeAuthGuid) {
       claimDischargeDto['discharge_auth_guid'] = body.dischargeAuthGuid;
+    }
+    if (body.dateOfDeath) {
+      claimDischargeDto['date_of_death'] = body.dateOfDeath;
+    }
+
+    if (body.deathNotificationSerialNumber) {
+      claimDischargeDto['death_notification_serial_number'] = body.deathNotificationSerialNumber;
     }
 
     return this.claimDischargeService.dichargeClaim(

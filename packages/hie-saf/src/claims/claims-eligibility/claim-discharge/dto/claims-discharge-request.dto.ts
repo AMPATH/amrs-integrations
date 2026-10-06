@@ -43,4 +43,16 @@ export class ClaimDischargeRequestDto {
   @IsNotEmpty()
   @IsString()
   locationUuid!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  dateOfDeath!: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  deathNotificationSerialNumber!: string;
 }

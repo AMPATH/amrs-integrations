@@ -20,7 +20,7 @@ export class ClaimSubmissionController {
 
   @Post()
   public submitClaim(@Body() body: SubmitClaimRequestDto) {
-    if (!body.otp && !body.dischargeAuthGuid) {
+    if ((!body.otp && !body.dischargeAuthGuid) && body.dischargeReason?.toUpperCase() != "DECEASED") {
       throw new BadRequestException('Missing both otp and discharge auth guid');
     }
     const submitClaimDto: SubmitClaimDto = {
@@ -52,7 +52,7 @@ export class ClaimSubmissionController {
 
   @Post('inpatient')
   public submitInpatientsClaim(@Body() body: SubmitInpatientClaimRequestDto) {
-    if (!body.otp && !body.dischargeAuthGuid) {
+    if ((!body.otp && !body.dischargeAuthGuid) && body.dischargeReason?.toUpperCase() != "DECEASED") {
       throw new BadRequestException('Missing both otp and discharge auth guid');
     }
     console.log('inpatient claim dto', body);

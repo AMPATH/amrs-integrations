@@ -16,7 +16,7 @@ import { SubmitInpatientClaimRequestDto } from './dto/submit-inpatient-claim-req
 export class ClaimSubmissionController {
   constructor(
     private readonly claimSubmissionService: ClaimSubmissionService,
-  ) {}
+  ) { }
 
   @Post()
   public submitClaim(@Body() body: SubmitClaimRequestDto) {
@@ -34,6 +34,14 @@ export class ClaimSubmissionController {
     }
     if (body.dischargeAuthGuid) {
       submitClaimDto['discharge_auth_guid'] = body.dischargeAuthGuid;
+    }
+
+    if (body.dateOfDeath) {
+      submitClaimDto['date_of_death'] = body.dateOfDeath;
+    }
+
+    if (body.deathNotificationSerialNumber) {
+      submitClaimDto['death_notification_serial_number'] = body.deathNotificationSerialNumber;
     }
 
     return this.claimSubmissionService.submitClaim(
@@ -62,6 +70,14 @@ export class ClaimSubmissionController {
     }
     if (body.dischargeAuthGuid) {
       submitClaimDto['discharge_auth_guid'] = body.dischargeAuthGuid;
+    }
+
+    if (body.dateOfDeath) {
+      submitClaimDto['date_of_death'] = body.dateOfDeath;
+    }
+
+    if (body.deathNotificationSerialNumber) {
+      submitClaimDto['death_notification_serial_number'] = body.deathNotificationSerialNumber;
     }
 
     console.log('submitClaimDto', submitClaimDto);

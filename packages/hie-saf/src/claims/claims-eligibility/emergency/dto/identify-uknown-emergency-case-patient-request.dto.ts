@@ -41,7 +41,7 @@ export class IdentifyUknownEmergencyCaseRequestDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  notes!: string;
+  notes?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -50,9 +50,8 @@ export class IdentifyUknownEmergencyCaseRequestDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
-  beneficiaryContactId!: string;
+  beneficiaryContactId?: string;
 
   @ApiProperty()
   @IsNotEmpty()

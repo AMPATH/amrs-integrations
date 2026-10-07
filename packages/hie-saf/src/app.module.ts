@@ -50,6 +50,7 @@ import { TelemedicineModule } from './telemedicine/telemedicine.module';
         AMRS_DATABASE_PASSWORD: Joi.string().required(),
         AMRS_DATABASE_NAME: Joi.string().required(),
         AMRS_DATABASE_POOL_SIZE: Joi.number().default(4),
+        SYNC_CLAIMS: Joi.boolean().required(),
       }),
     }),
     DatabaseModule,

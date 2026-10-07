@@ -52,24 +52,32 @@ export class ClaimsVisitService {
       }
       try {
         if (data) {
-          const claimVisitEntity = this.claimVisitRepository.create({
-            patientId: createClaimVisitDto.patient_id,
-            locationUuid: createClaimVisitDto.locationUuid,
-            serviceType: createClaimVisitDto.service_type,
-            claimVisitId: data.id,
-            claimVisitNumber: data.visit_number,
-            visitStart: data.visit_start,
-            authorizationCode: data.authorization_code,
-            authorizationGuid: data.authorization_guid,
-            visitResponse: data,
-            providerStatus: data.workflow_state,
-            providerAuthStatus: data.claim_auth_status,
-            totalClaimAmount: data.total_claim_amount,
-            totalClaimDiscount: data.total_claim_discount,
-            totalClaimCoPay: data.total_claim_copay,
-            totalClaimNetAmount: data.total_claim_net_amount,
+          //check if claim visit has been created
+          const visit = await this.claimVisitRepository.findOne({
+            where: {
+              authorizationCode: data.authorization_code,
+            },
           });
-          await this.claimVisitRepository.save(claimVisitEntity);
+          if (!visit) {
+            const claimVisitEntity = this.claimVisitRepository.create({
+              patientId: createClaimVisitDto.patient_id,
+              locationUuid: createClaimVisitDto.locationUuid,
+              serviceType: createClaimVisitDto.service_type,
+              claimVisitId: data.id,
+              claimVisitNumber: data.visit_number,
+              visitStart: data.visit_start,
+              authorizationCode: data.authorization_code,
+              authorizationGuid: data.authorization_guid,
+              visitResponse: data,
+              providerStatus: data.workflow_state,
+              providerAuthStatus: data.claim_auth_status,
+              totalClaimAmount: data.total_claim_amount,
+              totalClaimDiscount: data.total_claim_discount,
+              totalClaimCoPay: data.total_claim_copay,
+              totalClaimNetAmount: data.total_claim_net_amount,
+            });
+            await this.claimVisitRepository.save(claimVisitEntity);
+          }
         }
       } catch (error) {
         Logger.error(error);

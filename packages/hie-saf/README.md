@@ -74,6 +74,7 @@ AMRS_DATABASE_POOL_SIZE=<AMRS_DATABASE_POOL_SIZE>
 
 APP_ENV=<APP_ENV>
 BASIC_AUTH=<BASIC_AUTH>
+SYNC_CLAIMS= true | false
 ```
 
 To run the dev server for your app, use:

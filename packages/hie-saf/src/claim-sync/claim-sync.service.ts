@@ -9,6 +9,7 @@ import {
   PreviewProviderClaimDto,
 } from '../claims/claims-eligibility/claim-preview/types';
 import { ClaimsBatchSyncDto } from './dto/claims-batch-sync.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ClaimSyncService {
@@ -17,6 +18,7 @@ export class ClaimSyncService {
     @InjectRepository(ClaimVisit)
     private readonly claimVisitRepository: Repository<ClaimVisit>,
     private readonly claimPreviewService: ClaimPreviewService,
+    private readonly configService: ConfigService,
   ) {}
 
   public async batchSyncClaims(claimsBatchSyncDto: ClaimsBatchSyncDto) {
@@ -50,7 +52,7 @@ export class ClaimSyncService {
           ),
         },
         {
-          providerStatus: 'SUBMITTED',
+          providerStatus: In(['SUBMITTED', 'SUBMISSION_READY']),
           payerStatus: IsNull(),
           visitStart: Between(
             new Date(startDate),
@@ -79,7 +81,7 @@ export class ClaimSyncService {
         );
         console.log(`${i} done...`);
         results.push(res);
-      }else{
+      } else {
         Logger.log('No location Uuid set');
       }
     }
@@ -125,6 +127,11 @@ export class ClaimSyncService {
 
   @Cron('30 * * * *')
   public async syncClaimsCron() {
+    const syncClaims = this.configService.get<boolean>('SYNC_CLAIMS') ?? false;
+    Logger.log(`Should sync claims ${syncClaims}`);
+    if (!syncClaims) {
+      return;
+    }
     this.logger.debug(`start claim sync job ${new Date().toISOString()}`);
     try {
       await this.batchSyncClaims({

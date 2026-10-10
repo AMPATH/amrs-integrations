@@ -18,11 +18,13 @@ export class ClaimsReportService {
       const results = await this.claimVisitRepository
         .createQueryBuilder('cv')
         .select('cv.provider_status', 'provider_status')
+        .addSelect('cv.payer_status', 'payer_status')
         .addSelect('COUNT(*)', 'total')
         .where('cv.visit_start >= :startDate', { startDate })
         .andWhere('cv.visit_start <= :endDate', { endDate })
         .andWhere('cv.location_uuid = :locationUuid', { locationUuid })
         .groupBy('cv.provider_status')
+        .addGroupBy('cv.payer_status')
         .getRawMany();
 
       return results;

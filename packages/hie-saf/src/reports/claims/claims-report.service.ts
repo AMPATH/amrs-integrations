@@ -21,6 +21,7 @@ export class ClaimsReportService {
         .select('cv.provider_status', 'provider_status')
         .addSelect('cv.payer_status', 'payer_status')
         .addSelect('COUNT(*)', 'total')
+        .addSelect('SUM(cv.total_claim_amount)', 'total_claim_amount')
         .where('cv.visit_start >= :startDate', { startDate })
         .andWhere('cv.visit_start <= :endDate', { endDate })
         .andWhere('cv.location_uuid = :locationUuid', { locationUuid })

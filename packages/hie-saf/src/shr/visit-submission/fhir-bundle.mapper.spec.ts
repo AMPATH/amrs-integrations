@@ -113,6 +113,18 @@ describe('buildShrVisitBundle', () => {
     }
   });
 
+  it('gives every resource its own id — the fullUrl uuid (DHA persistence rule)', () => {
+    // "each resource needs its own id — that is what you use to confirm it
+    // was persisted" — checked for both families.
+    for (const family of [options, mapperOptionsFixture({ family: 'clinical' })]) {
+      const built = buildShrVisitBundle(closedVisitContextFixture(), family);
+      for (const entry of built.bundle.entry ?? []) {
+        expect(entry.resource.id).toBe(entry.fullUrl.replace('urn:uuid:', ''));
+        expect(entry.resource.id).toMatch(UUID_RE);
+      }
+    }
+  });
+
   it('is idempotent: rebuilding the same visit yields a byte-identical bundle', () => {
     const rebuilt = buildShrVisitBundle(closedVisitContextFixture(), options);
     expect(JSON.stringify(rebuilt.bundle)).toBe(JSON.stringify(bundle));
@@ -711,26 +723,36 @@ describe('buildShrVisitBundle — clinical family', () => {
   const [encounterEntry] = entriesOf(bundle, 'Encounter');
   const encounter = encounterEntry.resource;
 
-  it('emits ONE base-R4 Encounter and no emergency scaffolding', () => {
+  it('emits ONE base-R4 Encounter referencing its EpisodeOfCare, with no emergency scaffolding', () => {
     expect(entriesOf(bundle, 'Encounter').length).toBe(1);
-    // No EpisodeOfCare, no incident encounter, and none of the emergency-IG
-    // vocabulary on the visit encounter.
-    expect(entriesOf(bundle, 'EpisodeOfCare')).toEqual([]);
+    // No incident encounter and none of the emergency-IG vocabulary on the
+    // visit encounter.
     expect(encounter.meta).toBeFalsy();
     expect(encounter.extension).toBeFalsy();
     expect(encounter.priority).toBeFalsy();
-    // partOf/episodeOfCare are structural on the emergency profiles — the
-    // clinical encounter must not carry the keys at all.
+    // partOf is structural on the emergency profile — the clinical encounter
+    // must not carry the key at all.
     expect('partOf' in encounter).toBe(false);
-    expect('episodeOfCare' in encounter).toBe(false);
-    // Patient → Organization → Practitioner → Encounter → Conditions → Obs.
+    // DHA's submission rules: "The Encounter must reference the visit's
+    // EpisodeOfCare" — the clinical family carries one bare-bones episode
+    // (no incident identifier, which is emergency-IG-only) and points at it.
+    const episodes = entriesOf(bundle, 'EpisodeOfCare');
+    expect(episodes.length).toBe(1);
+    expect(encounter.episodeOfCare).toEqual([
+      { reference: episodes[0].fullUrl },
+    ]);
+    expect(
+      (episodes[0].resource.patient as { reference?: string }).reference,
+    ).toBe(entriesOf(bundle, 'Patient')[0].fullUrl);
+    expect(episodes[0].resource.status).toBe('finished');
+    // Patient → Organization → Practitioner → EpisodeOfCare → Encounter → …
     const types = (bundle.entry ?? []).map((e) => e.resource.resourceType);
     expect(types.slice(0, 5)).toEqual([
       'Patient',
       'Organization',
       'Practitioner',
+      'EpisodeOfCare',
       'Encounter',
-      'Condition',
     ]);
     expect(types.indexOf('Observation')).toBeGreaterThan(
       types.indexOf('Encounter'),

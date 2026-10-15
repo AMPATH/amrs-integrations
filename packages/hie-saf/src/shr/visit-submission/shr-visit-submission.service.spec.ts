@@ -162,7 +162,25 @@ describe('ShrVisitSubmissionService', () => {
     expect(submitBundle.mock.calls[0][2]).toBe('recorded-token');
   });
 
-  it('answers 400 when no consent token can be resolved', async () => {
+  it('submits without a consent token when none can be resolved (default)', async () => {
+    getActiveConsent.mockResolvedValue({
+      hasActiveConsent: false,
+      consentToken: null,
+    });
+    const response = await service.submitClosedVisit(
+      dtoFor(),
+      'session-cookie-1',
+    );
+
+    // DHA's middleware requires no consent token on POST /shr/bundles
+    // (verified on UAT, 2026-10-15) — the miss is a warning, not a failure.
+    expect(response.status).toBe('submitted');
+    expect(response.consentTokenSource).toBeUndefined();
+    expect(submitBundle.mock.calls[0][2]).toBeUndefined();
+  });
+
+  it('answers 400 when no consent token can be resolved and consent is required', async () => {
+    env.SHA_SUBMISSION_REQUIRE_CONSENT = 'true';
     getActiveConsent.mockResolvedValue({
       hasActiveConsent: false,
       consentToken: null,
@@ -423,12 +441,16 @@ describe('ShrVisitSubmissionService', () => {
     const encounters = bundle.entry.filter(
       (entry) => entry.resource.resourceType === 'Encounter',
     );
-    expect(
-      bundle.entry.filter(
-        (entry) => entry.resource.resourceType === 'EpisodeOfCare',
-      ),
-    ).toEqual([]);
+    // The DHA submission rule carries into the clinical family too: the one
+    // Encounter references the visit's one EpisodeOfCare.
+    const episodes = bundle.entry.filter(
+      (entry) => entry.resource.resourceType === 'EpisodeOfCare',
+    );
+    expect(episodes.length).toBe(1);
     expect(encounters.length).toBe(1);
+    expect(encounters[0].resource.episodeOfCare).toEqual([
+      { reference: episodes[0].fullUrl },
+    ]);
     expect(encounters[0].resource.class).toMatchObject({ code: 'AMB' });
   });
 

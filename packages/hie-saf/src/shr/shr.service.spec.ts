@@ -616,6 +616,32 @@ describe('ShrService', () => {
     });
   });
 
+  it('submits a bundle without the consent token header when none is given', async () => {
+    hieHttpRequests.sendPostRequest.mockResolvedValue(
+      upstreamResponse({ mediator_id: 'med-2', status: 'success' }),
+    );
+
+    // DHA's middleware requires no consent token on POST /shr/bundles
+    // (verified on UAT, 2026-10-15) — only the facility bearer/facility-id
+    // headers HieHttpRequests attaches to every call.
+    await service.submitBundle(
+      {
+        id: 'bundle-2',
+        resourceType: 'Bundle' as const,
+        type: 'collection' as const,
+        entry: [],
+      },
+      'loc-1',
+    );
+
+    expect(hieHttpRequests.sendPostRequest).toHaveBeenCalledWith(
+      `${BASE_URL}/shr/bundles`,
+      expect.anything(),
+      'loc-1',
+      undefined,
+    );
+  });
+
   it('surfaces upstream errors when submitting a bundle', async () => {
     hieHttpRequests.sendPostRequest.mockResolvedValue(
       upstreamResponse({ message: 'invalid bundle' }, false, 400),

@@ -54,7 +54,8 @@ import { SubmitShrVisitDto } from './dto/submit-shr-visit.dto';
  *     `submissionFamily` or, under `auto`, by the AMRS visit type;
  *  4. pre-validate against the SHA FHIR server (`$validate`, never persists)
  *     when configured, then submit through DHA's middleware — the same
- *     `POST /shr/bundles` consent-token path `ShrService.submitBundle` uses;
+ *     `POST /shr/bundles` path `ShrService.submitBundle` uses (consent token
+ *     attached when resolvable; the middleware itself requires none);
  *  5. log a clear success or failure status, and answer with the structured
  *     outcome the DHA workflow app's frontend types mirror.
  *
@@ -64,9 +65,10 @@ import { SubmitShrVisitDto } from './dto/submit-shr-visit.dto';
  *   submitted  — DHA's middleware accepted the bundle
  *   validated  — dryRun: built (and optionally pre-validated), not submitted
  *   skipped    — the patient has no closed visit; nothing to do
- *   failed     — 400 missing consent token · 404 unknown patient · 409 visit
- *                not closed · 422 IG preconditions/validation unmet · 502
- *                upstream (OpenMRS / DHA middleware / SHA) failure
+ *   failed     — 400 missing consent token (only under
+ *                SHA_SUBMISSION_REQUIRE_CONSENT) · 404 unknown patient · 409
+ *                visit not closed · 422 IG preconditions/validation unmet ·
+ *                502 upstream (OpenMRS / DHA middleware / SHA) failure
  */
 @Injectable()
 export class ShrVisitSubmissionService {
@@ -141,9 +143,12 @@ export class ShrVisitSubmissionService {
           )})${build.incidentId ? `, incident ${build.incidentId}` : ''}`,
     );
 
-    // A submission through DHA's middleware needs a usable consent token; a
-    // dry run does not. Caller-supplied first, the recorded consent session
-    // (with its refresh/open-visit fallbacks) after.
+    // A submission rides the facility bearer + facility-id headers
+    // HieHttpRequests always attaches; DHA's middleware puts no consent
+    // requirement on POST /shr/bundles (verified on UAT, 2026-10-15), so the
+    // token is best-effort — attached when one is resolvable, skipped (with a
+    // warning) when not. SHA_SUBMISSION_REQUIRE_CONSENT=true restores the old
+    // hard 400 for deployments whose policy demands consent before a write.
     let consentToken = consentTokenHeader ?? dto.consentToken;
     let consentTokenSource: 'request' | 'active-consent' | undefined =
       consentToken ? 'request' : undefined;
@@ -152,8 +157,8 @@ export class ShrVisitSubmissionService {
         context.patient,
         dto.locationUuid,
       );
-      consentToken = resolved.token;
-      consentTokenSource = resolved.source;
+      consentToken = resolved?.token;
+      consentTokenSource = resolved?.source;
     }
 
     // ── Step 4a: optional pre-submission $validate against the SHA FHIR IG ───
@@ -211,8 +216,8 @@ export class ShrVisitSubmissionService {
     const accepted = await this.submitBundle(
       build,
       dto,
-      consentToken!,
-      consentTokenSource!,
+      consentToken,
+      consentTokenSource,
     );
     Logger.log(
       `SHR visit submission succeeded for visit ${visit.uuid}: mediator ${accepted.mediator_id} ` +
@@ -277,13 +282,16 @@ export class ShrVisitSubmissionService {
   /**
    * Best-effort consent token from the recorded consent session — the same
    * resolution `GET /shr/consents/active` performs (session → refresh →
-   * open visits). Resolution failure is logged and answered with a 400 that
-   * tells the caller to send a token, mirroring `ShrController.submitBundle`.
+   * open visits). Returns undefined when none can be resolved: DHA's
+   * middleware accepts submissions without one (verified on UAT, 2026-10-15),
+   * so the default is to proceed, logging the miss.
+   * `SHA_SUBMISSION_REQUIRE_CONSENT=true` restores the old contract — a 400
+   * telling the caller to send a token or establish consent first.
    */
   private async resolveConsentToken(
     patient: OpenMrsPatient,
     locationUuid: string,
-  ): Promise<{ token: string; source: 'active-consent' }> {
+  ): Promise<{ token: string; source: 'active-consent' } | undefined> {
     const crId = patient.identifiers?.find(
       (id) => id.identifierType?.uuid === this.crIdentifierTypeUuid(),
     )?.identifier;
@@ -302,6 +310,13 @@ export class ShrVisitSubmissionService {
         );
       }
     }
+    if (!this.submissionRequiresConsent()) {
+      Logger.warn(
+        `Submitting visit for patient ${patient.uuid} to the SHR without a consent token ` +
+          '(none resolvable from the recorded consent session; the middleware requires none).',
+      );
+      return undefined;
+    }
     throw new BadRequestException(
       this.failed(
         { patientUuid: patient.uuid, locationUuid } as SubmitShrVisitDto,
@@ -315,12 +330,18 @@ export class ShrVisitSubmissionService {
     );
   }
 
+  /** Whether consent-less submissions are forbidden (policy, not middleware). */
+  private submissionRequiresConsent(): boolean {
+    const raw = this.configService.get<string>('SHA_SUBMISSION_REQUIRE_CONSENT');
+    return ['true', '1', 'yes', 'on'].includes((raw ?? '').trim().toLowerCase());
+  }
+
   /** Step 4b — submit through DHA's middleware, rewrapping any rejection. */
   private async submitBundle(
     build: ShrVisitBundleBuild,
     dto: SubmitShrVisitDto,
-    consentToken: string,
-    consentTokenSource: 'request' | 'active-consent',
+    consentToken: string | undefined,
+    consentTokenSource: 'request' | 'active-consent' | undefined,
   ) {
     try {
       return await this.shrService.submitBundle(

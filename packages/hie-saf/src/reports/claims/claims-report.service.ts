@@ -12,8 +12,8 @@ export class ClaimsReportService {
     private claimVisitRepository: Repository<ClaimVisit>,
   ) {}
   public async generateClaimsSummaryReport(claimSummaryDto: ClaimsSummaryDto) {
-    const startDate = claimSummaryDto.startDate;
-    const endDate = claimSummaryDto.endDate;
+    const startDate = `${claimSummaryDto.startDate} 00:00:00`;
+    const endDate = `${claimSummaryDto.endDate} 23:59:00`;
     const locationUuid = claimSummaryDto.locationUuid;
     try {
       const results = await this.claimVisitRepository

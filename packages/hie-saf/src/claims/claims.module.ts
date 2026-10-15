@@ -38,7 +38,7 @@ import { ClaimDiagnosis } from '../core/database/entities/claim-diagnosis.entity
 import { ClaimClosureService } from './claims-eligibility/claim-closure/claim-closure.service';
 import { ClaimClosureController } from './claims-eligibility/claim-closure/claim-closure.controller';
 import { ClaimLine } from '../core/database/entities/claime-line.entity';
-import { OtpDischargeService } from 'src/consent/otp-discharge/otp-discharge.service';
+import { OtpDischargeService } from '../consent/otp-discharge/otp-discharge.service';
 import { ClaimDischargeController } from './claims-eligibility/claim-discharge/claim-discharge.controller';
 import { ClaimDischargeService } from './claims-eligibility/claim-discharge/claim-discharge.service';
 import { ClaimAttachment } from '../core/database/entities/claim-attachment.entity';
@@ -57,6 +57,9 @@ import { PomsfCoverageController } from './claims-eligibility/pomsf-coverage/pom
 import { PomsfCoverageService } from './claims-eligibility/pomsf-coverage/pomsf-coverage.service';
 import { PayerRemittanceService } from './claims-eligibility/payer-remittance/payer-remittance.service';
 import { PayerRemittanceController } from './claims-eligibility/payer-remittance/payer-remittance.controller';
+import { PaymentReconciliation } from '../core/database/entities/payment-reconciliation';
+import { PaymentNotice } from '../core/database/entities/payment-notice';
+import { PayerRemittance } from '../core/database/entities/payer-remittance';
 
 @Module({
   imports: [
@@ -70,6 +73,9 @@ import { PayerRemittanceController } from './claims-eligibility/payer-remittance
       ClaimLine,
       ClaimAttachment,
       PreAuthRequest,
+      PaymentReconciliation,
+      PaymentNotice,
+      PayerRemittance,
     ]),
   ],
   controllers: [

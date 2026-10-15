@@ -355,7 +355,14 @@ function prepareSharedParts(
     stats[resourceType] = (stats[resourceType] ?? 0) + 1;
     entries.push({
       fullUrl,
-      resource: resource as FhirBundleEntry['resource'],
+      // DHA's submission rules: "each resource needs its own id — that is
+      // what you use to confirm it was persisted." The fullUrl's uuid is
+      // already the resource's deterministic identity, so it doubles as the
+      // id; an explicit caller-provided id (none today) would win.
+      resource: {
+        id: fullUrl.slice('urn:uuid:'.length),
+        ...resource,
+      } as FhirBundleEntry['resource'],
     });
   };
   const referenceTo = (fullUrl: string, display?: string): FhirReference => ({
@@ -795,9 +802,11 @@ function buildEmergencyVisitBundle(
 
 /**
  * Routine non-emergency care as a base-R4B Encounter: no em-* profile, no
- * incident/EpisodeOfCare scaffolding, no dispatch identifiers, no triage
- * acuity, no EMT participant role — none of which base R4 requires. The
- * `Encounter.class` comes from the AMRS visit type (AMB/IMP/…, the OpenMRS
+ * incident encounter, no dispatch identifiers, no triage acuity, no EMT
+ * participant role — none of which base R4 requires. One EpisodeOfCare is
+ * carried and referenced, though: DHA's submission rules require "the
+ * Encounter must reference the visit's EpisodeOfCare" regardless of profile.
+ * The `Encounter.class` comes from the AMRS visit type (AMB/IMP/…, the OpenMRS
  * FHIR2 mapping), the visit type rides along as `Encounter.type` coding, and
  * the clinical content keeps the same profiles as the emergency family:
  * `ke-condition` (national, not emergency) and
@@ -812,10 +821,35 @@ function buildClinicalVisitBundle(
   // Same derivation as the emergency family's PoC encounter: this IS the
   // visit, as an Encounter.
   const encounterFullUrl = `urn:uuid:${deterministicUuid(`${options.amrsSourceUri}/fhir/Encounter/${visit.uuid}`)}`;
+  // The visit's episode, keyed on the visit uuid — deterministic and
+  // family-independent, unlike the emergency family's incident-keyed episode.
+  const episodeFullUrl = `urn:uuid:${deterministicUuid(`${options.amrsSourceUri}/fhir/EpisodeOfCare/${visit.uuid}`)}`;
 
   pushPatient(parts);
   pushOrganization(parts, options);
   pushPractitioners(parts, options);
+
+  // DHA's submission rules: "The Encounter must reference the visit's
+  // EpisodeOfCare." Base R4 doesn't demand one, but the middleware's upstream
+  // contract does — so the clinical family carries a bare-bones episode for
+  // the visit itself (no incident identifier, which is emergency-IG-only).
+  parts.push(episodeFullUrl, {
+    resourceType: 'EpisodeOfCare',
+    // The visit's own id under the AMRS-derived system, same as the Encounter.
+    identifier: [derivedIdentifier(options, `visit-${visit.uuid}`)],
+    status: 'finished',
+    statusHistory: [
+      {
+        status: 'finished',
+        period: { start: parts.periodStart, end: parts.periodEnd },
+      },
+    ],
+    patient: parts.referenceTo(parts.patientFullUrl),
+    ...(parts.periodStart || parts.periodEnd
+      ? { period: { start: parts.periodStart, end: parts.periodEnd } }
+      : {}),
+    managingOrganization: parts.referenceTo(parts.organizationFullUrl),
+  });
 
   // Conditions reference the encounter, so build them before it is pushed.
   const diagnosisEntries: Array<{
@@ -854,6 +888,9 @@ function buildClinicalVisitBundle(
       ? { type: [conceptCodings(visit.visitType, options)] }
       : {}),
     subject: parts.referenceTo(parts.patientFullUrl),
+    // The DHA submission rule, not base R4: the Encounter must reference the
+    // visit's EpisodeOfCare (pushed above).
+    episodeOfCare: [parts.referenceTo(episodeFullUrl)],
     // Base R4 requires no participant and fixes no role — the emergency IG's
     // EMT coding stays out of routine care.
     ...(parts.providers.size

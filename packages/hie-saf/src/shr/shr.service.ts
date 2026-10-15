@@ -375,20 +375,24 @@ export class ShrService {
 
   /**
    * POST /shr/bundles — submit a FHIR collection Bundle for an open visit.
-   * Reuses the same consent token lifecycle as reads; the bundle is
-   * forwarded as-is, DHA validates its contents.
+   * The bundle is forwarded as-is; DHA validates its contents asynchronously.
+   *
+   * The consent token is optional and forwarded when present: DHA's docs put
+   * no auth on this endpoint beyond the facility bearer `HieHttpRequests`
+   * already attaches, and a 2026-10-15 UAT probe confirmed a full bundle is
+   * accepted with no `X-Consent-Token` at all. Reads keep requiring it.
    */
   async submitBundle(
     bundle: SubmitShrBundleDto,
     locationUuid: string,
-    consentToken: string,
+    consentToken?: string,
   ) {
     return this.post<ShrSubmitBundleApiResponse>(
       '/shr/bundles',
       bundle,
       locationUuid,
       'submit bundle',
-      { [CONSENT_TOKEN_HEADER]: consentToken },
+      consentToken ? { [CONSENT_TOKEN_HEADER]: consentToken } : undefined,
     );
   }
 

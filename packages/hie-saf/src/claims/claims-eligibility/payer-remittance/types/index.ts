@@ -94,3 +94,20 @@ export interface ReconciliationBundle {
   type: string;
   entry: BundleEntry[];
 }
+
+export type PayerRemittanceIssue = {
+  severity: string;
+  code: string;
+  text: string;
+  diagnostics: string;
+};
+export type PayerRemittanceOutcome = {
+  id: string;
+  issues?: PayerRemittanceIssue[];
+};
+export type PayerRemittanceReponse = {
+  type: string;
+  payment_notices: any[];
+  payment_reconciliations: any[];
+  operation_outcomes: PayerRemittanceOutcome[];
+};

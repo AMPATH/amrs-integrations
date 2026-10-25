@@ -6,27 +6,21 @@ import { AffectedRows, QueueStatus, ResponseObject } from "../models/Model";
 
 class RdeSyncService {
   async getPatientIds(identifiers: string[]) {
-    let whereQuery = "";
-    identifiers.forEach((identifier) => {
-      whereQuery += `'${identifier}',`;
-    });
+    const placeholders = identifiers.map(() => "?").join(",");
 
-    const query = `SELECT DISTINCT patient_id FROM patient_identifier WHERE identifier IN (${whereQuery.slice(
-      0,
-      -1
-    )})`;
+    const query = `SELECT DISTINCT patient_id FROM patient_identifier WHERE identifier IN (${placeholders})`;
 
     const connection = await AMRS_POOL.getConnection();
-    const result = await connection.execute(query);
+    const result = await connection.execute(query, identifiers);
     connection.release();
 
     return result;
   }
 
   async getIdentifiers(patientId: number) {
-    const query = `SELECT DISTINCT identifier FROM patient_identifier WHERE patient_id = ${patientId}`;
+    const query = `SELECT DISTINCT identifier FROM patient_identifier WHERE patient_id = ?`;
     const connection = await AMRS_POOL.getConnection();
-    const [result] = await connection.execute(query);
+    const [result] = await connection.execute(query, [patientId]);
     connection.release();
 
     return result as Array<{ identifier: string }>;
@@ -41,8 +35,11 @@ class RdeSyncService {
       const patientId = row.patient_id;
       const connection = await ETL_POOL.getConnection();
 
-      const checkingPatientQuery = `SELECT COUNT(1) FROM rde_sync_queue WHERE patient_id = ${patientId} AND reporting_month = '${reportingMonth}'`;
-      const [existingRows] = await connection.execute(checkingPatientQuery);
+      const checkingPatientQuery = `SELECT COUNT(1) FROM rde_sync_queue WHERE patient_id = ? AND reporting_month = ?`;
+      const [existingRows] = await connection.execute(checkingPatientQuery, [
+        patientId,
+        reportingMonth,
+      ]);
       connection.release();
 
       if (Array.isArray(existingRows)) {
@@ -68,9 +65,14 @@ class RdeSyncService {
           let now = moment().tz("Africa/Nairobi");
           let formattedDateTime = now.format("YYYY-MM-DD HH:mm:ss");
 
-          let query = `INSERT INTO rde_sync_queue (user_id, patient_id, date_created, reporting_month, status) VALUES ('${userId}', ${patientId}, '${formattedDateTime}', '${reportingMonth}', 'QUEUED')`;
+          let query = `INSERT INTO rde_sync_queue (user_id, patient_id, date_created, reporting_month, status) VALUES (?, ?, ?, ?, 'QUEUED')`;
 
-          const [rows] = await connection.execute(query);
+          const [rows] = await connection.execute(query, [
+            userId,
+            patientId,
+            formattedDateTime,
+            reportingMonth,
+          ]);
           const { affectedRows } = rows as AffectedRows;
           connection.release();
           returnObject.affectedRows = affectedRows;
@@ -126,9 +128,9 @@ class RdeSyncService {
     const [patientId] = await this.getPatientIds(identifiers);
     if (Array.isArray(patientId)) {
       const id = patientId[0] as { patient_id: number };
-      const query = `DELETE FROM rde_sync_queue WHERE patient_id = ${id.patient_id}`;
+      const query = `DELETE FROM rde_sync_queue WHERE patient_id = ?`;
       const connection = await ETL_POOL.getConnection();
-      const [deleted] = await connection.execute(query);
+      const [deleted] = await connection.execute(query, [id.patient_id]);
       connection.release();
       return h.response(deleted).code(204);
     }
@@ -137,6 +139,11 @@ class RdeSyncService {
   async processingStatus(id: string, h: ResponseToolkit) {
     let count;
     try {
+      if (!/^[A-Za-z0-9_-]+$/.test(id)) {
+        // table suffixes are composed of word characters only; anything else
+        // would previously have errored below and returned totalRows: 0
+        return { totalRows: 0 };
+      }
       const query = `SELECT * FROM hiv_monthly_report_dataset_build_queue_${id}`;
       const connection = await ETL_POOL.getConnection();
       const [rows] = await connection.execute(query);
@@ -156,18 +163,18 @@ class RdeSyncService {
   async freezingData(request: QueuePatientPayload, h: ResponseToolkit) {
     const { patientIds, userId, reportingMonth } = request;
 
-    let whereQuery = "";
-    patientIds.forEach((id) => {
-      whereQuery += `${id},`;
-    });
+    const placeholders = patientIds.map(() => "?").join(",");
 
     const query = `REPLACE INTO etl.hiv_monthly_report_dataset_frozen (SELECT * from etl.hiv_monthly_report_dataset_v1_2
-          WHERE hiv_monthly_report_dataset_v1_2.endDate = '${reportingMonth}' AND hiv_monthly_report_dataset_v1_2.person_id
-          IN (${whereQuery.slice(0, -1)}));`;
+          WHERE hiv_monthly_report_dataset_v1_2.endDate = ? AND hiv_monthly_report_dataset_v1_2.person_id
+          IN (${placeholders}));`;
 
     try {
       const connection = await ETL_POOL.getConnection();
-      const [rows] = await connection.execute(query);
+      const [rows] = await connection.execute(query, [
+        reportingMonth,
+        ...patientIds,
+      ]);
       await this.updatePatientStatus(patientIds, QueueStatus.FROZEN);
       connection.release();
       return h.response(rows).code(201);

@@ -40,7 +40,10 @@ export async function updateAmrsOrderStatus(adtResp: any, status: string) {
   let connection = await CM.getConnectionAmrsProd();
   let sql = "";
   adtResp.drug_details.forEach((order: any) => {
-    sql = `update amrs.orders set fulfiller_status = '${status}' where order_number = '${order.prescription_number}'`;
+    sql = mysql.format(
+      "update amrs.orders set fulfiller_status = ? where order_number = ?",
+      [status, order.prescription_number]
+    );
   });
   let result = await CM.query(sql, connection);
   if (result.affectedRows > 0) {

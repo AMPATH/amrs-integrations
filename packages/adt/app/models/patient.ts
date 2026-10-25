@@ -1,4 +1,5 @@
 import config from "@amrs-integrations/core";
+import mysql from "mysql";
 const CM = config.ConnectionManager.getInstance();
 
 export async function loadPatient(patient_uuid: string, connection: any) {
@@ -9,7 +10,7 @@ export async function loadPatient(patient_uuid: string, connection: any) {
 }
 
 export async function loadProviderData(uuid: string, connection: any) {
-  const sql = `SELECT 
+  const sql = mysql.format(`SELECT
     pn.given_name,
     pn.family_name,
     pn.middle_name,
@@ -21,7 +22,7 @@ export async function loadProviderData(uuid: string, connection: any) {
         AND pn.voided = 0
   )
   WHERE
-    p.uuid = '${uuid}'`;
+    p.uuid = ?`, [uuid]);
   let result = await CM.query(sql, connection);
   CM.releaseConnections(connection);
   return result[0];
@@ -30,14 +31,17 @@ export async function loadProviderData(uuid: string, connection: any) {
 export async function loadEncounterData(uuid: string) {
   const CM = config.ConnectionManager.getInstance();
   const connection = await CM.getConnectionAmrs();
-  const sql = `select * from amrs.encounter where uuid = '${uuid}'`;
+  const sql = mysql.format("select * from amrs.encounter where uuid = ?", [
+    uuid,
+  ]);
   let result = await CM.query(sql, connection);
   CM.releaseConnections(connection);
   return result;
 }
 
 function large_query(patient_uuid: string) {
-  return `
+  return mysql.format(
+    `
   SELECT 
     CASE
         WHEN
@@ -131,12 +135,14 @@ FROM
     FROM
         etl.flat_vitals
     WHERE
-        uuid =  '${patient_uuid}'
+        uuid =  ?
             AND weight IS NOT NULL
             AND height IS NOT NULL
     ORDER BY encounter_datetime DESC) v ON (p.person_id = v.person_id)
     left join etl.mfl_codes c on (fhs.location_id = c.mrsId)
 WHERE
-    p.uuid = '${patient_uuid}'
-GROUP BY p.person_id;`;
+    p.uuid = ?
+GROUP BY p.person_id;`,
+    [patient_uuid, patient_uuid]
+  );
 }

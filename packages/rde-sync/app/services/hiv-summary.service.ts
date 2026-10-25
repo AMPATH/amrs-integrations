@@ -8,10 +8,10 @@ class HIVSummaryService {
 
     const executingQuery = async (id: string) => {
       const query = `replace into etl.flat_hiv_summary_sync_queue (select patient_id from amrs.patient_identifier where identifier in (
-            '${id}'
+            ?
             ));`;
       const connection = await ETL_POOL.getConnection();
-      const [rows] = await connection.execute(query);
+      const [rows] = await connection.execute(query, [id]);
       const { affectedRows } = rows as AffectedRows;
 
       connection.release();

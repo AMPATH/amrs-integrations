@@ -60,10 +60,11 @@ export class ClientRegistryController {
     if (!facility.frCode) {
       throw new HttpException('Missing facility code', HttpStatus.BAD_REQUEST);
     }
+    const normalizedPhoneNumber = this.consentService.normalizePhoneNumber(body.phoneNumber);
     const consentDto: ConsentDto = {
       identifierType: body.identificationType,
       identifierNumber: body.identificationNumber,
-      phoneNumber: body.phoneNumber,
+      phoneNumber: normalizedPhoneNumber,
       scope: [ConsentScope.ClientRegistry, ConsentScope.SharedHealthRecords],
       facility: facility.frCode,
     };

@@ -105,4 +105,17 @@ export class ConsentService {
       );
     }
   }
+  normalizePhoneNumber(phoneNumber: string) {
+    const validPhoneNumberPrefix = /^(\+254|254|0)[17]\d{8}$/;
+    try {
+      if(!validPhoneNumberPrefix.test(phoneNumber)) {
+        throw new HttpException('Invalid phone number', HttpStatus.BAD_REQUEST);
+      }
+      phoneNumber = phoneNumber?.trim();
+      phoneNumber = phoneNumber?.slice(-9);
+      return "254" + phoneNumber;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

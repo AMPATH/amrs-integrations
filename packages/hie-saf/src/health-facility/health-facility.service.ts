@@ -15,7 +15,7 @@ export class HealthFacilityService {
     try {
       const resp = await this.healthFacilityRepository.find({
         where: {
-          officialName: Like(`%${searchHealthFacilityDto.officialName}%`),
+          officialName: Like(`%${searchHealthFacilityDto.q}%`),
         },
       });
       const transformedResults = this.transformHealthFacilityData(resp);

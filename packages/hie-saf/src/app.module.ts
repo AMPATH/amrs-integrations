@@ -26,6 +26,7 @@ import { CallbackModule } from './callbacks/callbacks.module';
 import { ClaimSyncModule } from './claim-sync/claim-sync.module';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { ClaimsReportModule } from './reports/claims/claims-report.module';
+import { HealthFacilityModule } from './health-facility/health-facility.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -72,6 +73,7 @@ import { ClaimsReportModule } from './reports/claims/claims-report.module';
     ClaimSyncModule,
     TelemedicineModule,
     ClaimsReportModule,
+    HealthFacilityModule,
   ],
   controllers: [AppController],
   providers: [

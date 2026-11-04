@@ -13,7 +13,6 @@ export class ClientRegistryService {
   async fetchClientFromClientRegistry(searchClientDto: SearchClientDto) {
     const baseUrl = this.configService.get<string>('HIE_BASE_URL') ?? '';
     const clientSearchUrl = `${baseUrl}/hie/api/v1/patient?identifierType=${searchClientDto.identificationType}&identifierNumber=${searchClientDto.identificationNumber}`;
-
     try {
       const response = await this.hieHttpRequests.sendGetRequest(
         clientSearchUrl,

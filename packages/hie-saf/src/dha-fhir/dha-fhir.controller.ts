@@ -1,11 +1,13 @@
 import {
   All,
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
   Logger,
-  Param,
+  Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -13,10 +15,17 @@ import {
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import { BasicAuthGuard } from '../auth/guards/basic-auth-guard/basic-auth.guard';
+import { DhaFhirResourcesService } from './dha-fhir-resources.service';
+import type { FhirResourceLike } from './dha-fhir-resources.service';
 
 interface GatewayRequest extends Request {
   dhaEtlCookie?: string;
   dhaEtlUser?: string;
+}
+
+interface ForwardHeaders {
+  cookie?: string;
+  authorization?: string;
 }
 
 interface FhirMeta {
@@ -30,6 +39,15 @@ interface FhirResource {
   entry?: { resource?: FhirResource }[];
   [key: string]: unknown;
 }
+
+/** Known FHIR2 resource types (from the HAPI-0302 server list) — used by the comma safety net. */
+const FHIR_RESOURCE_TYPES = new Set([
+  'Condition', 'Group', 'MedicationRequest', 'Task', 'Immunization', 'Invoice',
+  'MedicationDispense', 'DiagnosticReport', 'Patient', 'Flag', 'RelatedPerson',
+  'ServiceRequest', 'Practitioner', 'AllergyIntolerance', 'EpisodeOfCare',
+  'Observation', 'Medication', 'Encounter', 'Person', 'ValueSet',
+  'OperationDefinition', 'Location',
+]);
 
 /**
  * Kenya Core IG (ke.fhir.core v1.0.0) — live and publicly resolvable at
@@ -98,7 +116,10 @@ const CONFIRMED_PROFILES: Record<string, string[]> = {
 export class DhaFhirController {
   private readonly logger = new Logger(DhaFhirController.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly resources: DhaFhirResourcesService,
+  ) {}
 
   private fhir2Base(): string {
     const base = this.configService.get<string>('AMRS_BASE_URL') ?? '';
@@ -140,17 +161,191 @@ export class DhaFhirController {
       service: 'dha-fhir',
       auth: 'Authorization: Basic (validated against OpenMRS)',
       usage:
-        'GET /dha-fhir/<FHIR2 path>?<query> — proxied to OpenMRS FHIR2 R4 with the DHA Kenya Core meta.profile stamped',
+        'GET /dha-fhir/<FHIR2 path>?<query> — proxied to OpenMRS FHIR2 R4 with the DHA Kenya Core meta.profile stamped and Conditions enriched with ICD-11 codings. Assembled resources: /Composition, /DetectedIssue, /AuditEvent, /Task; validation: POST /$validate, GET /validation-status, /validation-examples',
       stampedProfiles: this.profiles(),
       authenticatedAs: request.dhaEtlUser ?? null,
     };
+  }
+
+  /* ---------------- assembled resources (declared before the catch-all) ---------------- */
+
+  private forwarded(request: GatewayRequest): ForwardHeaders {
+    return {
+      cookie: request.dhaEtlCookie,
+      authorization: request.headers['authorization'] as string | undefined,
+    };
+  }
+
+  /** FUNC-SUMM-001 — clinical summary as a Composition (in-process case-summary). */
+  @Get('Composition')
+  async composition(
+    @Req() request: GatewayRequest,
+    @Query('patientUuid') patientUuid: string,
+    @Query('locationUuid') locationUuid: string,
+  ) {
+    if (!patientUuid || !locationUuid) {
+      throw new HttpException(
+        'patientUuid and locationUuid are required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const resource = await this.resources.composition(patientUuid, locationUuid);
+    this.stamp(resource, this.profiles());
+    return resource;
+  }
+
+  /** FUNC-CDS-001 (patientUuid=…) / REP-PHE-001 (type=outbreak&startDate&endDate). */
+  @Get('DetectedIssue')
+  async detectedIssue(
+    @Req() request: GatewayRequest,
+    @Query('patientUuid') patientUuid?: string,
+    @Query('type') type?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const profiles = this.profiles();
+    if (type === 'outbreak') {
+      if (!startDate || !endDate) {
+        throw new HttpException(
+          'startDate and endDate are required for outbreak issues',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const issues = await this.resources.detectedIssuesForOutbreak(
+        startDate,
+        endDate,
+        this.forwarded(request),
+      );
+      issues.forEach((i) => this.stamp(i, profiles));
+      return { resourceType: 'Bundle', type: 'searchset', total: issues.length, entry: issues.map((resource) => ({ resource })) };
+    }
+    if (!patientUuid) {
+      throw new HttpException(
+        'patientUuid is required (or type=outbreak with a period)',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const issues = await this.resources.detectedIssuesForPatient(
+      patientUuid,
+      this.forwarded(request),
+    );
+    issues.forEach((i) => this.stamp(i, profiles));
+    return { resourceType: 'Bundle', type: 'searchset', total: issues.length, entry: issues.map((resource) => ({ resource })) };
+  }
+
+  /** SEC-AUDIT-001 — audit trail as core R4 AuditEvents. */
+  @Get('AuditEvent')
+  async auditEvent(@Query('patientUuid') patientUuid: string) {
+    if (!patientUuid) {
+      throw new HttpException('patientUuid is required', HttpStatus.BAD_REQUEST);
+    }
+    const events = await this.resources.auditEventsForPatient(patientUuid);
+    return { resourceType: 'Bundle', type: 'searchset', total: events.length, entry: events.map((resource) => ({ resource })) };
+  }
+
+  /** REP-IHR-001 (status=requested) / INTER-HIE-001 (focus=Referral). */
+  @Get('Task')
+  async task(
+    @Req() request: GatewayRequest,
+    @Query('focus') focus?: string,
+    @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('locationUuid') locationUuid?: string,
+  ) {
+    const profiles = this.profiles();
+    let tasks: FhirResourceLike[];
+    if (focus === 'Referral') {
+      if (!locationUuid) {
+        throw new HttpException('locationUuid is required for referral tasks', HttpStatus.BAD_REQUEST);
+      }
+      tasks = await this.resources.referralTasks(locationUuid);
+    } else if (status === 'requested') {
+      if (!startDate || !endDate) {
+        throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
+      }
+      tasks = await this.resources.ihrTasks(startDate, endDate, this.forwarded(request));
+    } else {
+      throw new HttpException(
+        "Use ?focus=Referral (referrals) or ?status=requested (IHR queue)",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    tasks.forEach((t) => this.stamp(t, profiles));
+    return { resourceType: 'Bundle', type: 'searchset', total: tasks.length, entry: tasks.map((resource) => ({ resource })) };
+  }
+
+  /**
+   * SEC-INT-001 — live-session demonstration: submit a (wrong) dataset and
+   * receive a FHIR OperationOutcome. Declared before the catch-all; the
+   * portal attestation surface stays GET-only (validation-status +
+   * validation-examples carry the GET evidence).
+   */
+  @Post('$validate')
+  async validateResource(
+    @Req() request: GatewayRequest,
+    @Body() body: unknown,
+  ) {
+    return this.resources.validateSubmittedDataset(body, this.forwarded(request));
+  }
+
+  /** SEC-INT-001 — last OperationOutcome (GET-only portal evidence). */
+  @Get('validation-status')
+  validationStatus() {
+    const last = this.resources.lastValidationOutcome;
+    if (!last) {
+      return {
+        resourceType: 'OperationOutcome',
+        issue: [
+          {
+            severity: 'information',
+            code: 'informational',
+            diagnostics:
+              'No dataset has been validated yet — POST /dha-fhir/$validate to run one.',
+          },
+        ],
+      };
+    }
+    return last;
+  }
+
+  /** SEC-INT-001 — a deliberately wrong dataset the lab can POST. */
+  @Get('validation-examples')
+  validationExamples() {
+    return { examples: [this.resources.invalidExampleDataset()] };
+  }
+
+  /**
+   * Derive the proxied sub-path from the original URL instead of the Express
+   * 5 wildcard param: param capture mangles multi-segment values
+   * ('Patient/<uuid>' arrived as 'Patient,<uuid>' on staging, causing HAPI-0302).
+   * The controller mount is '/dha-fhir' — originalUrl as seen by this app is
+   * '/dha-fhir/<sub-path>[?query]' (nginx strips the /openmrs/hie prefix).
+   */
+  private subPathFrom(request: GatewayRequest): string {
+    const base = '/dha-fhir';
+    const q = request.originalUrl.indexOf('?');
+    let sub = (q >= 0 ? request.originalUrl.slice(0, q) : request.originalUrl).slice(base.length);
+    try {
+      sub = decodeURIComponent(sub);
+    } catch {
+      /* keep raw */
+    }
+    sub = sub.replace(/^\/+/, '');
+    // Safety net: normalize a mangled 'Type,id' read back to 'Type/id'.
+    if (sub.includes(',') && !sub.includes('/')) {
+      const [head, tail] = sub.split(',');
+      if (FHIR_RESOURCE_TYPES.has(head) && tail && /^[\w.-]+$/.test(tail)) {
+        sub = `${head}/${tail}`;
+      }
+    }
+    return sub;
   }
 
   @All('{*path}')
   async proxy(
     @Req() request: GatewayRequest,
     @Res() response: Response,
-    @Param('path') rawPath: string,
   ) {
     if (request.method !== 'GET') {
       throw new HttpException(
@@ -161,12 +356,7 @@ export class DhaFhirController {
 
     const queryStart = request.originalUrl.indexOf('?');
     const query = queryStart >= 0 ? request.originalUrl.slice(queryStart + 1) : '';
-    let upstreamPath: string;
-    try {
-      upstreamPath = decodeURIComponent(rawPath);
-    } catch {
-      upstreamPath = rawPath;
-    }
+    const upstreamPath = this.subPathFrom(request);
     const url = `${this.fhir2Base()}/${upstreamPath.replace(/^\/+/, '')}${
       query ? `?${query}` : ''
     }`;
@@ -197,6 +387,21 @@ export class DhaFhirController {
             );
           } else {
             this.stamp(parsed, profiles);
+          }
+          // INTER-SEM: FHIR2 Conditions carry only the local concept UUID —
+          // inject the ICD-11 coding from the concept_reference_map join.
+          if (parsed.resourceType === 'Condition') {
+            await this.resources.enrichConditionIcd11(parsed).catch((e) =>
+              this.logger.warn(`ICD-11 enrichment skipped: ${String(e)}`),
+            );
+          } else if (parsed.resourceType === 'Bundle' && Array.isArray(parsed.entry)) {
+            for (const entry of parsed.entry) {
+              if (entry.resource?.resourceType === 'Condition') {
+                await this.resources
+                  .enrichConditionIcd11(entry.resource)
+                  .catch((e) => this.logger.warn(`ICD-11 enrichment skipped: ${String(e)}`));
+              }
+            }
           }
           response
             .status(upstream.status)

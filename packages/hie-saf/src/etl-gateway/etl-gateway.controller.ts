@@ -5,7 +5,6 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-  Param,
   Req,
   Res,
   UseGuards,
@@ -61,7 +60,6 @@ export class EtlProxyController {
   async proxy(
     @Req() request: GatewayRequest,
     @Res() response: Response,
-    @Param('path') rawPath: string,
   ) {
     if (request.method !== 'GET') {
       throw new HttpException(
@@ -72,11 +70,19 @@ export class EtlProxyController {
 
     const queryStart = request.originalUrl.indexOf('?');
     const query = queryStart >= 0 ? request.originalUrl.slice(queryStart + 1) : '';
+    // Derive the sub-path from the original URL — Express 5 wildcard param
+    // capture mangles multi-segment values (see DhaFhirController.subPathFrom).
+    const base = '/etl-gateway';
     let upstreamPath: string;
-    try {
-      upstreamPath = decodeURIComponent(rawPath);
-    } catch {
-      upstreamPath = rawPath;
+    {
+      const q = request.originalUrl.indexOf('?');
+      let sub = (q >= 0 ? request.originalUrl.slice(0, q) : request.originalUrl).slice(base.length);
+      try {
+        sub = decodeURIComponent(sub);
+      } catch {
+        /* keep raw */
+      }
+      upstreamPath = sub.replace(/^\/+/, '');
     }
     const url = `${this.targetBase()}/${upstreamPath.replace(/^\/+/, '')}${
       query ? `?${query}` : ''

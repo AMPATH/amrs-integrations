@@ -6,7 +6,6 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-  Param,
   Post,
   Query,
   Req,
@@ -40,6 +39,15 @@ interface FhirResource {
   entry?: { resource?: FhirResource }[];
   [key: string]: unknown;
 }
+
+/** Known FHIR2 resource types (from the HAPI-0302 server list) — used by the comma safety net. */
+const FHIR_RESOURCE_TYPES = new Set([
+  'Condition', 'Group', 'MedicationRequest', 'Task', 'Immunization', 'Invoice',
+  'MedicationDispense', 'DiagnosticReport', 'Patient', 'Flag', 'RelatedPerson',
+  'ServiceRequest', 'Practitioner', 'AllergyIntolerance', 'EpisodeOfCare',
+  'Observation', 'Medication', 'Encounter', 'Person', 'ValueSet',
+  'OperationDefinition', 'Location',
+]);
 
 /**
  * Kenya Core IG (ke.fhir.core v1.0.0) — live and publicly resolvable at
@@ -307,11 +315,37 @@ export class DhaFhirController {
     return { examples: [this.resources.invalidExampleDataset()] };
   }
 
+  /**
+   * Derive the proxied sub-path from the original URL instead of the Express
+   * 5 wildcard param: param capture mangles multi-segment values
+   * ('Patient/<uuid>' arrived as 'Patient,<uuid>' on staging, causing HAPI-0302).
+   * The controller mount is '/dha-fhir' — originalUrl as seen by this app is
+   * '/dha-fhir/<sub-path>[?query]' (nginx strips the /openmrs/hie prefix).
+   */
+  private subPathFrom(request: GatewayRequest): string {
+    const base = '/dha-fhir';
+    const q = request.originalUrl.indexOf('?');
+    let sub = (q >= 0 ? request.originalUrl.slice(0, q) : request.originalUrl).slice(base.length);
+    try {
+      sub = decodeURIComponent(sub);
+    } catch {
+      /* keep raw */
+    }
+    sub = sub.replace(/^\/+/, '');
+    // Safety net: normalize a mangled 'Type,id' read back to 'Type/id'.
+    if (sub.includes(',') && !sub.includes('/')) {
+      const [head, tail] = sub.split(',');
+      if (FHIR_RESOURCE_TYPES.has(head) && tail && /^[\w.-]+$/.test(tail)) {
+        sub = `${head}/${tail}`;
+      }
+    }
+    return sub;
+  }
+
   @All('{*path}')
   async proxy(
     @Req() request: GatewayRequest,
     @Res() response: Response,
-    @Param('path') rawPath: string,
   ) {
     if (request.method !== 'GET') {
       throw new HttpException(
@@ -322,12 +356,7 @@ export class DhaFhirController {
 
     const queryStart = request.originalUrl.indexOf('?');
     const query = queryStart >= 0 ? request.originalUrl.slice(queryStart + 1) : '';
-    let upstreamPath: string;
-    try {
-      upstreamPath = decodeURIComponent(rawPath);
-    } catch {
-      upstreamPath = rawPath;
-    }
+    const upstreamPath = this.subPathFrom(request);
     const url = `${this.fhir2Base()}/${upstreamPath.replace(/^\/+/, '')}${
       query ? `?${query}` : ''
     }`;

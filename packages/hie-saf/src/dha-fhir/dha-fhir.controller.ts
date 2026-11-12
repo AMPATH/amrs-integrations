@@ -282,6 +282,7 @@ export class DhaFhirController {
    * validation-examples carry the GET evidence).
    */
   @Post('$validate')
+  @HttpCode(HttpStatus.OK)
   async validateResource(
     @Req() request: GatewayRequest,
     @Body() body: unknown,

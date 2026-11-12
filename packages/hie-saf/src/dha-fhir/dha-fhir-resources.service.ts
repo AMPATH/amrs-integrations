@@ -359,114 +359,129 @@ export class DhaFhirResourcesService {
    * Lab wording covered: recorded time, agent, and source.
    */
   async auditEventsForPatient(patientUuid: string): Promise<FhirResourceLike[]> {
+    // OpenMRS audit model: encounter keeps date_changed/changed_by in place;
+    // obs edits create a NEW row linked by previous_version (no date_changed
+    // column) and deletes are voids (date_voided/voided_by on both tables).
     const encounters = await this.amrsDataSource.query(
-      `SELECT e.uuid AS resourceUuid, e.encounter_type, e.date_created,
-              cu.username AS creator, e.date_changed, ch.username AS changer, e.voided
+      `SELECT e.uuid AS resourceUuid, e.date_created,
+              cu.username AS creator, e.date_changed, ch.username AS changer,
+              e.voided, e.date_voided, vu.username AS voider
          FROM encounter e
          JOIN person p ON p.person_id = e.patient_id
          JOIN users cu ON cu.user_id = e.creator
          LEFT JOIN users ch ON ch.user_id = e.changed_by
+         LEFT JOIN users vu ON vu.user_id = e.voided_by
         WHERE p.uuid = ?
         ORDER BY e.date_created DESC
         LIMIT 50`,
       [patientUuid],
     );
-    const obs = await this.amrsDataSource.query(
-      `SELECT o.uuid AS resourceUuid, o.date_created,
-              cu.username AS creator, o.date_changed, ch.username AS changer, o.voided
-         FROM obs o
-         JOIN person p ON p.person_id = o.person_id
-         JOIN users cu ON cu.user_id = o.creator
-         LEFT JOIN users ch ON ch.user_id = o.changed_by
-        WHERE p.uuid = ?
-        ORDER BY o.date_created DESC
-        LIMIT 50`,
-      [patientUuid],
-    );
+    let obs: Array<Record<string, unknown>>;
+    try {
+      obs = await this.amrsDataSource.query(
+        `SELECT o.uuid AS resourceUuid, o.date_created,
+                cu.username AS creator, o.previous_version,
+                o.voided, o.date_voided, vu.username AS voider
+           FROM obs o
+           JOIN person p ON p.person_id = o.person_id
+           JOIN users cu ON cu.user_id = o.creator
+           LEFT JOIN users vu ON vu.user_id = o.voided_by
+          WHERE p.uuid = ?
+          ORDER BY o.date_created DESC
+          LIMIT 50`,
+        [patientUuid],
+      );
+    } catch (error) {
+      // Older schemas without obs.previous_version — degrade to create/void
+      // events only rather than failing the whole audit trail.
+      this.logger.warn(`obs audit query with previous_version failed (${String(error)}), retrying without it`);
+      obs = await this.amrsDataSource.query(
+        `SELECT o.uuid AS resourceUuid, o.date_created,
+                cu.username AS creator,
+                o.voided, o.date_voided, vu.username AS voider
+           FROM obs o
+           JOIN person p ON p.person_id = o.person_id
+           JOIN users cu ON cu.user_id = o.creator
+           LEFT JOIN users vu ON vu.user_id = o.voided_by
+          WHERE p.uuid = ?
+          ORDER BY o.date_created DESC
+          LIMIT 50`,
+        [patientUuid],
+      );
+    }
 
     const events: FhirResourceLike[] = [];
-    const push = (
+    const pushEvent = (
       resourceUuid: string,
       kind: 'Encounter' | 'Observation',
-      created: string,
-      creator: string,
-      changed: string | null,
-      changer: string | null,
-      voided: number,
+      action: 'C' | 'U' | 'D',
+      when: string,
+      who: string,
     ) => {
-      const actions: Array<{ action: 'C' | 'U' | 'D'; when: string; who: string }> = [
-        { action: 'C', when: String(created), who: String(creator ?? 'system') },
-      ];
-      if (changed && changer) {
-        actions.push({ action: 'U', when: String(changed), who: String(changer) });
-      }
-      if (voided) {
-        actions.push({ action: 'D', when: String(changed ?? created), who: String(changer ?? creator ?? 'system') });
-      }
-      for (const a of actions) {
-        const interaction =
-          a.action === 'C' ? 'create' : a.action === 'U' ? 'update' : 'delete';
-        events.push({
-          resourceType: 'AuditEvent',
-          id: `audit-${kind.toLowerCase()}-${resourceUuid}-${a.action}-${events.length + 1}`,
-          type: {
+      const interaction =
+        action === 'C' ? 'create' : action === 'U' ? 'update' : 'delete';
+      events.push({
+        resourceType: 'AuditEvent',
+        id: `audit-${kind.toLowerCase()}-${resourceUuid}-${action}-${events.length + 1}`,
+        type: {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/audit-event-type',
+              code: 'rest',
+              display: 'RESTful Operation',
+            },
+          ],
+        },
+        subtype: [
+          {
             coding: [
               {
-                system: 'http://terminology.hl7.org/CodeSystem/audit-event-type',
-                code: 'rest',
-                display: 'RESTful Operation',
+                system: 'http://hl7.org/fhir/restful-interaction',
+                code: interaction,
+                display: interaction,
               },
             ],
           },
-          subtype: [
-            {
-              coding: [
-                {
-                  system: 'http://hl7.org/fhir/restful-interaction',
-                  code: interaction,
-                  display: interaction,
-                },
-              ],
-            },
-          ],
-          action: a.action,
-          recorded: a.when,
-          agent: [{ who: { display: a.who }, requestor: true }],
-          source: {
-            site: 'AMRS — Moi Teaching And Referral Hospital',
-            observer: { display: 'OpenMRS AMRS' },
+        ],
+        action,
+        recorded: when,
+        agent: [{ who: { display: who }, requestor: true }],
+        source: {
+          site: 'AMRS — Moi Teaching And Referral Hospital',
+          observer: { display: 'OpenMRS AMRS' },
+        },
+        entity: [
+          {
+            what: { reference: `${kind}/${resourceUuid}` },
+            detail: [{ type: 'action', valueString: interaction }],
           },
-          entity: [
-            {
-              what: { reference: `${kind}/${resourceUuid}` },
-              detail: [{ type: 'action', valueString: interaction }],
-            },
-          ],
-        });
-      }
+        ],
+      });
     };
 
+    const safe = (v: unknown): string | null => (v == null ? null : String(v));
+
     for (const e of encounters as Array<Record<string, unknown>>) {
-      push(
-        String(e.resourceUuid),
-        'Encounter',
-        String(e.date_created),
-        String(e.creator),
-        e.date_changed ? String(e.date_changed) : null,
-        e.changer ? String(e.changer) : null,
-        Number(e.voided ?? 0),
-      );
+      const uuid = String(e.resourceUuid);
+      pushEvent(uuid, 'Encounter', 'C', safe(e.date_created) ?? '', safe(e.creator) ?? 'system');
+      if (safe(e.date_changed) && safe(e.changer)) {
+        pushEvent(uuid, 'Encounter', 'U', safe(e.date_changed)!, safe(e.changer)!);
+      }
+      if (Number(e.voided ?? 0)) {
+        pushEvent(uuid, 'Encounter', 'D', safe(e.date_voided) ?? safe(e.date_created) ?? '', safe(e.voider) ?? 'system');
+      }
     }
     for (const o of obs as Array<Record<string, unknown>>) {
-      push(
-        String(o.resourceUuid),
-        'Observation',
-        String(o.date_created),
-        String(o.creator),
-        o.date_changed ? String(o.date_changed) : null,
-        o.changer ? String(o.changer) : null,
-        Number(o.voided ?? 0),
-      );
+      const uuid = String(o.resourceUuid);
+      pushEvent(uuid, 'Observation', 'C', safe(o.date_created) ?? '', safe(o.creator) ?? 'system');
+      // An obs edit mints a new row pointing at its previous version — the
+      // new row's date_created/creator is the edit event.
+      if (o.previous_version != null) {
+        pushEvent(uuid, 'Observation', 'U', safe(o.date_created) ?? '', safe(o.creator) ?? 'system');
+      }
+      if (Number(o.voided ?? 0)) {
+        pushEvent(uuid, 'Observation', 'D', safe(o.date_voided) ?? safe(o.date_created) ?? '', safe(o.voider) ?? 'system');
+      }
     }
     return events;
   }

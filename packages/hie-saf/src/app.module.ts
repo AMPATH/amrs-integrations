@@ -24,6 +24,8 @@ import { CaseSummaryModule } from './case-summary/case-summary.module';
 import { EmtModule } from './emt/emt.module';
 import { CallbackModule } from './callbacks/callbacks.module';
 import { ClaimSyncModule } from './claim-sync/claim-sync.module';
+import { EtlGatewayModule } from './etl-gateway/etl-gateway.module';
+import { DhaFhirModule } from './dha-fhir/dha-fhir.module';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { ClaimsReportModule } from './reports/claims/claims-report.module';
 import { HealthFacilityModule } from './health-facility/health-facility.module';
@@ -40,6 +42,9 @@ import { HealthFacilityModule } from './health-facility/health-facility.module';
         HIE_BASE_URL: Joi.string().required(),
         HIE_CLIAMS_BASE_URL: Joi.string().required(),
         HIE_SHR_BASE_URL: Joi.string().required(),
+        ETL_GATEWAY_TARGET: Joi.string(),
+        ETL_GATEWAY_TIMEOUT_MS: Joi.number(),
+        DHA_PROFILE_MAP: Joi.string(),
         DATABASE_HOST: Joi.string().required(),
         DATABASE_PORT: Joi.number().required(),
         DATABASE_USER: Joi.string().required(),
@@ -74,6 +79,8 @@ import { HealthFacilityModule } from './health-facility/health-facility.module';
     TelemedicineModule,
     ClaimsReportModule,
     HealthFacilityModule,
+    EtlGatewayModule,
+    DhaFhirModule,
   ],
   controllers: [AppController],
   providers: [

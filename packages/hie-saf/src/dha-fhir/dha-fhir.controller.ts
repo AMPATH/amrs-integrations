@@ -32,14 +32,50 @@ interface FhirResource {
 }
 
 /**
- * Confirmed by the laboratory (NC-3, field-test feedback 12 Nov 2026):
- * resubmit the same Patient with exactly this meta.profile value.
- * Profiles for other resource types are intentionally NOT fabricated —
- * add them via DHA_PROFILE_MAP when DHA confirms the canonicals
- * (http://hl7.dha.go.ke/ig/core is not publicly resolvable, NXDOMAIN).
+ * Kenya Core IG (ke.fhir.core v1.0.0) — live and publicly resolvable at
+ * https://fhir.dha.go.ke/core (ImplementationGuide + 31 StructureDefinitions
+ * enumerated 12 Nov 2026). Canonical format:
+ *   https://fhir.dha.go.ke/core/StructureDefinition/<name>
+ *
+ * DISCREPANCY FLAG: the round-1 feedback (NC-3) quoted a Patient profile at
+ * http://hl7.dha.go.ke/ig/core/... — that host is NXDOMAIN. Patient is
+ * stamped with BOTH the live canonical and the NC-3 string until DHA
+ * confirms which one their validator expects.
+ *
+ * Types NOT covered by the IG (cannot be profiled): MedicationRequest,
+ * Composition, AuditEvent, Immunization, Medication, ValueSet — flagged to
+ * DHA; those resources pass through unstamped.
  */
-const CONFIRMED_PROFILES: Record<string, string> = {
-  Patient: 'http://hl7.dha.go.ke/ig/core/StructureDefinition/kenya-core-patient/0.1.0',
+const CANONICAL_BASE = 'https://fhir.dha.go.ke/core/StructureDefinition';
+const LEGACY_PATIENT_PROFILE =
+  'http://hl7.dha.go.ke/ig/core/StructureDefinition/kenya-core-patient/0.1.0';
+
+const CONFIRMED_PROFILES: Record<string, string[]> = {
+  Patient: [`${CANONICAL_BASE}/kenya-core-patient`, LEGACY_PATIENT_PROFILE],
+  Encounter: [`${CANONICAL_BASE}/kenya-core-encounter`],
+  Observation: [`${CANONICAL_BASE}/kenya-core-observation`],
+  Condition: [`${CANONICAL_BASE}/kenya-core-condition`],
+  AllergyIntolerance: [`${CANONICAL_BASE}/kenya-core-allergyintolerance`],
+  ServiceRequest: [`${CANONICAL_BASE}/kenya-core-servicerequest`],
+  DetectedIssue: [`${CANONICAL_BASE}/kenya-core-detectedissue`],
+  MeasureReport: [`${CANONICAL_BASE}/kenya-core-measurereport`],
+  Task: [`${CANONICAL_BASE}/kenya-core-task`],
+  DiagnosticReport: [`${CANONICAL_BASE}/kenya-core-diagnosticreport`],
+  Consent: [`${CANONICAL_BASE}/kenya-core-consent`],
+  Provenance: [`${CANONICAL_BASE}/kenya-core-provenance`],
+  Location: [`${CANONICAL_BASE}/kenya-core-location`],
+  EpisodeOfCare: [`${CANONICAL_BASE}/kenya-core-episodeofcare`],
+  Procedure: [`${CANONICAL_BASE}/kenya-core-procedure`],
+  PractitionerRole: [`${CANONICAL_BASE}/kenya-core-practitionerrole`],
+  RelatedPerson: [`${CANONICAL_BASE}/kenya-core-relatedperson`],
+  Communication: [`${CANONICAL_BASE}/kenya-core-communication`],
+  CommunicationRequest: [`${CANONICAL_BASE}/kenya-core-communicationrequest`],
+  Device: [`${CANONICAL_BASE}/kenya-core-device`],
+  DocumentReference: [`${CANONICAL_BASE}/kenya-core-documentreference`],
+  QuestionnaireResponse: [
+    `${CANONICAL_BASE}/kenya-core-questionnaireresponse`,
+  ],
+  Organization: [`${CANONICAL_BASE}/kenya-core-organization`],
 };
 
 /**
@@ -70,12 +106,18 @@ export class DhaFhirController {
     return `${withScheme.replace(/\/+$/, '')}/openmrs/ws/fhir2/R4`;
   }
 
-  private profiles(): Record<string, string> {
-    let extra: Record<string, string> = {};
+  private profiles(): Record<string, string[]> {
+    let extra: Record<string, string[]> = {};
     const raw = this.configService.get<string>('DHA_PROFILE_MAP');
     if (raw) {
       try {
-        extra = JSON.parse(raw) as Record<string, string>;
+        const parsed = JSON.parse(raw) as Record<string, string | string[]>;
+        extra = Object.fromEntries(
+          Object.entries(parsed).map(([type, url]) => [
+            type,
+            Array.isArray(url) ? url : [url],
+          ]),
+        );
       } catch {
         this.logger.warn('DHA_PROFILE_MAP is not valid JSON — ignoring.');
       }
@@ -83,13 +125,13 @@ export class DhaFhirController {
     return { ...CONFIRMED_PROFILES, ...extra };
   }
 
-  private stamp(resource: FhirResource, profiles: Record<string, string>): void {
-    const profile = profiles[resource.resourceType];
-    if (!profile) {
+  private stamp(resource: FhirResource, profiles: Record<string, string[]>): void {
+    const profileList = profiles[resource.resourceType];
+    if (!profileList || profileList.length === 0) {
       return;
     }
     const meta = (resource.meta = resource.meta ?? {}) as FhirMeta;
-    meta.profile = Array.from(new Set([...(meta.profile ?? []), profile]));
+    meta.profile = Array.from(new Set([...(meta.profile ?? []), ...profileList]));
   }
 
   @Get()

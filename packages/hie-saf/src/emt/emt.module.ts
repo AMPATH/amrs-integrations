@@ -16,5 +16,6 @@ import { EmtService } from './emt.service';
   ],
   controllers: [EmtController],
   providers: [EmtService, PractitionerResolver, HealthWorkerRegistryService],
+  exports: [EmtService],
 })
 export class EmtModule {}

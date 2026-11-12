@@ -16,5 +16,6 @@ import { VisitWindowHelper } from './utils/visit-window.helper';
     VisitWindowHelper,
     SoapNoteHelper,
   ],
+  exports: [CaseSummaryService],
 })
 export class CaseSummaryModule {}

@@ -68,6 +68,7 @@ export class BasicAuthGuard implements CanActivate {
         {
           method: 'GET',
           headers: { Accept: 'application/json', Authorization: header },
+          signal: AbortSignal.timeout(10_000),
         },
       );
       const body = (await resp.json()) as { authenticated?: boolean };
@@ -95,7 +96,16 @@ export class BasicAuthGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('OpenMRS authentication failed.');
+      // Surface the real cause (connect timeout, DNS, TLS, dead origin …) —
+      // a bare message made container-side outages indistinguishable from
+      // bad credentials (staging incident 2026-11-12).
+      const cause =
+        error instanceof Error
+          ? `${error.message}${error.cause ? ` | cause: ${String(error.cause)}` : ''}`
+          : String(error);
+      throw new UnauthorizedException(
+        `OpenMRS authentication failed: ${cause}`,
+      );
     }
   }
 

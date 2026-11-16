@@ -68,6 +68,35 @@ interface CaseSummaryLike {
 
 /** ICD-11 MMS coding system (WHO). */
 const ICD11_SYSTEM = 'http://id.who.int/icd/release/11/mms';
+/** AMRS local concepts resolve to the OCL AMPATH source (validator: unknown-CS warnings only) */
+const OCL_AMPATH_SYSTEM = 'https://openconceptlab.org/orgs/AMPATH/sources/AMPATH';
+
+/** DHA national terminology base (e.g. condition-category-cs) */
+const DHA_TERMINOLOGY_BASE = 'https://fhir.dha.go.ke/terminology';
+/** DHA national identifier systems (kenya-core-patient slices) */
+const DHA_IDENTIFIER_BASE = 'https://fhir.dha.go.ke/fhir/identifier';
+/**
+ * SHA identifier systems — the kenya-core-patient `sha-patient-min-identifier`
+ * constraint (verified from the IG FHIRPath) checks THIS host, while the
+ * identifier slices discriminate on the fhir.dha.go.ke host. Both are emitted
+ * for the same values so the resource satisfies slices AND the constraint.
+ */
+const SHA_IDENTIFIER_BASE = 'https://fhir.sha.go.ke/fhir/identifier';
+/** Kenya IDSR immediately-notifiable diseases (matched by concept display) */
+const DEFAULT_NOTIFIABLE = [
+  'cholera', 'measles', 'ebola', 'viral haemorrhagic fever', 'yellow fever',
+  'meningococcal meningitis', 'dengue', 'chikungunya', 'anthrax',
+  'poliomyelitis', 'neonatal tetanus', 'plague',
+];
+/** FHIR2 condition clinicalStatus codes -> DHA condition-clinical-status-cs */
+const DHA_CLINICAL_STATUS: Record<string, string> = {
+  active: 'ACTIVE', inactive: 'INACTIVE', resolved: 'RESOLVED', unknown: 'ACTIVE',
+};
+/** FHIR2 condition verificationStatus codes -> DHA verification-status-cs */
+const DHA_VERIFICATION_STATUS: Record<string, string> = {
+  unconfirmed: 'UNCONFIRMED', differential: 'DIFFERENTIAL',
+  confirmed: 'CONFIRMED', refuted: 'REFUTED', 'entered-in-error': 'ENTERED-IN-ERROR',
+};
 
 /** Live Kenya Core IG base (ke.fhir.core v1.0.0 — verified fetchable). */
 const DHA_IG_BASE = 'https://fhir.dha.go.ke/core';
@@ -543,23 +572,116 @@ export class DhaFhirResourcesService {
    * inject the ICD-11 coding from the same concept_reference_map join the
    * case-summary uses (verified live: GB60.0 / 1F40.Z / 5A22.Z / 5A13).
    */
-  async enrichConditionIcd11(resource: FhirResourceLike): Promise<void> {
+  /**
+   * Full Condition conformance enrichment (kenya-core-condition):
+   *  - `code`: ICD-11 coding (required binding) from the concept_reference_map
+   *  - `clinicalStatus`/`verificationStatus`/`category`: DHA terminology
+   *    codings (kenya slice + required ValueSets) alongside the HL7 ones,
+   *    with FHIR2's non-conformant `unknown` normalized
+   *  - `recordedDate`: fallback from onset
+   *  - `ihr-reportable` extension for immediately-notifiable diseases
+   */
+  async enrichCondition(resource: FhirResourceLike): Promise<void> {
+    // -- id is required (min 1)
+    if (!resource.id) {
+      resource.id = `condition-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    }
+    // -- ICD-11 coding on Condition.code (required binding)
     const code = resource.code as { coding?: FhirCoding[]; text?: string } | undefined;
     const localCoding = code?.coding?.find((c) => c.code && !c.system) ?? code?.coding?.[0];
     const conceptUuid = localCoding?.code;
-    if (!conceptUuid) return;
+    if (conceptUuid) {
+      const icd11 = await this.icd11ForConcept(conceptUuid);
+      if (icd11 && !code?.coding?.some((c) => c.system === ICD11_SYSTEM)) {
+        resource.code = {
+          ...(resource.code as object),
+          coding: [
+            ...(code?.coding ?? []),
+            { system: ICD11_SYSTEM, code: icd11 },
+          ],
+        } as never;
+      }
+    }
 
-    const icd11 = await this.icd11ForConcept(conceptUuid);
-    if (!icd11) return;
+    // -- category: add the DHA terminology coding (all FHIR2 conditions are encounter diagnoses)
+    const category = resource.category as Array<{ coding?: FhirCoding[] }> | undefined;
+    if (Array.isArray(category)) {
+      for (const cat of category) {
+        const hl7Code = cat.coding?.find((c) => c.system?.includes('condition-category'))?.code
+          ?? cat.coding?.[0]?.code;
+        const dhaCode = hl7Code === 'problem-list-item' ? 'PROBLEM-LIST-ITEM'
+          : hl7Code === 'health-concern' ? 'HEALTH-CONCERN' : 'ENCOUNTER-DIAGNOSIS';
+        if (!cat.coding?.some((c) => c.system?.startsWith(DHA_TERMINOLOGY_BASE))) {
+          cat.coding = [...(cat.coding ?? []),
+            { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-category-cs`, code: dhaCode }];
+        }
+      }
+    } else {
+      resource.category = [{ coding: [{ system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-category-cs`, code: 'ENCOUNTER-DIAGNOSIS' }] }];
+    }
 
-    resource.code = resource.code ?? {};
-    resource.code = {
-      ...(resource.code as object),
+    // -- clinicalStatus: normalize (FHIR2 can emit the invalid `unknown`) + DHA coding
+    const clinical = resource.clinicalStatus as { coding?: FhirCoding[]; text?: string } | undefined;
+    const hl7Clinical = clinical?.coding?.find((c) => c.system?.includes('condition-clinical'))?.code
+      ?? clinical?.coding?.[0]?.code ?? 'active';
+    const dhaClinical = DHA_CLINICAL_STATUS[hl7Clinical] ?? 'ACTIVE';
+    resource.clinicalStatus = {
       coding: [
-        ...(code?.coding ?? []),
-        { system: ICD11_SYSTEM, code: icd11 },
+        ...(clinical?.coding ?? []).filter((c) => c.system?.includes('condition-clinical')),
+        { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-clinical-status-cs`, code: dhaClinical },
       ],
     } as never;
+
+    // -- verificationStatus: add DHA coding when a status is present
+    const verification = resource.verificationStatus as { coding?: FhirCoding[] } | undefined;
+    const hl7Verification = verification?.coding?.find((c) => c.system?.includes('condition-ver-status'))?.code;
+    if (hl7Verification) {
+      const dhaVerification = DHA_VERIFICATION_STATUS[hl7Verification] ?? 'CONFIRMED';
+      resource.verificationStatus = {
+        coding: [
+          ...(verification?.coding ?? []).filter((c) => c.system?.includes('condition-ver-status')),
+          { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-verification-status-cs`, code: dhaVerification },
+        ],
+      } as never;
+    }
+
+    // -- recordedDate required (min 1): fallback to onset then now
+    if (!resource.recordedDate) {
+      resource.recordedDate =
+        (resource.onsetDateTime as string) ??
+        (resource.onsetPeriod as { start?: string } | undefined)?.start ??
+        new Date().toISOString().replace(/\.\d{3}Z$/, '+03:00');
+    }
+
+    // -- ihr-reportable extension for immediately-notifiable diseases
+    const display = String(code?.text ?? localCoding?.display ?? '').toLowerCase();
+    if (this.isNotifiable(display) && !this.hasExtension(resource, 'ihr-reportable')) {
+      resource.extension = [
+        ...((resource.extension as Array<object> | undefined) ?? []),
+        {
+          url: `${DHA_TERMINOLOGY_BASE.replace('/terminology', '')}/fhir/StructureDefinition/ihr-reportable`,
+          valueBoolean: true,
+        },
+      ];
+    }
+  }
+
+  private isNotifiable(display: string): boolean {
+    if (!display) return false;
+    const list = this.notifiableDiseases();
+    return list.some((d) => display.includes(d));
+  }
+
+  private notifiableDiseases(): string[] {
+    const raw = this.configService.get<string>('DHA_NOTIFIABLE_DISEASES');
+    if (raw) return raw.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
+    return DEFAULT_NOTIFIABLE;
+  }
+
+  private hasExtension(resource: FhirResourceLike, urlSuffix: string): boolean {
+    return (resource.extension as Array<{ url?: string }> | undefined)?.some((e) =>
+      e.url?.endsWith(urlSuffix),
+    ) ?? false;
   }
 
   private async icd11ForConcept(conceptUuid: string): Promise<string | null> {
@@ -685,6 +807,11 @@ export class DhaFhirResourcesService {
     return result;
   }
 
+  /** Default demo patient (env DHA_DEMO_PATIENT_UUID) for lab-facing queries. */
+  demoPatientUuid(): string {
+    return this.configService.get<string>('DHA_DEMO_PATIENT_UUID') ?? '';
+  }
+
   get lastValidationOutcome(): FhirOperationOutcome | null {
     return this.lastValidation;
   }
@@ -767,6 +894,300 @@ export class DhaFhirResourcesService {
       (Array.isArray(value) && value.length === 0) ||
       (typeof value === 'string' && value.trim() === '')
     );
+  }
+
+  /* ------------------------------------------- Patient / ServiceRequest enrichment */
+
+  /**
+   * Patient conformance enrichment (kenya-core-patient):
+   *  - identifier systems rewritten to the DHA national systems (slices) plus a
+   *    SHA-system twin (the `sha-patient-min-identifier` constraint checks the
+   *    fhir.sha.go.ke host — verified from the IG FHIRPath)
+   *  - telecom entries get their `system` (cpt-2)
+   */
+  async enrichPatient(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `patient-${Date.now()}`;
+    const identifiers = (resource.identifier as Array<Record<string, unknown>> | undefined) ?? [];
+    for (const ident of identifiers) {
+      if (!ident.system) {
+        const type = String(
+          (ident.type as { text?: string; coding?: Array<{ display?: string }> } | undefined)?.text ??
+            (ident.type as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
+        ).toLowerCase();
+        const value = String(ident.value ?? '');
+        if (type.includes('national')) ident.system = `${DHA_IDENTIFIER_BASE}/nationalid`;
+        else if (type.includes('cr') || type.includes('sha') || /^CR\d{13}-\d+$/.test(value))
+          ident.system = `${DHA_IDENTIFIER_BASE}/shanumber`;
+        else if (type.includes('phone') || value.startsWith('+254') || value.startsWith('07'))
+          ident.system = `${DHA_IDENTIFIER_BASE}/phonenumber`;
+        else if (type.includes('household')) ident.system = `${DHA_IDENTIFIER_BASE}/householdnumber`;
+      }
+    }
+    // constraint twin: one identifier whose system lives on the SHA host
+    const hasShaSystem = identifiers.some((i) => String(i.system ?? '').startsWith(SHA_IDENTIFIER_BASE));
+    if (!hasShaSystem) {
+      const source = identifiers.find((i) =>
+        String(i.system ?? '').includes('/shanumber') || String(i.system ?? '').includes('/nationalid'));
+      if (source) {
+        const shaSystem = String(source.system).includes('/shanumber')
+          ? `${SHA_IDENTIFIER_BASE}/shanumber`
+          : `${SHA_IDENTIFIER_BASE}/nationalid`;
+        identifiers.push({ system: shaSystem, value: source.value });
+        resource.identifier = identifiers as never;
+      }
+    }
+    // telecom: cpt-2 requires a system when a value is present
+    const telecom = (resource.telecom as Array<Record<string, unknown>> | undefined) ?? [];
+    const kept = telecom.filter((t) => {
+      if (t.system) return true;
+      const value = String(t.value ?? '');
+      if (value.includes('@')) { t.system = 'email'; return true; }
+      if (value) { t.system = 'phone'; return true; }
+      return false;
+    });
+    if (telecom.length) resource.telecom = kept as never;
+  }
+
+  /**
+   * ServiceRequest conformance enrichment (kenya-core-servicerequest):
+   *  - `authoredOn` (min 1) from the AMRS orders table
+   *  - any coding missing its `system` gets the OCL/AMPATH system (the
+   *    profile requires coding.system min 1)
+   */
+  async enrichServiceRequest(resource: FhirResourceLike, headers: ForwardHeaders): Promise<void> {
+    if (!resource.id) resource.id = `servicerequest-${Date.now()}`;
+    if (!resource.authoredOn) {
+      try {
+        const rows = (await this.amrsDataSource.query(
+          `SELECT date_activated FROM orders WHERE uuid = ? LIMIT 1`,
+          [String(resource.id)],
+        )) as Array<{ date_activated?: string }>;
+        if (rows?.[0]?.date_activated) resource.authoredOn = String(rows[0].date_activated).replace(' ', 'T') + '+03:00';
+      } catch (e) {
+        this.logger.warn(`authoredOn lookup failed for ${resource.id}: ${String(e)}`);
+      }
+    }
+    if (!resource.authoredOn) resource.authoredOn = new Date().toISOString();
+    this.backfillCodingSystems(resource, 'code');
+    this.backfillCodingSystems(resource, 'category');
+    this.backfillCodingSystems(resource, 'reasonCode');
+    void headers;
+  }
+
+  /** Add a system to any coding missing one (AMRS concepts are OCL/AMPATH-sourced). */
+  private backfillCodingSystems(resource: FhirResourceLike, field: string): void {
+    const value = resource[field] as
+      | { coding?: Array<{ system?: string; code?: string }> }
+      | Array<{ coding?: Array<{ system?: string; code?: string }> }>
+      | undefined;
+    const targets = Array.isArray(value) ? value : value ? [value] : [];
+    for (const wrapper of targets) {
+      for (const coding of wrapper.coding ?? []) {
+        if (coding.code && !coding.system) coding.system = OCL_AMPATH_SYSTEM;
+      }
+    }
+  }
+
+  /**
+   * MedicationRequest enrichment (kenya eRx ke-medication-request): ensure
+   * `id` + `authoredOn` (traceability) and a `system` on any coding missing
+   * one (PPB/OCL-sourced medication codings).
+   */
+  async enrichMedicationRequest(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `medicationrequest-${Date.now()}`;
+    if (!resource.authoredOn) {
+      try {
+        const rows = (await this.amrsDataSource.query(
+          `SELECT date_activated FROM orders WHERE uuid = ? LIMIT 1`,
+          [String(resource.id)],
+        )) as Array<{ date_activated?: string }>;
+        if (rows?.[0]?.date_activated) resource.authoredOn = String(rows[0].date_activated).replace(' ', 'T') + '+03:00';
+      } catch (e) {
+        this.logger.warn(`authoredOn lookup failed for MR ${resource.id}: ${String(e)}`);
+      }
+    }
+    const med = resource.medicationCodeableConcept as
+      | { coding?: Array<{ system?: string; code?: string }> }
+      | undefined;
+    if (med?.coding) {
+      for (const coding of med.coding) {
+        if (coding.code && !coding.system) coding.system = OCL_AMPATH_SYSTEM;
+      }
+    }
+  }
+
+  /**
+   * Condition search post-processing for the lab query shapes FHIR2 cannot
+   * execute natively (REP-IMM/IDSR/IHR):
+   *  - `extension:ihr-reportable=true` → enrich + filter notifiable conditions
+   *  - `_sort=-recordedDate` → client-side sort
+   *  - `onset-date=ge/le{date}` → client-side window filter (kept upstream when
+   *    FHIR2 accepts it; strips the prefixed form it rejects)
+   */
+  async conditionSearch(query: Record<string, string>, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
+    const ihrOnly = Object.keys(query).some((k) => k.includes('ihr-reportable'));
+    const sortDesc = (query['_sort'] ?? '').includes('recordedDate');
+    const window = { start: '', end: '' };
+    for (const [k, v] of Object.entries(query)) {
+      if (k.startsWith('onset-date')) {
+        const m = /^(ge|le)(.+)$/.exec(v);
+        if (m) {
+          if (m[1] === 'ge') window.start = m[2];
+          if (m[1] === 'le') window.end = m[2];
+        }
+      }
+    }
+
+    // supported upstream params only
+    const upstream = new URLSearchParams();
+    for (const key of ['patient', 'category', 'clinical-status', 'onset-date', '_count']) {
+      const value = query[key];
+      if (value !== undefined && !/^(ge|le)/.test(value)) upstream.set(key, value);
+    }
+    if (!upstream.has('_count')) upstream.set('_count', '100');
+    const entries = await this.fetchFhir2Search('Condition', upstream.toString(), headers);
+
+    let conditions: FhirResourceLike[] = [];
+    for (const entry of entries) {
+      const resource = (entry as { resource?: FhirResourceLike }).resource;
+      if (!resource) continue;
+      await this.enrichCondition(resource);
+      conditions.push(resource);
+    }
+
+    if (ihrOnly) {
+      conditions = conditions.filter((c) => {
+        const display = String(
+          ((c.code as { text?: string })?.text ??
+            (c.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? ''),
+        ).toLowerCase();
+        return this.isNotifiable(display) || this.hasExtension(c, 'ihr-reportable');
+      });
+    }
+    if (window.start || window.end) {
+      conditions = conditions.filter((c) => {
+        const onset = String(c.onsetDateTime ?? c.recordedDate ?? '');
+        if (!onset) return !window.start; // no onset: exclude only when a lower bound is required
+        return (!window.start || onset >= window.start) && (!window.end || onset <= window.end);
+      });
+    }
+    if (sortDesc) {
+      conditions.sort((a, b) =>
+        String(b.recordedDate ?? b.onsetDateTime ?? '').localeCompare(String(a.recordedDate ?? a.onsetDateTime ?? '')),
+      );
+    }
+    return conditions;
+  }
+
+  /* -------------------------------------- Communications (REP-PHE alerting) */
+
+  /** Alert notifications derived from the outbreak DetectedIssues. */
+  async communicationsForOutbreak(startDate: string, endDate: string, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
+    const issues = await this.detectedIssuesForOutbreak(startDate, endDate, headers);
+    return issues.map((issue) => ({
+      resourceType: 'Communication',
+      id: `alert-${String(issue.id)}`,
+      status: 'completed',
+      category: [
+        {
+          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'ALERT', display: 'Alert' }],
+          text: 'Public health event alert',
+        },
+      ],
+      sent: new Date().toISOString(),
+      about: [{ reference: `DetectedIssue/${String(issue.id)}`, display: String((issue.detail as string) ?? '').slice(0, 120) }],
+      sender: { display: 'AMRS Public Health Surveillance — MTRH' },
+      payload: [{ contentString: String(issue.detail ?? '') }],
+    }));
+  }
+
+  /* ------------------------------------ eRx surface (FUNC-EPRES-001) */
+
+  /** MedicationStatements synthesized from the patient's active MedicationRequests. */
+  async medicationStatements(patientUuid: string, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
+    const entries = await this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&status=active&_count=50`, headers);
+    const statements: FhirResourceLike[] = [];
+    for (const entry of entries) {
+      const mr = (entry as { resource?: Record<string, unknown> }).resource;
+      if (!mr) continue;
+      statements.push({
+        resourceType: 'MedicationStatement',
+        id: `ms-${String(mr.id)}`,
+        status: 'active',
+        medicationCodeableConcept: mr.medicationCodeableConcept,
+        subject: mr.subject,
+        dateAsserted: (mr.authoredOn as string) ?? new Date().toISOString(),
+        informationSource: mr.requester,
+        dosageInstruction: mr.dosageInstruction,
+        derivedFrom: [{ reference: `MedicationRequest/${String(mr.id)}` }],
+      });
+    }
+    return statements;
+  }
+
+  /** Provenances synthesized from the same audit sources as AuditEvent. */
+  async provenancesForPatient(patientUuid: string): Promise<FhirResourceLike[]> {
+    const events = await this.auditEventsForPatient(patientUuid);
+    const byTarget = new Map<string, FhirResourceLike>();
+    for (const event of events) {
+      const entity = (event.entity as Array<{ what?: { reference?: string } }> | undefined)?.[0];
+      const ref = entity?.what?.reference;
+      if (!ref) continue;
+      if (!byTarget.has(ref)) {
+        byTarget.set(ref, {
+          resourceType: 'Provenance',
+          id: `prov-${ref.replace(/[^a-zA-Z0-9-]/g, '-')}`,
+          recorded: String(event.recorded),
+          agent: event.agent,
+          target: [{ reference: ref }],
+          activity: {
+            coding: [
+              {
+                system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+                code: String(event.action) === 'C' ? 'CREATE' : String(event.action) === 'D' ? 'DELETE' : 'UPDATE',
+              },
+            ],
+          },
+        });
+      }
+    }
+    return [...byTarget.values()];
+  }
+
+  /* ------------------------------------------------- Task v2 (notify / ihr) */
+
+  /**
+   * REP-IMM-001: notification Tasks for the patient's immediately-notifiable
+   * conditions — `code=notify`, `priority=stat`, `executionPeriod` within the
+   * IDSR 24-hour window of the recorded case.
+   */
+  async notifyTasksForPatient(patientUuid: string, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
+    const entries = await this.fetchFhir2Search('Condition', `patient=${patientUuid}&_count=50`, headers);
+    const tasks: FhirResourceLike[] = [];
+    for (const entry of entries) {
+      const condition = (entry as { resource?: Record<string, unknown> }).resource;
+      if (!condition) continue;
+      const display = String(
+        ((condition.code as { text?: string })?.text ??
+          (condition.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? ''),
+      ).toLowerCase();
+      if (!this.isNotifiable(display)) continue;
+      const recorded = String(condition.recordedDate ?? '');
+      tasks.push({
+        resourceType: 'Task',
+        id: `notify-${String(condition.id)}-${tasks.length + 1}`,
+        status: 'completed',
+        intent: 'order',
+        code: { text: 'notify' },
+        priority: 'stat',
+        focus: { reference: `Condition/${String(condition.id)}`, display: display },
+        for: condition.subject,
+        authoredOn: recorded || undefined,
+        executionPeriod: { start: recorded || undefined, end: recorded || undefined },
+        reasonCode: { text: `Immediately-notifiable disease recorded (${display}) — notification within IDSR 24-hour rule` },
+      });
+    }
+    return tasks;
   }
 
   /* ------------------------------------------------------------- helpers */

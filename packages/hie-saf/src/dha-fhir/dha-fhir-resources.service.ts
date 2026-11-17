@@ -68,8 +68,28 @@ interface CaseSummaryLike {
 
 /** ICD-11 MMS coding system (WHO). */
 const ICD11_SYSTEM = 'http://id.who.int/icd/release/11/mms';
-/** AMRS local concepts resolve to the OCL AMPATH source (validator: unknown-CS warnings only) */
+
+/**
+ * Normalize an AMRS DB datetime ('2026-11-06 09:35:36') or partial value
+ * into a FHIR-valid dateTime/instant. Raw DB strings failed HAPI parse
+ * (HAPI-1821 'Expected character T at index 10') in the assembled
+ * AuditEvent/Provenance/Composition resources.
+ */
+function toFhirDateTime(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  let v = String(value).trim();
+  if (!v) return undefined;
+  v = v.replace(' ', 'T');
+  const tz = /([+-]\d{2})(\d{2})$/.exec(v);
+  if (tz) v = `${v.slice(0, tz.index)}${tz[1]}:${tz[2]}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  if (!/(Z|[+-]\d{2}:\d{2})$/.test(v)) v += '+03:00';
+  return v;
+}
+
+/** AMRS local concepts resolve to the OCL AMPATH source (validator warns on unknown CS) */
 const OCL_AMPATH_SYSTEM = 'https://openconceptlab.org/orgs/AMPATH/sources/AMPATH';
+/** AMRS local concepts resolve to the OCL AMPATH source (validator: unknown-CS warnings only) */
 
 /** DHA national terminology base (e.g. condition-category-cs) */
 const DHA_TERMINOLOGY_BASE = 'https://fhir.dha.go.ke/terminology';
@@ -239,7 +259,7 @@ export class DhaFhirResourcesService {
         reference: `Patient/${patientUuid}`,
         display: demographics.name,
       },
-      date: summary.visit?.startDatetime ?? new Date().toISOString(),
+      date: toFhirDateTime(summary.visit?.startDatetime) ?? new Date().toISOString(),
       title: `Clinical summary — ${demographics.name ?? patientUuid}`,
       section: sections.map((s) => {
         const entries = this.sectionEntries(s.code, {
@@ -407,7 +427,15 @@ export class DhaFhirResourcesService {
         resourceType: 'DetectedIssue',
         id: `cds-${patientUuid}-${issues.length + 1}`,
         status: 'preliminary',
-        code: { text: 'allergy-drug-interaction' },
+        code: {
+          coding: [
+            {
+              system: 'https://fhir.dha.go.ke/terminology/CodeSystem/detectedissue-cs',
+              code: 'allergy-drug-interaction',
+            },
+          ],
+          text: 'allergy-drug-interaction',
+        },
         severity: criticality.toLowerCase() === 'high' ? 'high' : criticality.toLowerCase() === 'moderate' ? 'moderate' : 'low',
         patient: { reference: `Patient/${patientUuid}` },
         identifiedDateTime: new Date().toISOString(),
@@ -564,24 +592,24 @@ export class DhaFhirResourcesService {
 
     for (const e of encounters as Array<Record<string, unknown>>) {
       const uuid = String(e.resourceUuid);
-      pushEvent(uuid, 'Encounter', 'C', safe(e.date_created) ?? '', safe(e.creator) ?? 'system');
+      pushEvent(uuid, 'Encounter', 'C', toFhirDateTime(e.date_created) ?? '', safe(e.creator) ?? 'system');
       if (safe(e.date_changed) && safe(e.changer)) {
-        pushEvent(uuid, 'Encounter', 'U', safe(e.date_changed)!, safe(e.changer)!);
+        pushEvent(uuid, 'Encounter', 'U', toFhirDateTime(e.date_changed)!, safe(e.changer)!);
       }
       if (Number(e.voided ?? 0)) {
-        pushEvent(uuid, 'Encounter', 'D', safe(e.date_voided) ?? safe(e.date_created) ?? '', safe(e.voider) ?? 'system');
+        pushEvent(uuid, 'Encounter', 'D', toFhirDateTime(e.date_voided) ?? toFhirDateTime(e.date_created) ?? '', safe(e.voider) ?? 'system');
       }
     }
     for (const o of obs as Array<Record<string, unknown>>) {
       const uuid = String(o.resourceUuid);
-      pushEvent(uuid, 'Observation', 'C', safe(o.date_created) ?? '', safe(o.creator) ?? 'system');
+      pushEvent(uuid, 'Observation', 'C', toFhirDateTime(o.date_created) ?? '', safe(o.creator) ?? 'system');
       // An obs edit mints a new row pointing at its previous version — the
       // new row's date_created/creator is the edit event.
       if (o.previous_version != null) {
-        pushEvent(uuid, 'Observation', 'U', safe(o.date_created) ?? '', safe(o.creator) ?? 'system');
+        pushEvent(uuid, 'Observation', 'U', toFhirDateTime(o.date_created) ?? '', safe(o.creator) ?? 'system');
       }
       if (Number(o.voided ?? 0)) {
-        pushEvent(uuid, 'Observation', 'D', safe(o.date_voided) ?? safe(o.date_created) ?? '', safe(o.voider) ?? 'system');
+        pushEvent(uuid, 'Observation', 'D', toFhirDateTime(o.date_voided) ?? toFhirDateTime(o.date_created) ?? '', safe(o.voider) ?? 'system');
       }
     }
     return events;
@@ -605,7 +633,16 @@ export class DhaFhirResourcesService {
           id: `ihr-${disease}-${startDate}-${endDate}-${tasks.length + 1}`,
           status: 'requested',
           intent: 'plan',
-          code: { text: 'ihr-notify' },
+          code: {
+            coding: [
+              {
+                system: 'https://fhir.dha.go.ke/terminology/CodeSystem/task-cs',
+                code: 'ihr-notify',
+                display: 'IHR notification / escalation',
+              },
+            ],
+            text: 'ihr-notify',
+          },
           priority: 'stat',
           authoredOn: new Date().toISOString(),
           executionPeriod: { start: startDate, end: endDate },
@@ -629,10 +666,28 @@ export class DhaFhirResourcesService {
     return results.map((r, i) => ({
       resourceType: 'Task',
       id: `referral-${String(r.submission_id ?? i)}`,
-      identifier: [{ system: 'https://fhir.dha.go.ke/core/NamingSystem/emt-submission', value: String(r.submission_id ?? '') }],
+      identifier: [
+        {
+          system: 'https://fhir.dha.go.ke/core/NamingSystem/emt-submission',
+          value: String(r.submission_id ?? ''),
+          type: {
+            coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v2-0203', code: 'FI', display: 'Facility ID' }],
+            text: 'EMT submission id',
+          },
+        },
+      ],
       status: String(r.status) === 'pending_acceptance' ? 'requested' : 'completed',
       intent: 'order',
-      code: { text: 'ambulance-referral' },
+      code: {
+        coding: [
+          {
+            system: 'https://fhir.dha.go.ke/terminology/CodeSystem/task-cs',
+            code: 'ambulance-referral',
+            display: 'Ambulance referral',
+          },
+        ],
+        text: 'ambulance-referral',
+      },
       focus: { display: `EMT case ${String(r.case_number ?? '')} (incident ${String(r.incident_id ?? '')})` },
       authoredOn: r.created_at ? String(r.created_at) : undefined,
       reasonCode: { text: 'Cross-facility ambulance handover pending acceptance' },
@@ -722,9 +777,9 @@ export class DhaFhirResourcesService {
     // -- recordedDate required (min 1): fallback to onset then now
     if (!resource.recordedDate) {
       resource.recordedDate =
-        (resource.onsetDateTime as string) ??
-        (resource.onsetPeriod as { start?: string } | undefined)?.start ??
-        new Date().toISOString().replace(/\.\d{3}Z$/, '+03:00');
+        toFhirDateTime(resource.onsetDateTime) ??
+        toFhirDateTime((resource.onsetPeriod as { start?: string } | undefined)?.start) ??
+        new Date().toISOString();
     }
 
     // -- ihr-reportable extension for immediately-notifiable diseases
@@ -1036,7 +1091,7 @@ export class DhaFhirResourcesService {
           `SELECT date_activated FROM orders WHERE uuid = ? LIMIT 1`,
           [String(resource.id)],
         )) as Array<{ date_activated?: string }>;
-        if (rows?.[0]?.date_activated) resource.authoredOn = String(rows[0].date_activated).replace(' ', 'T') + '+03:00';
+        if (rows?.[0]?.date_activated) resource.authoredOn = toFhirDateTime(rows[0].date_activated);
       } catch (e) {
         this.logger.warn(`authoredOn lookup failed for ${resource.id}: ${String(e)}`);
       }
@@ -1075,7 +1130,7 @@ export class DhaFhirResourcesService {
           `SELECT date_activated FROM orders WHERE uuid = ? LIMIT 1`,
           [String(resource.id)],
         )) as Array<{ date_activated?: string }>;
-        if (rows?.[0]?.date_activated) resource.authoredOn = String(rows[0].date_activated).replace(' ', 'T') + '+03:00';
+        if (rows?.[0]?.date_activated) resource.authoredOn = toFhirDateTime(rows[0].date_activated);
       } catch (e) {
         this.logger.warn(`authoredOn lookup failed for MR ${resource.id}: ${String(e)}`);
       }
@@ -1153,6 +1208,171 @@ export class DhaFhirResourcesService {
     return conditions;
   }
 
+  /* ---------------------------------- medication / dispense / episode */
+
+  /** ke-medication minimums: identifier + form. */
+  async enrichMedication(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `medication-${Date.now()}`;
+    if (!resource.identifier) {
+      resource.identifier = [
+        {
+          system: 'https://fhir.dha.go.ke/fhir/identifier/medication',
+          value: String(resource.id),
+        },
+      ];
+    }
+    const display = String(
+      (resource.code as { text?: string } | undefined)?.text ??
+        (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
+    );
+    if (!resource.form) {
+      const d = display.toLowerCase();
+      const formCode = d.includes('tablet') || d.includes(' tab')
+        ? 'TAB'
+        : d.includes('capsule') || d.includes(' cap')
+          ? 'CAP'
+          : d.includes('syrup') || d.includes('suspension')
+            ? 'SYRUP'
+            : d.includes('inject')
+              ? 'INJ'
+              : d.includes('cream') || d.includes('ointment')
+                ? 'OINT'
+                : null;
+      resource.form = formCode
+        ? {
+            coding: [
+              {
+                system: 'http://terminology.hl7.org/CodeSystem/v3-OrderableDrugForm',
+                code: formCode,
+              },
+            ],
+            text: display || formCode,
+          }
+        : { text: display || 'Not recorded' };
+    }
+  }
+
+  /** ke-medication-dispense minimums: type + qty-3 + medication reference form. */
+  async enrichMedicationDispense(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `dispense-${Date.now()}`;
+    if (!resource.type) {
+      resource.type = { text: 'Trial fill' };
+    }
+    const qty = resource.quantity as
+      | { code?: string; system?: string; unit?: string; value?: number }
+      | undefined;
+    if (qty?.code && !qty.system) {
+      const ucum: Record<string, string> = {
+        mg: 'mg',
+        ml: 'mL',
+        tab: '{tab}',
+        tabs: '{tab}',
+        tablet: '{tab}',
+        dose: '{dose}',
+      };
+      const mapped = ucum[qty.code.toLowerCase()];
+      if (mapped) {
+        qty.system = 'http://unitsofmeasure.org';
+        qty.code = mapped;
+      } else {
+        // qty-3: a bare code without a system is invalid — keep value + unit
+        qty.unit = qty.unit ?? qty.code;
+        delete qty.code;
+      }
+    }
+  }
+
+  /** kenya-core-episodeofcare guard: id + status + type coding. */
+  async enrichEpisodeOfCare(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `episodeofcare-${Date.now()}`;
+    if (!resource.status) resource.status = 'active';
+    if (!resource.type) {
+      resource.type = [
+        {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+              code: 'AMB',
+              display: 'Ambulatory',
+            },
+          ],
+          text: 'Ambulatory care',
+        },
+      ];
+    }
+  }
+
+  /** ke allergy minimums: criticality, clinicalStatus, category (DHA VS). */
+  async enrichAllergyIntolerance(resource: FhirResourceLike): Promise<void> {
+    if (!resource.id) resource.id = `allergyintolerance-${Date.now()}`;
+    if (!resource.clinicalStatus) {
+      resource.clinicalStatus = {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
+            code: 'active',
+            display: 'Active',
+          },
+        ],
+      };
+    }
+    if (!resource.category) {
+      resource.category = [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergy-intolerance-type', code: 'biologic' }], text: 'Biologic' }];
+    }
+    if (!resource.criticality) {
+      resource.criticality = 'unable-to-assess';
+    }
+  }
+
+  /** kenya-core-encounter minimums: type coding from a known system. */
+  async enrichEncounter(resource: FhirResourceLike): Promise<void> {
+    const type = resource.type as
+      | Array<{ text?: string; coding?: Array<{ system?: string; code?: string; display?: string }> }>
+      | undefined;
+    const known = type?.find((t) =>
+      t.coding?.some((c) => c.system && !c.system.includes('fhir.openmrs.org')),
+    );
+    if (!known && type?.length) {
+      const text = String(type[0].text ?? type[0].coding?.[0]?.display ?? '').toLowerCase();
+      const code = text.includes('inpatient') || text.includes('admission')
+        ? 'IMP'
+        : text.includes('emergency')
+          ? 'EMER'
+          : 'AMB';
+      type[0] = {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+            code: code,
+            display: code === 'IMP' ? 'Inpatient encounter' : code === 'EMER' ? 'Emergency' : 'Ambulatory',
+          },
+        ],
+        text: type[0].text ?? type[0].coding?.[0]?.display,
+      };
+    }
+  }
+
+  /** kenya-core-observation minimums: category (min 1). */
+  async enrichObservation(resource: FhirResourceLike): Promise<void> {
+    const category = resource.category as
+      | Array<{ coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }>
+      | undefined;
+    if (!category || category.length === 0) {
+      resource.category = [
+        {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/observation-category',
+              code: 'vital-signs',
+              display: 'Vital Signs',
+            },
+          ],
+          text: 'Vital Signs',
+        },
+      ];
+    }
+  }
+
   /* -------------------------------------- Communications (REP-PHE alerting) */
 
   /** Alert notifications derived from the outbreak DetectedIssues. */
@@ -1211,7 +1431,7 @@ export class DhaFhirResourcesService {
         byTarget.set(ref, {
           resourceType: 'Provenance',
           id: `prov-${ref.replace(/[^a-zA-Z0-9-]/g, '-')}`,
-          recorded: String(event.recorded),
+          recorded: toFhirDateTime(event.recorded) ?? new Date().toISOString(),
           agent: event.agent,
           target: [{ reference: ref }],
           activity: {

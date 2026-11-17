@@ -326,6 +326,96 @@ describe('DhaFhirResourcesService enrichment depth', () => {
     });
   });
 
+  describe('medicationStatements (ke-medication-statement)', () => {
+    it('resolves the MedicationRequest reference so medication[x] is present', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'AMRS_BASE_URL' ? 'https://upstream.test' : undefined,
+      );
+      jest.spyOn(service as any, 'fetchFhir2Search').mockResolvedValue([
+        {
+          resource: {
+            id: 'mr-active',
+            status: 'active',
+            subject: { reference: 'Patient/pt-1' },
+            authoredOn: '2026-11-17T10:00:00+03:00',
+            medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN TAB' },
+          },
+        },
+      ]);
+      jest.spyOn(service as any, 'fetchFhir2Read').mockResolvedValue({
+        code: {
+          coding: [
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+          ],
+          text: 'ASPIRIN TAB',
+        },
+      });
+
+      const statements = await service.medicationStatements('pt-1', {});
+      expect(statements).toHaveLength(1);
+      expect(statements[0].medicationCodeableConcept).toMatchObject({
+        coding: [
+          {
+            system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL',
+            code: '71617',
+            display: 'ASPIRIN',
+          },
+        ],
+        text: 'ASPIRIN TAB',
+      });
+    });
+  });
+
+  describe('generic-products self-healing', () => {
+    it('keeps the CIEL identity coding while the DHA code system is empty', async () => {
+      (service as any).genericProductCache = []; // published IG state: 0 concepts
+
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        code: {
+          coding: [
+            { code: 'a897e608', display: 'ASPIRIN' },
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+          ],
+          text: 'ASPIRIN',
+        },
+      };
+      await service.enrichMedication(resource as never);
+      expect(resource.code.coding).toHaveLength(1);
+      expect(resource.code.coding[0]).toMatchObject({
+        system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL',
+        code: '71617',
+      });
+    });
+
+    it('maps to the DHA coding the moment concepts are published (no redeploy)', async () => {
+      (service as any).genericProductCache = [
+        { code: 'GP0001', display: 'Acetylsalicylic Acid' },
+      ];
+
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'med-1',
+        code: {
+          coding: [
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+          ],
+          text: 'ASPIRIN',
+        },
+      };
+      await service.enrichMedication(resource as never);
+      expect(resource.code.coding).toEqual([
+        {
+          system: 'https://fhir.dha.go.ke/terminology/CodeSystem/generic-products-cs',
+          code: 'GP0001',
+          display: 'Acetylsalicylic Acid',
+        },
+      ]);
+      expect(resource.code.text).toBe('ASPIRIN');
+    });
+  });
+
   describe('composition (ke-kps-composition slices)', () => {
     it('uses the Patient summary Document LOINC pattern and slice-exact section codes', async () => {
       configService.get.mockImplementation((key: string) =>

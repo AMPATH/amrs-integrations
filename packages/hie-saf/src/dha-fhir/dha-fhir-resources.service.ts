@@ -1329,30 +1329,10 @@ export class DhaFhirResourcesService {
       | { reference?: string; display?: string }
       | undefined;
     if (medRef && !resource.medicationCodeableConcept) {
-      const medId = medRef.reference?.split('/')?.pop();
-      const med = medId ? await this.fetchFhir2Read('Medication', medId, headers) : null;
-      const medCode = (med?.code ?? {}) as {
-        coding?: Array<{ system?: string; code?: string; display?: string }>;
-        text?: string;
-      };
-      const codings = (medCode.coding ?? [])
-        .filter((c) => c.code)
-        .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
-      // single canonical coding — same empty generic-products-vs rationale
-      // as enrichMedicationDispense (disclosed IG gap)
-      const canonical = codings.length
-        ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
-        : [
-            {
-              system: OCL_AMPATH_SYSTEM,
-              code: medId ?? 'unknown',
-              display: medRef.display ?? 'Unknown medication',
-            },
-          ];
-      resource.medicationCodeableConcept = {
-        coding: canonical,
-        text: medCode.text ?? medRef.display ?? 'Unknown medication',
-      };
+      resource.medicationCodeableConcept = await this.resolveMedicationCodeableConcept(
+        medRef,
+        headers,
+      );
       delete resource.medicationReference;
     }
 
@@ -1646,12 +1626,17 @@ export class DhaFhirResourcesService {
       (resource.code as { text?: string } | undefined)?.text ??
         (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
     );
-    // The ke-medication `code` required binding points at the (currently
-    // empty) generic-products-vs — every coding fails per-coding validation.
-    // Keep exactly the canonical CIEL coding (the drug's real identity) so
-    // the noise is minimal; the display stays on code.text.
+    // The ke-medication `code` required binding points at generic-products-vs
+    // (empty in the published IG). Prefer the DHA generic-products coding when
+    // concepts have been published (self-healing), else keep exactly the
+    // canonical CIEL coding (the drug's real identity) so the noise is
+    // minimal; the display stays on code.text.
     const code = resource.code as { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string } | undefined;
-    if (code?.coding?.length) {
+    const genericProduct = this.dhaGenericProductCoding(display);
+    if (genericProduct && code) {
+      code.coding = [genericProduct];
+      code.text = code.text ?? display;
+    } else if (code?.coding?.length) {
       const ciel = code.coding.find((c) => c.system?.includes('/CIEL')) ?? code.coding.find((c) => c.system) ?? code.coding[0];
       code.coding = [{ system: ciel.system ?? OCL_AMPATH_SYSTEM, code: ciel.code!, display: ciel.display }];
       code.text = code.text ?? display;
@@ -1750,32 +1735,10 @@ export class DhaFhirResourcesService {
       | { reference?: string; display?: string }
       | undefined;
     if (medRef && !resource.medicationCodeableConcept) {
-      const medId = medRef.reference?.split('/')?.pop();
-      const med = medId ? await this.fetchFhir2Read('Medication', medId, headers) : null;
-      const medCode = (med?.code ?? {}) as {
-        coding?: Array<{ system?: string; code?: string; display?: string }>;
-        text?: string;
-      };
-      const codings = (medCode.coding ?? [])
-        .filter((c) => c.code)
-        .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
-      // single canonical coding: the required generic-products-vs binding is
-      // currently an empty value set — every coding fails per-coding
-      // validation, so keep just the identity coding and carry the display
-      // on text (disclosed IG gap)
-      const canonical = codings.length
-        ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
-        : [
-            {
-              system: OCL_AMPATH_SYSTEM,
-              code: medId ?? 'unknown',
-              display: medRef.display ?? 'Unknown medication',
-            },
-          ];
-      resource.medicationCodeableConcept = {
-        coding: canonical,
-        text: medCode.text ?? medRef.display ?? 'Unknown medication',
-      };
+      resource.medicationCodeableConcept = await this.resolveMedicationCodeableConcept(
+        medRef,
+        headers,
+      );
       delete resource.medicationReference;
     }
 
@@ -1800,6 +1763,116 @@ export class DhaFhirResourcesService {
         qty.unit = qty.unit ?? qty.code;
         delete qty.code;
       }
+    }
+  }
+
+  /**
+   * Convert FHIR2's medicationReference to the CodeableConcept the ke
+   * profiles require. Coding preference: a DHA generic-products coding when
+   * that CodeSystem has published concepts — the v0.1.0 erx IG ships it
+   * EMPTY (the required generic-products-vs binding is unsatisfiable until
+   * DHA populates it: any coding fails VS membership, a DHA-system coding
+   * fails as an unknown code, text-only fails 'no code provided') — else the
+   * single canonical CIEL/AMPATH identity coding with the display on text
+   * (disclosed IG gap). The self-healing means staging goes green the moment
+   * DHA publishes, with no redeploy; a restart also re-attempts the fetch.
+   */
+  private async resolveMedicationCodeableConcept(
+    medRef: { reference?: string; display?: string },
+    headers: ForwardHeaders,
+  ): Promise<{ coding: FhirCoding[]; text: string }> {
+    const medId = medRef.reference?.split('/')?.pop();
+    const med = medId ? await this.fetchFhir2Read('Medication', medId, headers) : null;
+    const medCode = (med?.code ?? {}) as {
+      coding?: Array<{ system?: string; code?: string; display?: string }>;
+      text?: string;
+    };
+    const display = medCode.text ?? medRef.display ?? 'Unknown medication';
+
+    const generic = this.dhaGenericProductCoding(display);
+    if (generic) {
+      return { coding: [generic], text: display };
+    }
+
+    const codings = (medCode.coding ?? [])
+      .filter((c) => c.code)
+      .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
+    const canonical = codings.length
+      ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
+      : [
+          {
+            system: OCL_AMPATH_SYSTEM,
+            code: medId ?? 'unknown',
+            display: medRef.display ?? 'Unknown medication',
+          },
+        ];
+    return { coding: canonical, text: display };
+  }
+
+  /** DHA generic-products concepts (empty in the published IG — refreshed once per process). */
+  private genericProductCache: Array<{ code: string; display: string }> | null = null;
+  private genericProductFetchAttempted = false;
+
+  /**
+   * DHA generic-products-cs coding for a drug display. Returns null while
+   * the CodeSystem is empty (the v0.1.0 IG state) — callers then keep the
+   * CIEL identity coding. Non-blocking: the first call seeds an empty cache
+   * and kicks a fire-and-forget refresh; later calls in the same process
+   * use whatever it fetched.
+   */
+  private dhaGenericProductCoding(
+    display: string,
+  ): { system: string; code: string; display: string } | null {
+    if (this.genericProductCache === null) {
+      this.genericProductCache = [];
+      void this.refreshGenericProducts();
+      return null;
+    }
+    if (!this.genericProductCache.length || !display.trim()) return null;
+    const d = display.trim().toLowerCase();
+    // generic products are INN-named (aspirin is published as Acetylsalicylic
+    // Acid) — reuse the active-components synonym table for the first hop
+    const synonym = ACTIVE_COMPONENT_SYNONYMS[d];
+    const byDisplay = (name: string) =>
+      this.genericProductCache!.find((c) => c.display.toLowerCase() === name.toLowerCase());
+    const hit =
+      (synonym && byDisplay(synonym)) ??
+      byDisplay(d) ??
+      this.genericProductCache.find((c) => {
+        const cd = c.display.toLowerCase();
+        return cd.includes(d) || d.includes(cd);
+      });
+    return hit
+      ? {
+          system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
+          code: hit.code,
+          display: hit.display,
+        }
+      : null;
+  }
+
+  private async refreshGenericProducts(): Promise<void> {
+    if (this.genericProductFetchAttempted) return;
+    this.genericProductFetchAttempted = true;
+    try {
+      const resp = await fetch(`${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`, {
+        headers: { accept: 'application/fhir+json' },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!resp.ok) return;
+      const cs = (await resp.json()) as { concept?: Array<{ code?: string; display?: string }> };
+      const concepts = (cs.concept ?? [])
+        .filter((c) => c.code && c.display)
+        .map((c) => ({ code: c.code!, display: c.display! }));
+      if (concepts.length) {
+        this.genericProductCache = concepts;
+        this.logger.log(
+          `generic-products-cs refreshed: ${concepts.length} concepts — medication codings now map to it`,
+        );
+      }
+    } catch {
+      // pod egress to fhir.dha.go.ke is intermittent — silent by design;
+      // the CIEL identity coding (disclosed gap) is served meanwhile
     }
   }
 
@@ -2185,15 +2258,45 @@ export class DhaFhirResourcesService {
       const mr = (entry as { resource?: Record<string, unknown> }).resource;
       if (!mr) continue;
       if (String(mr.status ?? '').toLowerCase() !== 'active') continue;
+      // ke-medication-statement requires medication[x] — FHIR2 MedicationRequests
+      // carry medicationReference, never medicationCodeableConcept, so resolve
+      // the reference (same converter + DHA generic-products preference as the
+      // other medication surfaces)
+      const medication =
+        (mr.medicationCodeableConcept as { coding?: FhirCoding[]; text?: string } | undefined) ??
+        (mr.medicationReference
+          ? await this.resolveMedicationCodeableConcept(
+              mr.medicationReference as { reference?: string; display?: string },
+              headers,
+            )
+          : undefined);
+      // qty-3 on the copied dosage: FHIR2 doseQuantity codes are OpenMRS
+      // uuids without a system — strip the bare code, keep value + unit
+      const dosage = mr.dosageInstruction as Array<Record<string, unknown>> | undefined;
+      if (Array.isArray(dosage)) {
+        for (const di of dosage) {
+          for (const dr of (di.doseAndRate as Array<Record<string, unknown>> | undefined) ?? []) {
+            const dq = dr.doseQuantity as
+              | { code?: string; system?: string; unit?: string }
+              | undefined;
+            if (dq?.code && !dq.system) {
+              dq.unit = dq.unit ?? dq.code;
+              delete dq.code;
+            }
+          }
+        }
+      }
       statements.push({
         resourceType: 'MedicationStatement',
         id: `ms-${String(mr.id)}`,
         status: 'active',
-        medicationCodeableConcept: mr.medicationCodeableConcept,
+        medicationCodeableConcept: medication,
         subject: mr.subject,
         dateAsserted: (mr.authoredOn as string) ?? new Date().toISOString(),
         informationSource: mr.requester,
-        dosageInstruction: mr.dosageInstruction,
+        // R4 MedicationStatement carries `dosage` — not MedicationRequest's
+        // `dosageInstruction` element name
+        dosage,
         derivedFrom: [{ reference: `MedicationRequest/${String(mr.id)}` }],
       });
     }

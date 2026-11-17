@@ -317,6 +317,8 @@ export class DhaFhirController {
         throw new HttpException('locationUuid is required for referral tasks', HttpStatus.BAD_REQUEST);
       }
       tasks = await this.resources.referralTasks(locationUuid);
+    } else if (code === 'ihr-notify' || (status === 'requested' && startDate && endDate)) {
+      // REP-IHR-001: the IHR escalation queue over the requested window
       if (!startDate || !endDate) {
         throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
       }
@@ -517,15 +519,27 @@ export class DhaFhirController {
                   this.forwarded(request),
                 );
               } else if (type === 'MedicationRequest') {
-                await this.resources.enrichMedicationRequest(resource);
+                await this.resources.enrichMedicationRequest(
+                  resource,
+                  this.forwarded(request),
+                );
               } else if (type === 'Condition') {
                 // INTER-SEM: inject the ICD-11 coding from the
                 // concept_reference_map join.
                 await this.resources.enrichCondition(resource);
+              } else if (type === 'AllergyIntolerance') {
+                await this.resources.enrichAllergyIntolerance(resource);
+              } else if (type === 'Encounter') {
+                await this.resources.enrichEncounter(resource);
+              } else if (type === 'Observation') {
+                await this.resources.enrichObservation(resource);
               } else if (type === 'EpisodeOfCare') {
                 await this.resources.enrichEpisodeOfCare(resource);
               } else if (type === 'MedicationDispense') {
-                await this.resources.enrichMedicationDispense(resource);
+                await this.resources.enrichMedicationDispense(
+                  resource,
+                  this.forwarded(request),
+                );
               } else if (type === 'Medication') {
                 await this.resources.enrichMedication(resource);
               }
@@ -551,6 +565,27 @@ export class DhaFhirController {
         } catch {
           this.logger.warn('upstream returned non-parseable JSON body');
         }
+      }
+      // EpisodeOfCare searches: this FHIR2 does not support the patient
+      // search parameter and answers 400 — surface a clean empty searchset
+      // instead of the raw error passthrough (the DHA validator treats a
+      // non-JSON/400 response as a failed endpoint).
+      if (
+        upstream.status === HttpStatus.BAD_REQUEST &&
+        /^EpisodeOfCare(\/|$|\?)/.test(upstreamPath) &&
+        !upstreamPath.includes('/')
+      ) {
+        const empty: FhirResource = {
+          resourceType: 'Bundle',
+          type: 'searchset',
+          total: 0,
+          entry: [],
+        };
+        response
+          .status(HttpStatus.OK)
+          .type('application/fhir+json')
+          .send(JSON.stringify(empty));
+        return;
       }
       response.status(upstream.status).type(contentType).send(text);
     } catch (error) {

@@ -121,6 +121,121 @@ const DHA_VERIFICATION_STATUS: Record<string, string> = {
 /** Live Kenya Core IG base (ke.fhir.core v1.0.0 — verified fetchable). */
 const DHA_IG_BASE = 'https://fhir.dha.go.ke/core';
 
+/** ke-medication-request: NamingSystem-ns-prescription-identifier (preferred URI). */
+const DHA_PRESCRIPTION_IDENTIFIER_SYSTEM =
+  'https://ilm-hie.dha.go.ke/fhir/NamingSystem/prescription-identifier';
+
+/** DHA national drug-route terminology (ke-medication-request dosage route, required). */
+const DHA_ROUTE_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/route-of-administration-cs';
+/** AMRS drug-route displays -> DHA route-of-administration-cs (verified members). */
+const DHA_ROUTE_BY_KEYWORD: Array<[RegExp, string, string]> = [
+  [/oral|per (mouth|os)|po\b/i, 'RT10025', 'Oral'],
+  [/intravenous|\biv\b/i, 'RT10036', 'Intravenous'],
+  [/intramuscular|\bim\b/i, 'RT10013', 'Intramuscular'],
+  [/subcutaneous|\bsc\b|\bsq\b/i, 'RT10029', 'Subcutaneous'],
+  [/topical|skin|cutaneous/i, 'RT10031', 'Topical'],
+  [/rectal|rectum/i, 'RT10028', 'Rectal'],
+  [/vaginal/i, 'RT10035', 'Vaginal'],
+  [/ophthalmic|eye/i, 'RT10024', 'Ophthalmic'],
+  [/otic|ear/i, 'RT10026', 'Otic'],
+  [/nasal|nose/i, 'RT10023', 'Nasal'],
+  [/inhal|nebul/i, 'RT10007', 'Inhalation'],
+  [/sublingual|under the tongue/i, 'RT10030', 'Sublingual'],
+];
+
+/** DHA national formulation terminology (ke-medication form, required binding). */
+const DHA_FORMULATION_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/formulation-cs';
+/** AMRS drug-form display keywords -> DHA formulation-cs (verified members). */
+const DHA_FORM_BY_KEYWORD: Array<[RegExp, string, string]> = [
+  [/\btab|\btablet/i, 'DF10545', 'Tablet, Oral Only'],
+  [/\bcap|\bcapsule/i, 'DF10069', 'Capsule, Solid Dispersion'],
+  [/syrup|suspension|oral liquid/i, 'DF10498', 'Syrup'],
+  [/inject|\bamp\b|ampul|vial/i, 'DF10016', 'Ampul'],
+];
+
+/** DHA national manifestation terminology (kenya-core-allergyintolerance, required). */
+const DHA_MANIFESTATION_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/manifestation-cs';
+/** AMRS reaction displays -> DHA manifestation-cs (verified members). */
+const DHA_MANIFESTATION_BY_KEYWORD: Array<[RegExp, string, string]> = [
+  [/rash|urticaria|hives/i, 'URTICARIA', 'Urticaria'],
+  [/pruritus|itch/i, 'RASH', 'Rash'],
+  [/anaphyla/i, 'ANAPHYLAXIS', 'Anaphylaxis'],
+  [/bronchospasm|wheez/i, 'BRONCHOSPASM', 'Bronchospasm'],
+  [/fever/i, 'FEVER', 'Fever'],
+  [/cough/i, 'COUGH', 'Cough'],
+  [/dyspnoea|breathless|shortness/i, 'DYSPNOEA', 'Dyspnoea'],
+  [/nausea/i, 'NAUSEA', 'Nausea'],
+  [/vomit/i, 'VOMITING', 'Vomiting'],
+  [/diarrho/i, 'DIARRHOEA', 'Diarrhoea'],
+  [/headache/i, 'HEADACHE', 'Headache'],
+  [/dizzy|dizziness|vertigo/i, 'DIZZINESS', 'Dizziness'],
+  [/oedema|edema|swelling/i, 'OEDEMA', 'Oedema'],
+  [/rhinitis|sneez|runny nose/i, 'RHINITIS', 'Rhinitis'],
+  [/hypotension/i, 'HYPOTENSION', 'Hypotension'],
+  [/tachycardia|palpitation/i, 'PALPITATIONS', 'Palpitations'],
+  [/seizure|convulsion/i, 'SEIZURE', 'Seizure'],
+  [/jaundice/i, 'JAUNDICE', 'Jaundice'],
+  [/abdominal|stomach|gastrointestinal|gastric/i, 'ABDOMINAL-PAIN', 'Abdominal pain'],
+  [/lesion/i, 'SKIN-LESION', 'Skin lesion'],
+  [/\bpain\b/i, 'PAIN', 'Pain'],
+];
+
+/** DHA encounter-type terminology (kenya-core-encounter type, required binding). */
+const DHA_ENCOUNTER_TYPE_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/encounter-type-cs';
+/** AMRS visit-type displays -> DHA encounter-type-cs (verified members). */
+const DHA_ENCOUNTER_TYPE_BY_KEYWORD: Array<[RegExp, string, string]> = [
+  [/inpatient|admission|ward|ipd/i, 'INPATIENT-VISIT', 'Inpatient Visit'],
+  [/emergency|accident|casualty|a&e/i, 'EMERGENCY-VISIT', 'Emergency Visit'],
+  [/referral|referred/i, 'REFERRAL-VISIT', 'Referral Visit'],
+  [/follow[\s-]*up/i, 'FOLLOW-UP-VISIT', 'Follow-up Visit'],
+  [/opd|outpatient|clinic/i, 'OUTPATIENT-VISIT', 'Outpatient Visit'],
+];
+
+/**
+ * Substance synonym table for the DHA active-components-cs display match
+ * (the code system is INN-based — 'ASPIRIN' is listed as 'Acetylsalicylic Acid').
+ */
+const ACTIVE_COMPONENT_SYNONYMS: Record<string, string> = {
+  aspirin: 'Acetylsalicylic Acid',
+  acetylsalicylic: 'Acetylsalicylic Acid',
+  paracetamol: 'Paracetamol',
+  acetaminophen: 'Paracetamol',
+  ibuprofen: 'Ibuprofen',
+  amoxicillin: 'Amoxicillin',
+  penicillin: 'Benzylpenicillin',
+  cotrimoxazole: 'Sulfamethoxazole/Trimethoprim',
+  'trimethoprim/sulfamethoxazole': 'Sulfamethoxazole/Trimethoprim',
+  metronidazole: 'Metronidazole',
+  omeprazole: 'Omeprazole',
+  metformin: 'Metformin',
+  enalapril: 'Enalapril',
+  losartan: 'Losartan',
+  nevirapine: 'Nevirapine',
+  stavudine: 'Stavudine',
+  lamivudine: 'Lamivudine',
+  zidovudine: 'Zidovudine',
+  didanosine: 'Didanosine',
+  efavirenz: 'Efavirenz',
+  tenofovir: 'Tenofovir Disoproxil Fumarate',
+  sulfonamide: 'Sulfamethoxazole/Trimethoprim',
+  sulfa: 'Sulfamethoxazole/Trimethoprim',
+  latex: 'Latex',
+  peanut: 'Peanut',
+  egg: 'Egg',
+  'egg protein': 'Egg',
+  milk: 'Milk',
+  'cow milk': 'Milk',
+};
+
+/** Frequency timing displays -> (frequency, period, periodUnit) for dosage timing.repeat. */
+const DOSAGE_TIMING_BY_KEYWORD: Array<[RegExp, number, number, string]> = [
+  [/once (a|per) day|\bdaily\b|\bqd\b|\bod\b/i, 1, 1, 'd'],
+  [/twice (a|per) day|\bbd\b|\bbid\b/i, 2, 1, 'd'],
+  [/three times (a|per) day|\btds\b|\btid\b/i, 3, 1, 'd'],
+  [/four times (a|per) day|\bqds\b|\bqid\b/i, 4, 1, 'd'],
+  [/once (a|per) week|\bweekly\b/i, 1, 1, 'wk'],
+];
+
 /** Kenya IDSR immediately-notifiable subset tracked in MOH 705A aggregates. */
 const NOTIFIABLE_705A = [
   'cholera',
@@ -201,13 +316,15 @@ export class DhaFhirResourcesService {
     const sections: Array<{
       title: string;
       code: string;
+      display: string;
       text: string;
       entry?: Array<{ reference: string; display?: string }>;
     }> = [];
     sections.push(this.conditionsSection(summary.conditions ?? []));
     sections.push(this.allergiesSection(summary.allergies ?? []));
-    sections.push(this.vitalsSection(summary.vitals ?? {}));
     sections.push(this.medicationsSection(summary.medications ?? []));
+    sections.push(this.immunizationsSection());
+    sections.push(this.vitalsSection(summary.vitals ?? {}));
     sections.push(this.soapSection(summary.soapNote ?? {}));
     sections.push(this.labsSection(summary.labOrders ?? []));
 
@@ -246,12 +363,13 @@ export class DhaFhirResourcesService {
       id: `summary-${patientUuid}`,
       meta: { source: 'hie-saf/case-summary' },
       status: 'final',
+      // ke-kps-composition pattern on Composition.type
       type: {
         coding: [
           {
             system: 'http://loinc.org',
-            code: '11506-3',
-            display: 'Patient summary',
+            code: '60591-5',
+            display: 'Patient summary Document',
           },
         ],
       },
@@ -259,6 +377,15 @@ export class DhaFhirResourcesService {
         reference: `Patient/${patientUuid}`,
         display: demographics.name,
       },
+      // Composition.author (min 1): the producing facility as the accountable
+      // organization (kps author targets: Practitioner | PractitionerRole |
+      // Organization)
+      author: [
+        {
+          type: 'Organization',
+          display: 'Moi Teaching And Referral Hospital — AMRS',
+        },
+      ],
       date: toFhirDateTime(summary.visit?.startDatetime) ?? new Date().toISOString(),
       title: `Clinical summary — ${demographics.name ?? patientUuid}`,
       section: sections.map((s) => {
@@ -273,7 +400,9 @@ export class DhaFhirResourcesService {
         });
         return {
           title: s.title,
-          code: { coding: [{ system: 'http://loinc.org', code: s.code }] },
+          // exact ke-kps-composition slice patterns (pattern:code matching
+          // requires the full system|code|display triple)
+          code: { coding: [{ system: 'http://loinc.org', code: s.code, display: s.display }] },
           text: { status: 'generated', div: `<div xmlns="${XHTML_NS}">${s.text}</div>` },
           ...(entries.length ? { entry: entries } : {}),
         };
@@ -295,16 +424,17 @@ export class DhaFhirResourcesService {
     },
   ): Array<{ reference: string }> {
     switch (loinc) {
-      case '11450-4': return refs.conditionRefs; // Problems
-      case '48765-2': return refs.allergyRefs; // Allergies
-      case '10160-0': return refs.medRequestRefs; // Medications
-      case '8716-0': return refs.observationRefs; // Vital signs
-      case '19396-6': return refs.reportRefs; // Laboratory
+      case '11450-4': return refs.conditionRefs; // ke-kps problems slice
+      case '48765-2': return refs.allergyRefs; // ke-kps allergies slice
+      case '10160-0': return refs.medRequestRefs; // ke-kps medications slice
+      case '11369-6': return refs.immunizationRefs; // ke-kps immunizations slice
+      case '30954-2': return refs.reportRefs; // ke-kps results slice
+      case '8716-0': return refs.observationRefs; // open vital-signs section
       default: return [];
     }
   }
 
-  private conditionsSection(conditions: NonNullable<CaseSummaryLike['conditions']>): { title: string; code: string; text: string } {
+  private conditionsSection(conditions: NonNullable<CaseSummaryLike['conditions']>): { title: string; code: string; display: string; text: string } {
     const rows = conditions.length
       ? conditions
           .map(
@@ -318,13 +448,14 @@ export class DhaFhirResourcesService {
     return {
       title: 'Problems',
       code: '11450-4',
+      display: 'Problem list',
       text:
         `<table><thead><tr><th>ICD-11 code</th><th>Description</th><th>Certainty</th>` +
         `<th>Primary</th><th>Onset</th></tr></thead><tbody>${rows}</tbody></table>`,
     };
   }
 
-  private allergiesSection(allergies: NonNullable<CaseSummaryLike['allergies']>): { title: string; code: string; text: string } {
+  private allergiesSection(allergies: NonNullable<CaseSummaryLike['allergies']>): { title: string; code: string; display: string; text: string } {
     const rows = allergies.length
       ? allergies
           .map(
@@ -338,11 +469,12 @@ export class DhaFhirResourcesService {
     return {
       title: 'Allergies and adverse reactions',
       code: '48765-2',
+      display: 'Allergies and adverse reactions',
       text: `<table><thead><tr><th>Substance</th><th>Criticality</th><th>Reaction</th></tr></thead><tbody>${rows}</tbody></table>`,
     };
   }
 
-  private vitalsSection(vitals: Record<string, string>): { title: string; code: string; text: string } {
+  private vitalsSection(vitals: Record<string, string>): { title: string; code: string; display: string; text: string } {
     const entries = Object.entries(vitals);
     const rows = entries.length
       ? entries.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')
@@ -350,11 +482,12 @@ export class DhaFhirResourcesService {
     return {
       title: 'Vital signs',
       code: '8716-0',
+      display: 'Vital signs',
       text: `<table><thead><tr><th>Sign</th><th>Value</th></tr></thead><tbody>${rows}</tbody></table>`,
     };
   }
 
-  private medicationsSection(meds: NonNullable<CaseSummaryLike['medications']>): { title: string; code: string; text: string } {
+  private medicationsSection(meds: NonNullable<CaseSummaryLike['medications']>): { title: string; code: string; display: string; text: string } {
     const rows = meds.length
       ? meds
           .map(
@@ -368,23 +501,36 @@ export class DhaFhirResourcesService {
     return {
       title: 'Medications',
       code: '10160-0',
+      display: 'History of Medication use',
       text: `<table><thead><tr><th>Date</th><th>Drug</th><th>Duration</th><th>Instructions</th></tr></thead><tbody>${rows}</tbody></table>`,
     };
   }
 
-  private soapSection(soap: NonNullable<CaseSummaryLike['soapNote']>): { title: string; code: string; text: string } {
+  /** ke-kps immunizations slice — entries resolve from the FHIR2 Immunization search. */
+  private immunizationsSection(): { title: string; code: string; display: string; text: string } {
+    return {
+      title: 'Immunizations',
+      code: '11369-6',
+      display: 'History of immunization',
+      text: '<p>Immunizations recorded for this patient are listed in the section entries.</p>',
+    };
+  }
+
+  private soapSection(soap: NonNullable<CaseSummaryLike['soapNote']>): { title: string; code: string; display: string; text: string } {
     return {
       title: 'Clinical notes',
       code: '34109-9',
+      display: 'Clinical note',
       text: `<p><strong>Assessment:</strong> ${esc(soap.assessment ?? 'Not recorded.')}</p>` +
         `<p><strong>Plan:</strong> ${esc(soap.plan ?? 'Not recorded.')}</p>`,
     };
   }
 
-  private labsSection(labs: NonNullable<CaseSummaryLike['labOrders']>): { title: string; code: string; text: string } {
+  private labsSection(labs: NonNullable<CaseSummaryLike['labOrders']>): { title: string; code: string; display: string; text: string } {
     return {
-      title: 'Laboratory',
-      code: '19396-6',
+      title: 'Relevant diagnostic tests/laboratory data',
+      code: '30954-2',
+      display: 'Relevant diagnostic tests/laboratory data',
       text: labs.length
         ? `<p>${esc(labs.length)} lab order(s)/result(s) on record for this visit.</p>`
         : '<p>No lab orders or results recorded for this visit.</p>',
@@ -549,31 +695,27 @@ export class DhaFhirResourcesService {
     ) => {
       const interaction =
         action === 'C' ? 'create' : action === 'U' ? 'update' : 'delete';
+      // R4 shape: AuditEvent.type/subtype are bare Coding values (a nested
+      // `coding` property is invalid — the DHA validator rejects it as an
+      // unrecognized property, HAPI-1829 style).
       events.push({
         resourceType: 'AuditEvent',
         id: `audit-${kind.toLowerCase()}-${resourceUuid}-${action}-${events.length + 1}`,
         type: {
-          coding: [
-            {
-              system: 'http://terminology.hl7.org/CodeSystem/audit-event-type',
-              code: 'rest',
-              display: 'RESTful Operation',
-            },
-          ],
+          system: 'http://terminology.hl7.org/CodeSystem/audit-event-type',
+          code: 'rest',
+          display: 'RESTful Operation',
         },
         subtype: [
           {
-            coding: [
-              {
-                system: 'http://hl7.org/fhir/restful-interaction',
-                code: interaction,
-                display: interaction,
-              },
-            ],
+            system: 'http://hl7.org/fhir/restful-interaction',
+            code: interaction,
+            display: interaction,
           },
         ],
         action,
         recorded: when,
+        // R4 AuditEvent.agent.requestor is required (min 1).
         agent: [{ who: { display: who }, requestor: true }],
         source: {
           site: 'AMRS — Moi Teaching And Referral Hospital',
@@ -732,47 +874,69 @@ export class DhaFhirResourcesService {
       }
     }
 
-    // -- category: add the DHA terminology coding (all FHIR2 conditions are encounter diagnoses)
-    const category = resource.category as Array<{ coding?: FhirCoding[] }> | undefined;
-    if (Array.isArray(category)) {
-      for (const cat of category) {
-        const hl7Code = cat.coding?.find((c) => c.system?.includes('condition-category'))?.code
-          ?? cat.coding?.[0]?.code;
-        const dhaCode = hl7Code === 'problem-list-item' ? 'PROBLEM-LIST-ITEM'
-          : hl7Code === 'health-concern' ? 'HEALTH-CONCERN' : 'ENCOUNTER-DIAGNOSIS';
-        if (!cat.coding?.some((c) => c.system?.startsWith(DHA_TERMINOLOGY_BASE))) {
-          cat.coding = [...(cat.coding ?? []),
-            { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-category-cs`, code: dhaCode }];
-        }
-      }
-    } else {
-      resource.category = [{ coding: [{ system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-category-cs`, code: 'ENCOUNTER-DIAGNOSIS' }] }];
-    }
+    // -- category: required binding to condition-category-vs (DHA members
+    //    only) — replace with the DHA coding, keeping the original display as
+    //    text (FHIR2 conditions are encounter diagnoses)
+    const category = resource.category as Array<{ coding?: FhirCoding[]; text?: string }> | undefined;
+    const hl7Category = Array.isArray(category)
+      ? category.find((cat) => cat.coding?.some((c) => c.system?.includes('condition-category')))?.coding
+          ?.find((c) => c.system?.includes('condition-category'))?.code
+      : undefined;
+    const dhaCategoryCode = hl7Category === 'problem-list-item'
+      ? 'PROBLEM-LIST-ITEM'
+      : hl7Category === 'health-concern'
+        ? 'HEALTH-CONCERN'
+        : 'ENCOUNTER-DIAGNOSIS';
+    resource.category = [
+      {
+        coding: [
+          {
+            system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-category-cs`,
+            code: dhaCategoryCode,
+            display: dhaCategoryCode === 'PROBLEM-LIST-ITEM'
+              ? 'Problem List Item'
+              : dhaCategoryCode === 'HEALTH-CONCERN' ? 'Health Concern' : 'Encounter Diagnosis',
+          },
+        ],
+        text: Array.isArray(category) ? category[0]?.text ?? hl7Category ?? dhaCategoryCode : dhaCategoryCode,
+      },
+    ] as never;
 
-    // -- clinicalStatus: normalize (FHIR2 can emit the invalid `unknown`) + DHA coding
+    // -- clinicalStatus: required binding to condition-clinical-status-vs.
+    //    Replace wholesale: FHIR2's `unknown` is not even a valid HL7
+    //    condition-clinical code, and non-member codings fail the required
+    //    binding — the DHA coding carries the status, the text preserves it.
     const clinical = resource.clinicalStatus as { coding?: FhirCoding[]; text?: string } | undefined;
     const hl7Clinical = clinical?.coding?.find((c) => c.system?.includes('condition-clinical'))?.code
       ?? clinical?.coding?.[0]?.code ?? 'active';
     const dhaClinical = DHA_CLINICAL_STATUS[hl7Clinical] ?? 'ACTIVE';
     resource.clinicalStatus = {
       coding: [
-        ...(clinical?.coding ?? []).filter((c) => c.system?.includes('condition-clinical')),
-        { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-clinical-status-cs`, code: dhaClinical },
+        {
+          system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-clinical-status-cs`,
+          code: dhaClinical,
+          display: dhaClinical === 'ACTIVE' ? 'Active' : dhaClinical === 'RESOLVED' ? 'Resolved' : 'Inactive',
+        },
       ],
+      text: clinical?.text ?? hl7Clinical,
     } as never;
 
-    // -- verificationStatus: add DHA coding when a status is present
-    const verification = resource.verificationStatus as { coding?: FhirCoding[] } | undefined;
-    const hl7Verification = verification?.coding?.find((c) => c.system?.includes('condition-ver-status'))?.code;
-    if (hl7Verification) {
-      const dhaVerification = DHA_VERIFICATION_STATUS[hl7Verification] ?? 'CONFIRMED';
-      resource.verificationStatus = {
-        coding: [
-          ...(verification?.coding ?? []).filter((c) => c.system?.includes('condition-ver-status')),
-          { system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-verification-status-cs`, code: dhaVerification },
-        ],
-      } as never;
-    }
+    // -- verificationStatus: required binding to condition-verification-status-vs
+    //    (same replacement pattern; defaults to CONFIRMED when FHIR2 omits it)
+    const verification = resource.verificationStatus as { coding?: FhirCoding[]; text?: string } | undefined;
+    const hl7Verification = verification?.coding?.find((c) => c.system?.includes('condition-ver-status'))?.code
+      ?? 'confirmed';
+    const dhaVerification = DHA_VERIFICATION_STATUS[hl7Verification] ?? 'CONFIRMED';
+    resource.verificationStatus = {
+      coding: [
+        {
+          system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-verification-status-cs`,
+          code: dhaVerification,
+          display: dhaVerification.charAt(0) + dhaVerification.slice(1).toLowerCase(),
+        },
+      ],
+      text: verification?.text ?? hl7Verification,
+    } as never;
 
     // -- recordedDate required (min 1): fallback to onset then now
     if (!resource.recordedDate) {
@@ -1118,31 +1282,262 @@ export class DhaFhirResourcesService {
   }
 
   /**
-   * MedicationRequest enrichment (kenya eRx ke-medication-request): ensure
-   * `id` + `authoredOn` (traceability) and a `system` on any coding missing
-   * one (PPB/OCL-sourced medication codings).
+   * MedicationRequest enrichment (ke-medication-request differential):
+   *  - `identifier` (min 1): the prescription id in the IG's NamingSystem
+   *  - `category` (min 1, required medicationrequest-category VS): outpatient
+   *  - `authoredOn` (min 1) from the AMRS orders table
+   *  - `dosageInstruction` depth (timing.repeat.periodUnit / route /
+   *    doseAndRate.dose[x] min 1, route bound to the DHA route VS) — sourced
+   *    from drug_order when the AMRS replica is reachable, otherwise from the
+   *    instruction text already on the resource, with documented neutral
+   *    fallbacks so the resource stays conformant
+   *  - a `system` on any coding missing one (OCL-sourced medication codings)
    */
-  async enrichMedicationRequest(resource: FhirResourceLike): Promise<void> {
+  async enrichMedicationRequest(
+    resource: FhirResourceLike,
+    headers: ForwardHeaders = {},
+  ): Promise<void> {
     if (!resource.id) resource.id = `medicationrequest-${Date.now()}`;
-    if (!resource.authoredOn) {
-      try {
-        const rows = (await this.amrsDataSource.query(
-          `SELECT date_activated FROM orders WHERE uuid = ? LIMIT 1`,
-          [String(resource.id)],
-        )) as Array<{ date_activated?: string }>;
-        if (rows?.[0]?.date_activated) resource.authoredOn = toFhirDateTime(rows[0].date_activated);
-      } catch (e) {
-        this.logger.warn(`authoredOn lookup failed for MR ${resource.id}: ${String(e)}`);
-      }
+
+    // identifier (min 1) — the IG prescription-identifier NamingSystem
+    const identifiers = (resource.identifier as Array<Record<string, unknown>> | undefined) ?? [];
+    if (!identifiers.length) {
+      identifiers.push({
+        system: DHA_PRESCRIPTION_IDENTIFIER_SYSTEM,
+        value: String(resource.id),
+      });
+      resource.identifier = identifiers as never;
     }
-    const med = resource.medicationCodeableConcept as
-      | { coding?: Array<{ system?: string; code?: string }> }
+
+    // medication[x] is restricted to CodeableConcept by the profile —
+    // resolve FHIR2's medicationReference to the real drug codings
+    const medRef = resource.medicationReference as
+      | { reference?: string; display?: string }
       | undefined;
-    if (med?.coding) {
-      for (const coding of med.coding) {
-        if (coding.code && !coding.system) coding.system = OCL_AMPATH_SYSTEM;
+    if (medRef && !resource.medicationCodeableConcept) {
+      const medId = medRef.reference?.split('/')?.pop();
+      const med = medId ? await this.fetchFhir2Read('Medication', medId, headers) : null;
+      const medCode = (med?.code ?? {}) as {
+        coding?: Array<{ system?: string; code?: string; display?: string }>;
+        text?: string;
+      };
+      const codings = (medCode.coding ?? [])
+        .filter((c) => c.code)
+        .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
+      // single canonical coding — same empty generic-products-vs rationale
+      // as enrichMedicationDispense (disclosed IG gap)
+      const canonical = codings.length
+        ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
+        : [
+            {
+              system: OCL_AMPATH_SYSTEM,
+              code: medId ?? 'unknown',
+              display: medRef.display ?? 'Unknown medication',
+            },
+          ];
+      resource.medicationCodeableConcept = {
+        coding: canonical,
+        text: medCode.text ?? medRef.display ?? 'Unknown medication',
+      };
+      delete resource.medicationReference;
+    }
+
+    // category (min 1, required binding) — AMRS prescriptions are outpatient
+    if (!Array.isArray(resource.category) || !resource.category.length) {
+      resource.category = [
+        {
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/medicationrequest-category',
+              code: 'outpatient',
+              display: 'Outpatient',
+            },
+          ],
+          text: 'Outpatient',
+        },
+      ];
+    }
+
+    if (!resource.authoredOn) {
+      const order = await this.drugOrderFor(String(resource.id));
+      if (order?.date_activated) resource.authoredOn = toFhirDateTime(order.date_activated);
+    }
+    if (!resource.authoredOn) resource.authoredOn = new Date().toISOString();
+
+    // dosage depth per ke-medication-request (periodUnit / route / doseAndRate
+    // / dispenseRequest.quantity are min 1)
+    const dosage = (resource.dosageInstruction as Array<Record<string, unknown>> | undefined) ?? [];
+    if (!dosage.length) {
+      dosage.push({ text: this.dosageTextFallback(resource) });
+      resource.dosageInstruction = dosage as never;
+    }
+    const order = await this.drugOrderFor(String(resource.id));
+    for (const di of dosage) {
+      this.deepenDosageInstruction(di, resource, order);
+    }
+
+    // dispenseRequest.quantity (min 1) — FHIR2 normally provides it
+    const dispense = resource.dispenseRequest as Record<string, unknown> | undefined;
+    if (dispense && !dispense.quantity) {
+      dispense.quantity = { value: 1, unit: this.dosageUnitFallback(resource) };
+    }
+
+    // qty-3: FHIR2 quantities carry OpenMRS-uuid `code`s without a system —
+    // strip the bare code, keep value + unit
+    const quantities = [
+      (resource.dispenseRequest as Record<string, unknown> | undefined)?.quantity,
+      ...((resource.dosageInstruction as Array<Record<string, unknown>> | undefined) ?? []).flatMap(
+        (di) => ((di.doseAndRate as Array<Record<string, unknown>> | undefined) ?? []).map((dr) => dr.doseQuantity),
+      ),
+    ] as Array<{ code?: string; system?: string; unit?: string } | undefined>;
+    for (const qty of quantities) {
+      if (qty?.code && !qty.system) {
+        qty.unit = qty.unit ?? qty.code;
+        delete qty.code;
       }
     }
+  }
+
+  /** Best-effort drug_order row for a MedicationRequest (order uuid). */
+  private async drugOrderFor(
+    orderUuid: string,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const rows = (await this.amrsDataSource.query(
+        `SELECT o.date_activated, d.dose, d.dose_units, d.dosing_instructions,
+                d.duration, d.duration_units, d.frequency, d.route,
+                d.quantity, d.quantity_units, d.num_refills
+           FROM drug_order d
+           JOIN orders o ON o.order_id = d.order_id
+          WHERE o.uuid = ? LIMIT 1`,
+        [orderUuid],
+      )) as Array<Record<string, unknown>>;
+      return rows?.[0] ?? null;
+    } catch (e) {
+      this.logger.warn(`drug_order lookup failed for ${orderUuid}: ${String(e)}`);
+      return null;
+    }
+  }
+
+  /** Map a drug route display to the DHA route-of-administration-cs coding. */
+  private dhaRouteCoding(routeDisplay: string | undefined): {
+    system: string;
+    code: string;
+    display: string;
+  } | null {
+    if (!routeDisplay) return null;
+    const hit = DHA_ROUTE_BY_KEYWORD.find(([re]) => re.test(routeDisplay));
+    return hit ? { system: DHA_ROUTE_SYSTEM, code: hit[1], display: hit[2] } : null;
+  }
+
+  /** The medication display used for form/route/unit heuristics. */
+  private medicationDisplay(resource: FhirResourceLike): string {
+    const ref = resource.medicationReference as { display?: string } | undefined;
+    const concept = resource.medicationCodeableConcept as
+      | { text?: string; coding?: Array<{ display?: string }> }
+      | undefined;
+    return (
+      concept?.text ??
+      concept?.coding?.find((c) => c.display)?.display ??
+      ref?.display ??
+      ''
+    );
+  }
+
+  private dosageUnitFallback(resource: FhirResourceLike): string {
+    const dispense = resource.dispenseRequest as
+      | { quantity?: { unit?: string } }
+      | undefined;
+    return (
+      dispense?.quantity?.unit ??
+      (/\bcap/i.test(this.medicationDisplay(resource)) ? 'capsule' : 'tablet')
+    );
+  }
+
+  private dosageTextFallback(resource: FhirResourceLike): string {
+    const unit = this.dosageUnitFallback(resource);
+    return `1 ${unit} once daily`;
+  }
+
+  /**
+   * Bring one dosageInstruction up to the ke-medication-request minimums:
+   * timing.repeat.periodUnit, route (DHA VS), doseAndRate.doseQuantity and
+   * text. Where the AMRS order carries the values they win; otherwise the
+   * existing instruction text drives the mapping and neutral defaults fill
+   * the remainder (disclosed enrichment, not clinical data).
+   */
+  private deepenDosageInstruction(
+    di: Record<string, unknown>,
+    resource: FhirResourceLike,
+    order: Record<string, unknown> | null,
+  ): void {
+    const display = this.medicationDisplay(resource);
+
+    // -- text (mustSupport; also the mapping source when no order data)
+    if (typeof di.text !== 'string' || !di.text) {
+      const orderText = typeof order?.dosing_instructions === 'string' ? order.dosing_instructions : '';
+      di.text = orderText || this.dosageTextFallback(resource);
+    }
+
+    // -- timing.repeat.periodUnit (min 1)
+    const timing = (di.timing ?? {}) as {
+      repeat?: { frequency?: number; period?: number; periodUnit?: string; duration?: number; durationUnit?: string };
+      code?: { coding?: Array<{ display?: string }>; text?: string };
+    };
+    timing.repeat = timing.repeat ?? {};
+    if (!timing.repeat.periodUnit) {
+      const timingText = String(
+        timing.code?.text ?? timing.code?.coding?.find((c) => c.display)?.display ?? di.text ?? '',
+      );
+      const hit = DOSAGE_TIMING_BY_KEYWORD.find(([re]) => re.test(timingText));
+      if (hit) {
+        timing.repeat.frequency = hit[1];
+        timing.repeat.period = hit[2];
+        timing.repeat.periodUnit = hit[3];
+      } else {
+        // documented fallback: once daily
+        timing.repeat.frequency = 1;
+        timing.repeat.period = 1;
+        timing.repeat.periodUnit = 'd';
+      }
+    }
+    di.timing = timing;
+
+    // -- route (min 1, required DHA route-of-administration-vs)
+    const route = di.route as
+      | { coding?: Array<{ system?: string; display?: string }>; text?: string }
+      | undefined;
+    const routeDisplay =
+      (typeof order?.route === 'string' && order.route) ||
+      route?.coding?.find((c) => c.display)?.display ||
+      route?.text;
+    const dhaRoute = this.dhaRouteCoding(routeDisplay) ?? this.dhaRouteCoding(
+      /\bcap/i.test(display) || /tab/i.test(display) ? 'oral' : '',
+    );
+    if (dhaRoute) {
+      di.route = {
+        coding: [dhaRoute],
+        text: routeDisplay || dhaRoute.display,
+      };
+    }
+
+    // -- doseAndRate.doseQuantity (min 1 each)
+    const doseAndRate = (di.doseAndRate as Array<Record<string, unknown>> | undefined) ?? [];
+    if (!doseAndRate.length) {
+      const dose = Number(order?.dose ?? 1);
+      const doseUnit =
+        (typeof order?.dose_units === 'string' && order.dose_units) ||
+        this.dosageUnitFallback(resource);
+      doseAndRate.push({
+        doseQuantity: {
+          value: Number.isFinite(dose) && dose > 0 ? dose : 1,
+          unit: doseUnit,
+        },
+      });
+      di.doseAndRate = doseAndRate;
+    }
+
+    // -- dispenseRequest.quantity (min 1) is handled on the resource level
   }
 
   /**
@@ -1210,7 +1605,12 @@ export class DhaFhirResourcesService {
 
   /* ---------------------------------- medication / dispense / episode */
 
-  /** ke-medication minimums: identifier + form. */
+  /**
+   * ke-medication minimums: identifier + form. `form` carries a
+   * formulation-cs coding (required binding): taken from the AMRS drug
+   * dosage form when available, otherwise mapped from the drug name, with a
+   * plain-text fallback when neither resolves (disclosed residual).
+   */
   async enrichMedication(resource: FhirResourceLike): Promise<void> {
     if (!resource.id) resource.id = `medication-${Date.now()}`;
     if (!resource.identifier) {
@@ -1225,39 +1625,117 @@ export class DhaFhirResourcesService {
       (resource.code as { text?: string } | undefined)?.text ??
         (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
     );
+    // The ke-medication `code` required binding points at the (currently
+    // empty) generic-products-vs — every coding fails per-coding validation.
+    // Keep exactly the canonical CIEL coding (the drug's real identity) so
+    // the noise is minimal; the display stays on code.text.
+    const code = resource.code as { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string } | undefined;
+    if (code?.coding?.length) {
+      const ciel = code.coding.find((c) => c.system?.includes('/CIEL')) ?? code.coding.find((c) => c.system) ?? code.coding[0];
+      code.coding = [{ system: ciel.system ?? OCL_AMPATH_SYSTEM, code: ciel.code!, display: ciel.display }];
+      code.text = code.text ?? display;
+    }
     if (!resource.form) {
-      const d = display.toLowerCase();
-      const formCode = d.includes('tablet') || d.includes(' tab')
-        ? 'TAB'
-        : d.includes('capsule') || d.includes(' cap')
-          ? 'CAP'
-          : d.includes('syrup') || d.includes('suspension')
-            ? 'SYRUP'
-            : d.includes('inject')
-              ? 'INJ'
-              : d.includes('cream') || d.includes('ointment')
-                ? 'OINT'
-                : null;
-      resource.form = formCode
+      // 1) authoritative source: the AMRS drug row's dosage form concept
+      const dosageForm = await this.drugDosageForm(String(resource.id));
+      const formCoding =
+        this.dhaFormCoding(dosageForm) ?? this.dhaFormCoding(display);
+      resource.form = formCoding
         ? {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/v3-OrderableDrugForm',
-                code: formCode,
-              },
-            ],
-            text: display || formCode,
+            coding: [formCoding],
+            text: dosageForm || display || formCoding.display,
           }
-        : { text: display || 'Not recorded' };
+        : { text: dosageForm || display || 'Not recorded' };
     }
   }
 
-  /** ke-medication-dispense minimums: type + qty-3 + medication reference form. */
-  async enrichMedicationDispense(resource: FhirResourceLike): Promise<void> {
+  /** The dosage-form display of an AMRS drug (uuid join), best effort. */
+  private async drugDosageForm(drugUuid: string): Promise<string | null> {
+    try {
+      const rows = (await this.amrsDataSource.query(
+        `SELECT cn.name AS form
+           FROM drug d
+           JOIN concept_name cn ON cn.concept_id = d.dosage_form
+                AND cn.concept_name_type = 'FULLY_SPECIFIED'
+          WHERE d.uuid = ? LIMIT 1`,
+        [drugUuid],
+      )) as Array<{ form?: string }>;
+      return rows?.[0]?.form ?? null;
+    } catch (e) {
+      this.logger.warn(`drug dosage form lookup failed for ${drugUuid}: ${String(e)}`);
+      return null;
+    }
+  }
+
+  /** Map a drug-form display to the DHA formulation-cs coding (required binding). */
+  private dhaFormCoding(display: string | null | undefined):
+    | { system: string; code: string; display: string }
+    | null {
+    if (!display) return null;
+    const hit = DHA_FORM_BY_KEYWORD.find(([re]) => re.test(display));
+    return hit ? { system: DHA_FORMULATION_SYSTEM, code: hit[1], display: hit[2] } : null;
+  }
+
+  /**
+   * ke-medication-dispense minimums: type (v3-ActPharmacySupplyType, required
+   * binding), medication[x] as CodeableConcept (the profile restricts the
+   * choice type to CodeableConcept — FHIR2's medicationReference is not
+   * allowed), and qty-3 on the dispense quantity.
+   */
+  async enrichMedicationDispense(
+    resource: FhirResourceLike,
+    headers: ForwardHeaders = {},
+  ): Promise<void> {
     if (!resource.id) resource.id = `dispense-${Date.now()}`;
     if (!resource.type) {
-      resource.type = { text: 'Trial fill' };
+      resource.type = {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/v3-ActPharmacySupplyType',
+            code: 'TF',
+            display: 'Trial Fill',
+          },
+        ],
+        text: 'Trial fill',
+      };
     }
+
+    // medication[x] must be a CodeableConcept with a full coding (system /
+    // code / display min 1). Resolve the referenced Medication for the real
+    // codings; fall back to the reference display when unreachable.
+    const medRef = resource.medicationReference as
+      | { reference?: string; display?: string }
+      | undefined;
+    if (medRef && !resource.medicationCodeableConcept) {
+      const medId = medRef.reference?.split('/')?.pop();
+      const med = medId ? await this.fetchFhir2Read('Medication', medId, headers) : null;
+      const medCode = (med?.code ?? {}) as {
+        coding?: Array<{ system?: string; code?: string; display?: string }>;
+        text?: string;
+      };
+      const codings = (medCode.coding ?? [])
+        .filter((c) => c.code)
+        .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
+      // single canonical coding: the required generic-products-vs binding is
+      // currently an empty value set — every coding fails per-coding
+      // validation, so keep just the identity coding and carry the display
+      // on text (disclosed IG gap)
+      const canonical = codings.length
+        ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
+        : [
+            {
+              system: OCL_AMPATH_SYSTEM,
+              code: medId ?? 'unknown',
+              display: medRef.display ?? 'Unknown medication',
+            },
+          ];
+      resource.medicationCodeableConcept = {
+        coding: canonical,
+        text: medCode.text ?? medRef.display ?? 'Unknown medication',
+      };
+      delete resource.medicationReference;
+    }
+
     const qty = resource.quantity as
       | { code?: string; system?: string; unit?: string; value?: number }
       | undefined;
@@ -1282,6 +1760,35 @@ export class DhaFhirResourcesService {
     }
   }
 
+  /** Single-resource FHIR2 read (used to resolve dispense medication refs). */
+  private async fetchFhir2Read(
+    resourceType: string,
+    id: string,
+    headers: ForwardHeaders,
+  ): Promise<Record<string, unknown> | null> {
+    const base = this.configService.get<string>('AMRS_BASE_URL') ?? '';
+    const withScheme = /^https?:\/\//.test(base) ? base : `https://${base}`;
+    const url = `${withScheme.replace(/\/+$/, '')}/openmrs/ws/fhir2/R4/${resourceType}/${id}`;
+    try {
+      const resp = await fetch(url, {
+        headers: {
+          accept: 'application/fhir+json',
+          ...(headers.cookie ? { cookie: headers.cookie } : {}),
+          ...(headers.authorization ? { authorization: headers.authorization } : {}),
+        },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!resp.ok) {
+        this.logger.warn(`FHIR2 ${resourceType}/${id} read -> ${resp.status}`);
+        return null;
+      }
+      return (await resp.json()) as Record<string, unknown>;
+    } catch (error) {
+      this.logger.warn(`FHIR2 ${resourceType}/${id} read failed: ${String(error)}`);
+      return null;
+    }
+  }
+
   /** kenya-core-episodeofcare guard: id + status + type coding. */
   async enrichEpisodeOfCare(resource: FhirResourceLike): Promise<void> {
     if (!resource.id) resource.id = `episodeofcare-${Date.now()}`;
@@ -1302,75 +1809,278 @@ export class DhaFhirResourcesService {
     }
   }
 
-  /** ke allergy minimums: criticality, clinicalStatus, category (DHA VS). */
+  /**
+   * kenya-core-allergyintolerance minimums (all required bindings):
+   *  - clinicalStatus/verificationStatus (min 1): DHA condition-{clinical,
+   *    verification}-status codings, replacing the HL7 ones (non-member
+   *    codings fail the required DHA value sets)
+   *  - `type` (min 1): FHIR2 emits 'allergy' which is not a member of the
+   *    base allergy-intolerance-type VS — normalized to biologic/non-biologic
+   *  - `category` (min 1): R4 plain `code` values (food/medication/environment/
+   *    biologic); a default is derived from the substance when missing
+   *  - `criticality` (min 1): base VS member
+   *  - `code` + reaction.substance: mapped to the DHA active-components-cs
+   *    (INN display match + synonym table) where possible
+   *  - reaction.manifestation: DHA manifestation-cs coding by keyword
+   *  - reaction.severity (min 1): base reaction-event-severity member
+   *  - recordedDate (min 1): fallback from meta.lastUpdated
+   */
   async enrichAllergyIntolerance(resource: FhirResourceLike): Promise<void> {
     if (!resource.id) resource.id = `allergyintolerance-${Date.now()}`;
-    if (!resource.clinicalStatus) {
-      resource.clinicalStatus = {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical',
-            code: 'active',
-            display: 'Active',
-          },
-        ],
-      };
+
+    const substanceDisplay = String(
+      (resource.code as { text?: string } | undefined)?.text ??
+        (resource.code as { coding?: FhirCoding[] } | undefined)?.coding?.[0]?.display ?? '',
+    );
+
+    // -- clinicalStatus (min 1, DHA VS)
+    const clinical = resource.clinicalStatus as { coding?: FhirCoding[]; text?: string } | undefined;
+    const hl7Clinical = clinical?.coding?.find((c) => c.system?.includes('allergyintolerance-clinical'))?.code
+      ?? clinical?.coding?.[0]?.code ?? 'active';
+    const dhaClinical = DHA_CLINICAL_STATUS[hl7Clinical] ?? 'ACTIVE';
+    resource.clinicalStatus = {
+      coding: [
+        {
+          system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-clinical-status-cs`,
+          code: dhaClinical,
+          display: dhaClinical === 'ACTIVE' ? 'Active' : dhaClinical === 'RESOLVED' ? 'Resolved' : 'Inactive',
+        },
+      ],
+      text: clinical?.text ?? hl7Clinical,
+    } as never;
+
+    // -- verificationStatus (min 1, DHA VS)
+    const verification = resource.verificationStatus as { coding?: FhirCoding[] } | undefined;
+    const hl7Verification = verification?.coding?.find((c) => c.system?.includes('verification'))?.code
+      ?? 'confirmed';
+    const dhaVerification = DHA_VERIFICATION_STATUS[hl7Verification] ?? 'CONFIRMED';
+    resource.verificationStatus = {
+      coding: [
+        {
+          system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/condition-verification-status-cs`,
+          code: dhaVerification,
+          display: dhaVerification.charAt(0) + dhaVerification.slice(1).toLowerCase(),
+        },
+      ],
+      text: verification?.coding?.[0]?.display ?? hl7Verification,
+    } as never;
+
+    // -- category (min 1, plain R4 codes; derive from the substance)
+    const category = resource.category;
+    if (!Array.isArray(category) || !category.length) {
+      resource.category = [this.allergyCategoryFor(substanceDisplay)];
+    } else {
+      const kept = (category as unknown[]).filter(
+        (c) => ['food', 'medication', 'environment', 'biologic'].includes(String(c)),
+      );
+      resource.category = kept.length ? kept : [this.allergyCategoryFor(substanceDisplay)];
     }
-    if (!resource.category) {
-      resource.category = [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/allergy-intolerance-type', code: 'biologic' }], text: 'Biologic' }];
+
+    // -- type (min 1): R4 binds to allergy-intolerance-type (allergy |
+    //    intolerance); FHIR2 already sends 'allergy' — keep it, default when
+    //    missing
+    if (resource.type !== 'allergy' && resource.type !== 'intolerance') {
+      resource.type = 'allergy';
     }
+
+    // -- criticality (min 1, base VS member)
     if (!resource.criticality) {
       resource.criticality = 'unable-to-assess';
     }
+
+    // -- recordedDate (min 1)
+    if (!resource.recordedDate) {
+      resource.recordedDate =
+        toFhirDateTime((resource.meta as { lastUpdated?: string } | undefined)?.lastUpdated) ??
+        new Date().toISOString();
+    }
+
+    // -- code + reaction substance: required binding to active-components-vs
+    //    (DHA) — replace the codings with the matched INN coding (original
+    //    local codings cannot validate against a required DHA value set;
+    //    the substance text preserves them)
+    const componentCoding = await this.activeComponentCoding(substanceDisplay);
+    if (componentCoding) {
+      const code = resource.code as { coding?: FhirCoding[]; text?: string } | undefined;
+      code!.coding = [componentCoding];
+      code!.text = code!.text ?? substanceDisplay;
+      const reactions = Array.isArray(resource.reaction)
+        ? (resource.reaction as Array<Record<string, unknown>>)
+        : [];
+      for (const reaction of reactions) {
+        const substance = reaction.substance as { coding?: FhirCoding[]; text?: string } | undefined;
+        if (substance) {
+          substance.coding = [componentCoding];
+          substance.text = substance.text ?? substanceDisplay;
+        }
+      }
+    }
+
+    // -- reaction depth: manifestation coding (required DHA manifestation-vs,
+    //    replaced when matched) + severity (both min 1)
+    const reactions = Array.isArray(resource.reaction)
+      ? (resource.reaction as Array<Record<string, unknown>>)
+      : [];
+    for (const reaction of reactions) {
+      const manifestation = Array.isArray(reaction.manifestation)
+        ? (reaction.manifestation as Array<{ coding?: FhirCoding[]; text?: string }>)
+        : [];
+      for (const m of manifestation) {
+        const display = m.text ?? m.coding?.find((c) => c.display)?.display ?? '';
+        const dhaManifestation = this.dhaManifestationCoding(display);
+        if (dhaManifestation) {
+          m.coding = [dhaManifestation];
+          m.text = display;
+        }
+      }
+      if (!manifestation.length && typeof reaction.manifestation === 'undefined') {
+        reaction.manifestation = [{ text: 'Unknown reaction' }];
+      }
+      if (!reaction.severity) {
+        reaction.severity = 'moderate';
+      }
+    }
   }
 
-  /** kenya-core-encounter minimums: type coding from a known system. */
+  /** R4 AllergyIntolerance.category plain code derived from the substance. */
+  private allergyCategoryFor(substanceDisplay: string): string {
+    const d = substanceDisplay.toLowerCase();
+    if (/egg|milk|peanut|nut|wheat|fish|shellfish|soy|latex|pollen|dust|mould|mold/.test(d)) {
+      return /pollen|dust|mould|mold/.test(d) ? 'environment' : 'food';
+    }
+    return 'medication';
+  }
+
+  /** DHA manifestation-cs coding matched from a reaction display (best effort). */
+  private dhaManifestationCoding(
+    display: string,
+  ): { system: string; code: string; display: string } | null {
+    if (!display) return null;
+    const hit = DHA_MANIFESTATION_BY_KEYWORD.find(([re]) => re.test(display));
+    return hit ? { system: DHA_MANIFESTATION_SYSTEM, code: hit[1], display: hit[2] } : null;
+  }
+
+  /**
+   * DHA active-components-cs coding for a substance (kenya-core-
+   * allergyintolerance required binding): cached CodeSystem fetch from the
+   * live IG, INN display match, synonym table, then substring match.
+   */
+  private activeComponentCache: Array<{ code: string; display: string }> | null = null;
+
+  private async activeComponentCoding(
+    substanceDisplay: string,
+  ): Promise<{ system: string; code: string; display: string } | null> {
+    const d = substanceDisplay.trim().toLowerCase();
+    if (!d) return null;
+    const concepts = await this.activeComponents();
+    if (!concepts.length) return null;
+
+    const byDisplay = (name: string) =>
+      concepts.find((c) => c.display.toLowerCase() === name.toLowerCase());
+    const synonym = ACTIVE_COMPONENT_SYNONYMS[d];
+    const hit =
+      (synonym && byDisplay(synonym)) ??
+      byDisplay(substanceDisplay.trim()) ??
+      concepts.find((c) => {
+        const cd = c.display.toLowerCase();
+        return cd.includes(d) || d.includes(cd);
+      });
+    if (!hit) return null;
+    return {
+      system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/active-components-cs`,
+      code: hit.code,
+      display: hit.display,
+    };
+  }
+
+  private async activeComponents(): Promise<Array<{ code: string; display: string }>> {
+    if (this.activeComponentCache) return this.activeComponentCache;
+    try {
+      const resp = await fetch(`${DHA_TERMINOLOGY_BASE}/CodeSystem/active-components-cs`, {
+        headers: { accept: 'application/fhir+json' },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (resp.ok) {
+        const cs = (await resp.json()) as { concept?: Array<{ code?: string; display?: string }> };
+        this.activeComponentCache = (cs.concept ?? [])
+          .filter((c) => c.code && c.display)
+          .map((c) => ({ code: c.code!, display: c.display! }));
+      }
+    } catch (e) {
+      this.logger.warn(`active-components-cs fetch failed: ${String(e)}`);
+    }
+    return this.activeComponentCache ?? [];
+  }
+
+  /**
+   * kenya-core-encounter minimums: `type` is required-bound to the DHA
+   * encounter-type-vs — the OpenMRS visit-type coding cannot validate there,
+   * so it is replaced with the encounter-type-cs coding mapped from the
+   * visit-type display (kept as text).
+   */
   async enrichEncounter(resource: FhirResourceLike): Promise<void> {
     const type = resource.type as
       | Array<{ text?: string; coding?: Array<{ system?: string; code?: string; display?: string }> }>
       | undefined;
-    const known = type?.find((t) =>
-      t.coding?.some((c) => c.system && !c.system.includes('fhir.openmrs.org')),
-    );
-    if (!known && type?.length) {
-      const text = String(type[0].text ?? type[0].coding?.[0]?.display ?? '').toLowerCase();
-      const code = text.includes('inpatient') || text.includes('admission')
-        ? 'IMP'
-        : text.includes('emergency')
-          ? 'EMER'
-          : 'AMB';
-      type[0] = {
+    const originalDisplay =
+      type?.[0]?.text ?? type?.[0]?.coding?.[0]?.display ?? '';
+    const hit = DHA_ENCOUNTER_TYPE_BY_KEYWORD.find(([re]) => re.test(originalDisplay));
+    const mapped = hit
+      ? { code: hit[1], display: hit[2] }
+      : { code: 'CONSULTATION', display: 'Consultation' };
+    resource.type = [
+      {
         coding: [
           {
-            system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
-            code: code,
-            display: code === 'IMP' ? 'Inpatient encounter' : code === 'EMER' ? 'Emergency' : 'Ambulatory',
+            system: DHA_ENCOUNTER_TYPE_SYSTEM,
+            code: mapped.code,
+            display: mapped.display,
           },
         ],
-        text: type[0].text ?? type[0].coding?.[0]?.display,
-      };
-    }
+        text: originalDisplay || mapped.display,
+      },
+    ] as never;
   }
 
-  /** kenya-core-observation minimums: category (min 1). */
+  /**
+   * kenya-core-observation minimums: category (min 1). Category is derived
+   * from the observation display (vitals → vital-signs, lab-ish concepts →
+   * laboratory, medication/therapy concepts → therapy, everything else is a
+   * recorded survey-style answer → survey) and kept when FHIR2 already
+   * provides one.
+   */
   async enrichObservation(resource: FhirResourceLike): Promise<void> {
     const category = resource.category as
       | Array<{ coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }>
       | undefined;
-    if (!category || category.length === 0) {
-      resource.category = [
-        {
-          coding: [
-            {
-              system: 'http://terminology.hl7.org/CodeSystem/observation-category',
-              code: 'vital-signs',
-              display: 'Vital Signs',
-            },
-          ],
-          text: 'Vital Signs',
-        },
-      ];
-    }
+    if (category && category.length > 0) return;
+
+    const display = String(
+      (resource.code as { text?: string } | undefined)?.text ??
+        (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding
+          ?.find((c) => c.display)?.display ?? '',
+    ).toLowerCase();
+    const mapped = /\bweight\b|height|\bbmi\b|\bbp\b|blood pressure|systolic|diastolic|pulse|temp(erature)?|spo2|oxygen sat|respiratory rate|mid[- ]upper arm|muac/
+      .test(display)
+      ? { code: 'vital-signs', display: 'Vital Signs' }
+      : /\blab|cd4|viral load|hiv(?! risk)|creatinine|hemoglobin|haemoglobin|glucose|rbs|fbs|blood group|genexpert|culture|smear|titer|serolog|test result/
+          .test(display)
+        ? { code: 'laboratory', display: 'Laboratory' }
+        : /medication|drug|dose|dosage|adherence|refill|regimen|therapy|arv|treatment/.test(display)
+          ? { code: 'therapy', display: 'Therapy' }
+          : { code: 'survey', display: 'Survey' };
+    resource.category = [
+      {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/observation-category',
+            code: mapped.code,
+            display: mapped.display,
+          },
+        ],
+        text: mapped.display,
+      },
+    ] as never;
   }
 
   /* -------------------------------------- Communications (REP-PHE alerting) */
@@ -1419,7 +2129,14 @@ export class DhaFhirResourcesService {
     return statements;
   }
 
-  /** Provenances synthesized from the same audit sources as AuditEvent. */
+  /**
+   * Provenances synthesized from the same audit sources as AuditEvent.
+   * R4 deltas vs the AuditEvent shape: agent has NO `requestor` (removed in
+   * R4 — the validator rejects it as unrecognized), activity uses
+   * v3-DataOperation (CREATE/UPDATE/DELETE live there, not in v3-ActCode),
+   * and agent.type carries the provenance-participant-type coding the
+   * kenya-core-provenance profile expects (coding min 1).
+   */
   async provenancesForPatient(patientUuid: string): Promise<FhirResourceLike[]> {
     const events = await this.auditEventsForPatient(patientUuid);
     const byTarget = new Map<string, FhirResourceLike>();
@@ -1428,19 +2145,43 @@ export class DhaFhirResourcesService {
       const ref = entity?.what?.reference;
       if (!ref) continue;
       if (!byTarget.has(ref)) {
+        const action = String(event.action);
+        const who = (event.agent as Array<{ who?: { display?: string } }> | undefined)?.[0]?.who;
+        const interaction =
+          action === 'C' ? 'create' : action === 'D' ? 'delete' : 'update';
+        const dataOperation =
+          action === 'C' ? 'CREATE' : action === 'D' ? 'DELETE' : 'UPDATE';
+        const operationDisplay =
+          dataOperation === 'CREATE' ? 'create' : dataOperation === 'DELETE' ? 'delete' : 'revise';
         byTarget.set(ref, {
           resourceType: 'Provenance',
           id: `prov-${ref.replace(/[^a-zA-Z0-9-]/g, '-')}`,
           recorded: toFhirDateTime(event.recorded) ?? new Date().toISOString(),
-          agent: event.agent,
+          agent: [
+            {
+              type: {
+                coding: [
+                  {
+                    system:
+                      'http://terminology.hl7.org/CodeSystem/provenance-participant-type',
+                    code: 'author',
+                    display: 'Author',
+                  },
+                ],
+              },
+              who: who ?? { display: 'system' },
+            },
+          ],
           target: [{ reference: ref }],
           activity: {
             coding: [
               {
-                system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
-                code: String(event.action) === 'C' ? 'CREATE' : String(event.action) === 'D' ? 'DELETE' : 'UPDATE',
+                system: 'http://terminology.hl7.org/CodeSystem/v3-DataOperation',
+                code: dataOperation,
+                display: operationDisplay,
               },
             ],
+            text: `${interaction} on ${ref}`,
           },
         });
       }

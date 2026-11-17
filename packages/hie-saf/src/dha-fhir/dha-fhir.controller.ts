@@ -502,35 +502,46 @@ export class DhaFhirController {
           } else {
             this.stamp(parsed, profiles);
           }
-          // Conformance enrichments per resource type (verified against the
-          // DHA test bed validation reports, 16 Nov).
-          if (parsed.resourceType === 'Patient') {
-            await this.resources.enrichPatient(parsed).catch((e) =>
-              this.logger.warn(`Patient enrichment skipped: ${String(e)}`),
-            );
-          } else if (parsed.resourceType === 'ServiceRequest') {
-            await this.resources
-              .enrichServiceRequest(parsed, this.forwarded(request))
-              .catch((e) => this.logger.warn(`ServiceRequest enrichment skipped: ${String(e)}`));
-          } else if (parsed.resourceType === 'MedicationRequest') {
-            await this.resources.enrichMedicationRequest(parsed).catch((e) =>
-              this.logger.warn(`MedicationRequest enrichment skipped: ${String(e)}`),
-            );
-          }
-          // INTER-SEM: FHIR2 Conditions carry only the local concept UUID —
-          // inject the ICD-11 coding from the concept_reference_map join.
-          if (parsed.resourceType === 'Condition') {
-            await this.resources.enrichCondition(parsed).catch((e) =>
-              this.logger.warn(`ICD-11 enrichment skipped: ${String(e)}`),
-            );
-          } else if (parsed.resourceType === 'Bundle' && Array.isArray(parsed.entry)) {
+          // Conformance enrichment per resource type (verified against the
+          // DHA test bed validation reports, 16 Nov). Applied to top-level
+          // resources AND every Bundle entry — searchsets previously shipped
+          // raw entries that failed the ke profiles.
+          const enrichOne = async (resource: FhirResource): Promise<void> => {
+            const type = resource.resourceType;
+            try {
+              if (type === 'Patient') {
+                await this.resources.enrichPatient(resource);
+              } else if (type === 'ServiceRequest') {
+                await this.resources.enrichServiceRequest(
+                  resource,
+                  this.forwarded(request),
+                );
+              } else if (type === 'MedicationRequest') {
+                await this.resources.enrichMedicationRequest(resource);
+              } else if (type === 'Condition') {
+                // INTER-SEM: inject the ICD-11 coding from the
+                // concept_reference_map join.
+                await this.resources.enrichCondition(resource);
+              } else if (type === 'EpisodeOfCare') {
+                await this.resources.enrichEpisodeOfCare(resource);
+              } else if (type === 'MedicationDispense') {
+                await this.resources.enrichMedicationDispense(resource);
+              } else if (type === 'Medication') {
+                await this.resources.enrichMedication(resource);
+              }
+            } catch (e) {
+              this.logger.warn(`${type} enrichment skipped: ${String(e)}`);
+            }
+          };
+
+          if (parsed.resourceType === 'Bundle' && Array.isArray(parsed.entry)) {
             for (const entry of parsed.entry) {
-              if (entry.resource?.resourceType === 'Condition') {
-                await this.resources
-                  .enrichCondition(entry.resource)
-                  .catch((e) => this.logger.warn(`ICD-11 enrichment skipped: ${String(e)}`));
+              if (entry.resource) {
+                await enrichOne(entry.resource);
               }
             }
+          } else {
+            await enrichOne(parsed);
           }
           response
             .status(upstream.status)

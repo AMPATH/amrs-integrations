@@ -168,19 +168,56 @@ export class DhaFhirResourcesService {
    * in-process from CaseSummaryService (source verified live with ICD-11
    * codes) with XHTML narratives for human readability.
    */
-  async composition(patientUuid: string, locationUuid: string): Promise<FhirResourceLike> {
+  async composition(
+    patientUuid: string,
+    locationUuid: string,
+    headers: ForwardHeaders = {},
+  ): Promise<FhirResourceLike> {
     const dto = { patientUuid, locationUuid } as Parameters<
       CaseSummaryService['getVisitCaseSummary']
     >[0];
     const summary = (await this.caseSummaryService.getVisitCaseSummary(dto)) as CaseSummaryLike;
 
-    const sections: Array<{ title: string; code: string; text: string }> = [];
+    const sections: Array<{
+      title: string;
+      code: string;
+      text: string;
+      entry?: Array<{ reference: string; display?: string }>;
+    }> = [];
     sections.push(this.conditionsSection(summary.conditions ?? []));
     sections.push(this.allergiesSection(summary.allergies ?? []));
     sections.push(this.vitalsSection(summary.vitals ?? {}));
     sections.push(this.medicationsSection(summary.medications ?? []));
     sections.push(this.soapSection(summary.soapNote ?? {}));
     sections.push(this.labsSection(summary.labOrders ?? []));
+
+    // Laboratory requirement: the Composition references the clinical FHIR
+    // resources behind its sections. FHIR2-backed types are searched and
+    // referenced individually; types AMRS does not record (ImagingStudy,
+    // Substance, Specimen) are noted as empty in the section text.
+    const searchHeaders = headers;
+    const [conditions, allergies, medRequests, observations, reports, immunizations, episodes] =
+      await Promise.all([
+        this.fetchFhir2Search('Condition', `patient=${patientUuid}&_count=50`, searchHeaders),
+        this.fetchFhir2Search('AllergyIntolerance', `patient=${patientUuid}&_count=20`, searchHeaders),
+        this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&status=active&_count=50`, searchHeaders),
+        this.fetchFhir2Search('Observation', `patient=${patientUuid}&_count=50`, searchHeaders),
+        this.fetchFhir2Search('DiagnosticReport', `patient=${patientUuid}&_count=20`, searchHeaders),
+        this.fetchFhir2Search('Immunization', `patient=${patientUuid}&_count=20`, searchHeaders),
+        this.fetchFhir2Search('EpisodeOfCare', `patient=${patientUuid}&_count=20`, searchHeaders),
+      ]);
+    const refsOf = (bundle: unknown[]): Array<{ reference: string; display?: string }> =>
+      bundle
+        .map((e) => (e as { resource?: { id?: string; resourceType?: string } }).resource)
+        .filter((r): r is NonNullable<typeof r> => Boolean(r))
+        .map((r) => ({ reference: `${r.resourceType}/${r.id}` }));
+    const conditionRefs = refsOf(conditions);
+    const allergyRefs = refsOf(allergies);
+    const medRequestRefs = refsOf(medRequests);
+    const observationRefs = refsOf(observations);
+    const reportRefs = refsOf(reports);
+    const immunizationRefs = refsOf(immunizations);
+    const episodeRefs = refsOf(episodes);
 
     const demographics = summary.demographics ?? {};
 
@@ -204,12 +241,47 @@ export class DhaFhirResourcesService {
       },
       date: summary.visit?.startDatetime ?? new Date().toISOString(),
       title: `Clinical summary — ${demographics.name ?? patientUuid}`,
-      section: sections.map((s) => ({
-        title: s.title,
-        code: { coding: [{ system: 'http://loinc.org', code: s.code }] },
-        text: { status: 'generated', div: `<div xmlns="${XHTML_NS}">${s.text}</div>` },
-      })),
+      section: sections.map((s) => {
+        const entries = this.sectionEntries(s.code, {
+          conditionRefs,
+          allergyRefs,
+          medRequestRefs,
+          observationRefs,
+          reportRefs,
+          immunizationRefs,
+          episodeRefs,
+        });
+        return {
+          title: s.title,
+          code: { coding: [{ system: 'http://loinc.org', code: s.code }] },
+          text: { status: 'generated', div: `<div xmlns="${XHTML_NS}">${s.text}</div>` },
+          ...(entries.length ? { entry: entries } : {}),
+        };
+      }),
     };
+  }
+
+  /** Map a LOINC section code to its FHIR2-referenced entries (lab requirement). */
+  private sectionEntries(
+    loinc: string,
+    refs: {
+      conditionRefs: Array<{ reference: string }>;
+      allergyRefs: Array<{ reference: string }>;
+      medRequestRefs: Array<{ reference: string }>;
+      observationRefs: Array<{ reference: string }>;
+      reportRefs: Array<{ reference: string }>;
+      immunizationRefs: Array<{ reference: string }>;
+      episodeRefs: Array<{ reference: string }>;
+    },
+  ): Array<{ reference: string }> {
+    switch (loinc) {
+      case '11450-4': return refs.conditionRefs; // Problems
+      case '48765-2': return refs.allergyRefs; // Allergies
+      case '10160-0': return refs.medRequestRefs; // Medications
+      case '8716-0': return refs.observationRefs; // Vital signs
+      case '19396-6': return refs.reportRefs; // Laboratory
+      default: return [];
+    }
   }
 
   private conditionsSection(conditions: NonNullable<CaseSummaryLike['conditions']>): { title: string; code: string; text: string } {
@@ -533,8 +605,10 @@ export class DhaFhirResourcesService {
           id: `ihr-${disease}-${startDate}-${endDate}-${tasks.length + 1}`,
           status: 'requested',
           intent: 'plan',
-          code: { text: 'IHR-reportable-event-escalation' },
+          code: { text: 'ihr-notify' },
+          priority: 'stat',
           authoredOn: new Date().toISOString(),
+          executionPeriod: { start: startDate, end: endDate },
           reasonCode: {
             text: `${count} case(s) of ${disease.replace(/_/g, ' ')} in ${startDate}…${endDate} — event of potential international concern, escalate County → National DSO → WHO per IHR SOP.`,
           },

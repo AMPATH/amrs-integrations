@@ -6,6 +6,7 @@ import { AMRS_CONNECTION } from '../core/database/db.module';
 import { CaseSummaryService } from '../case-summary/case-summary.service';
 import { EmtService } from '../emt/emt.service';
 import { ListEmtReferralsDto } from '../emt/dto/list-emt-referrals.dto';
+import { ACTIVE_COMPONENTS } from './active-components.snapshot';
 
 /* ------------------------------------------------------------------ types */
 
@@ -157,7 +158,8 @@ const DHA_FORM_BY_KEYWORD: Array<[RegExp, string, string]> = [
 const DHA_MANIFESTATION_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/manifestation-cs';
 /** AMRS reaction displays -> DHA manifestation-cs (verified members). */
 const DHA_MANIFESTATION_BY_KEYWORD: Array<[RegExp, string, string]> = [
-  [/rash|urticaria|hives/i, 'URTICARIA', 'Urticaria'],
+  [/urticaria|hives|wheal/i, 'URTICARIA', 'Urticaria'],
+  [/rash/i, 'RASH', 'Rash'],
   [/pruritus|itch/i, 'RASH', 'Rash'],
   [/anaphyla/i, 'ANAPHYLAXIS', 'Anaphylaxis'],
   [/bronchospasm|wheez/i, 'BRONCHOSPASM', 'Bronchospasm'],
@@ -282,6 +284,14 @@ export class DhaFhirResourcesService {
 
   /** concept uuid -> ICD-11 code (cached for the process lifetime). */
   private readonly icd11Cache = new Map<string, string | null>();
+
+  /** DHA active-components concepts (bundled snapshot, refreshed opportunistically). */
+  private activeComponentCache: Array<{ code: string; display: string }> | null = null;
+  private activeComponentRefreshAttempted = false;
+
+  /** AMRS replica query availability flags (negative-cache the failures). */
+  private drugOrderQueryAvailable: boolean | null = null;
+  private drugDosageFormQueryAvailable: boolean | null = null;
 
   /** StructureDefinition snapshot cache: resourceType -> required element names. */
   private readonly requiredElementsCache = new Map<string, string[]>();
@@ -1406,6 +1416,9 @@ export class DhaFhirResourcesService {
   private async drugOrderFor(
     orderUuid: string,
   ): Promise<Record<string, unknown> | null> {
+    // the AMRS replica may not expose drug_order — after one failure stop
+    // querying (and warning) for the process lifetime
+    if (this.drugOrderQueryAvailable === false) return null;
     try {
       const rows = (await this.amrsDataSource.query(
         `SELECT o.date_activated, d.dose, d.dose_units, d.dosing_instructions,
@@ -1416,9 +1429,13 @@ export class DhaFhirResourcesService {
           WHERE o.uuid = ? LIMIT 1`,
         [orderUuid],
       )) as Array<Record<string, unknown>>;
+      this.drugOrderQueryAvailable = true;
       return rows?.[0] ?? null;
     } catch (e) {
-      this.logger.warn(`drug_order lookup failed for ${orderUuid}: ${String(e)}`);
+      this.drugOrderQueryAvailable = false;
+      this.logger.warn(
+        `drug_order lookup unavailable (${String(e)}) — dosage enrichment uses resource fallbacks`,
+      );
       return null;
     }
   }
@@ -1655,6 +1672,8 @@ export class DhaFhirResourcesService {
 
   /** The dosage-form display of an AMRS drug (uuid join), best effort. */
   private async drugDosageForm(drugUuid: string): Promise<string | null> {
+    // same negative-cache policy as drugOrderFor — one warn, then stop
+    if (this.drugDosageFormQueryAvailable === false) return null;
     try {
       const rows = (await this.amrsDataSource.query(
         `SELECT cn.name AS form
@@ -1664,9 +1683,13 @@ export class DhaFhirResourcesService {
           WHERE d.uuid = ? LIMIT 1`,
         [drugUuid],
       )) as Array<{ form?: string }>;
+      this.drugDosageFormQueryAvailable = true;
       return rows?.[0]?.form ?? null;
     } catch (e) {
-      this.logger.warn(`drug dosage form lookup failed for ${drugUuid}: ${String(e)}`);
+      this.drugDosageFormQueryAvailable = false;
+      this.logger.warn(
+        `drug dosage form lookup unavailable (${String(e)}) — form falls back to the drug name`,
+      );
       return null;
     }
   }
@@ -1919,7 +1942,7 @@ export class DhaFhirResourcesService {
     //    (DHA) — replace the codings with the matched INN coding (original
     //    local codings cannot validate against a required DHA value set;
     //    the substance text preserves them)
-    const componentCoding = await this.activeComponentCoding(substanceDisplay);
+    const componentCoding = this.activeComponentCoding(substanceDisplay);
     if (componentCoding) {
       const code = resource.code as { coding?: FhirCoding[]; text?: string } | undefined;
       code!.coding = [componentCoding];
@@ -1982,17 +2005,15 @@ export class DhaFhirResourcesService {
 
   /**
    * DHA active-components-cs coding for a substance (kenya-core-
-   * allergyintolerance required binding): cached CodeSystem fetch from the
-   * live IG, INN display match, synonym table, then substring match.
+   * allergyintolerance required binding): INN display match against the
+   * active-components concept list, synonym table, then substring match.
    */
-  private activeComponentCache: Array<{ code: string; display: string }> | null = null;
-
-  private async activeComponentCoding(
+  private activeComponentCoding(
     substanceDisplay: string,
-  ): Promise<{ system: string; code: string; display: string } | null> {
+  ): { system: string; code: string; display: string } | null {
     const d = substanceDisplay.trim().toLowerCase();
     if (!d) return null;
-    const concepts = await this.activeComponents();
+    const concepts = this.activeComponents();
     if (!concepts.length) return null;
 
     const byDisplay = (name: string) =>
@@ -2013,23 +2034,50 @@ export class DhaFhirResourcesService {
     };
   }
 
-  private async activeComponents(): Promise<Array<{ code: string; display: string }>> {
+  /**
+   * The active-components concept list. The bundled snapshot is the
+   * baseline — the pod's egress to fhir.dha.go.ke is intermittent (staging
+   * logged 'active-components-cs fetch failed: TypeError: fetch failed'),
+   * and with a cold cache every allergy resource used to block on (and
+   * retry) the failing fetch. The live-IG refresh is opportunistic
+   * fire-and-forget: it never blocks enrichment and warns at most once.
+   */
+  private activeComponents(): Array<{ code: string; display: string }> {
     if (this.activeComponentCache) return this.activeComponentCache;
+    this.activeComponentCache = ACTIVE_COMPONENTS.map(([code, display]) => ({
+      code,
+      display,
+    }));
+    void this.refreshActiveComponents();
+    return this.activeComponentCache;
+  }
+
+  private async refreshActiveComponents(): Promise<void> {
+    if (this.activeComponentRefreshAttempted) return;
+    this.activeComponentRefreshAttempted = true;
     try {
       const resp = await fetch(`${DHA_TERMINOLOGY_BASE}/CodeSystem/active-components-cs`, {
         headers: { accept: 'application/fhir+json' },
         signal: AbortSignal.timeout(20000),
       });
-      if (resp.ok) {
-        const cs = (await resp.json()) as { concept?: Array<{ code?: string; display?: string }> };
-        this.activeComponentCache = (cs.concept ?? [])
-          .filter((c) => c.code && c.display)
-          .map((c) => ({ code: c.code!, display: c.display! }));
+      if (!resp.ok) {
+        this.logger.warn(
+          `active-components-cs refresh -> ${resp.status} (bundled snapshot in use)`,
+        );
+        return;
+      }
+      const cs = (await resp.json()) as { concept?: Array<{ code?: string; display?: string }> };
+      const concepts = (cs.concept ?? [])
+        .filter((c) => c.code && c.display)
+        .map((c) => ({ code: c.code!, display: c.display! }));
+      if (concepts.length) {
+        this.activeComponentCache = concepts;
       }
     } catch (e) {
-      this.logger.warn(`active-components-cs fetch failed: ${String(e)}`);
+      this.logger.warn(
+        `active-components-cs refresh failed (bundled snapshot in use): ${String(e)}`,
+      );
     }
-    return this.activeComponentCache ?? [];
   }
 
   /**

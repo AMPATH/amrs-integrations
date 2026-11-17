@@ -243,6 +243,35 @@ describe('DhaFhirResourcesService enrichment depth', () => {
         code: 'ABDOMINAL-PAIN',
       });
     });
+
+    it('maps the substance from the bundled snapshot when the live IG is unreachable', async () => {
+      // pod egress to fhir.dha.go.ke is intermittent (staging logged
+      // 'active-components-cs fetch failed: TypeError: fetch failed') — the
+      // enrichment must still produce the required DHA coding
+      jest.spyOn(global, 'fetch').mockRejectedValue(new TypeError('fetch failed'));
+
+      const resource: AnyResource = {
+        resourceType: 'AllergyIntolerance',
+        id: 'ai-offline',
+        code: { text: 'ASPIRIN', coding: [{ code: 'a890c2e2', display: 'ASPIRIN' }] },
+        reaction: [
+          { substance: { coding: [{ code: 'a890c2e2', display: 'ASPIRIN' }] }, manifestation: [{ text: 'RASH' }] },
+        ],
+      };
+
+      await service.enrichAllergyIntolerance(resource as never);
+
+      expect(resource.code.coding).toContainEqual({
+        system: 'https://fhir.dha.go.ke/terminology/CodeSystem/active-components-cs',
+        code: 'AC10262',
+        display: 'Acetylsalicylic Acid',
+      });
+      expect(resource.reaction[0].substance.coding[0]).toMatchObject({
+        code: 'AC10262',
+        display: 'Acetylsalicylic Acid',
+      });
+      expect(global.fetch).toHaveBeenCalledTimes(1); // refresh attempted once, never blocking
+    });
   });
 
   describe('enrichEncounter (kenya-core-encounter)', () => {

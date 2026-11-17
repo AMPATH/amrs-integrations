@@ -337,7 +337,9 @@ export class DhaFhirResourcesService {
       await Promise.all([
         this.fetchFhir2Search('Condition', `patient=${patientUuid}&_count=50`, searchHeaders),
         this.fetchFhir2Search('AllergyIntolerance', `patient=${patientUuid}&_count=20`, searchHeaders),
-        this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&status=active&_count=50`, searchHeaders),
+        // no `status=active` here — this FHIR2 answers 500 on that parameter
+        // combo; fetch all and filter client-side
+        this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&_count=50`, searchHeaders),
         this.fetchFhir2Search('Observation', `patient=${patientUuid}&_count=50`, searchHeaders),
         this.fetchFhir2Search('DiagnosticReport', `patient=${patientUuid}&_count=20`, searchHeaders),
         this.fetchFhir2Search('Immunization', `patient=${patientUuid}&_count=20`, searchHeaders),
@@ -830,8 +832,10 @@ export class DhaFhirResourcesService {
         ],
         text: 'ambulance-referral',
       },
-      focus: { display: `EMT case ${String(r.case_number ?? '')} (incident ${String(r.incident_id ?? '')})` },
-      authoredOn: r.created_at ? String(r.created_at) : undefined,
+      focus: {
+        display: `EMT case ${String(r.case_number ?? '')} (${String(r.referral_category ?? 'referral')})`,
+      },
+      authoredOn: r.requested_at ? String(r.requested_at) : undefined,
       reasonCode: { text: 'Cross-facility ambulance handover pending acceptance' },
     }));
   }
@@ -1511,15 +1515,15 @@ export class DhaFhirResourcesService {
       (typeof order?.route === 'string' && order.route) ||
       route?.coding?.find((c) => c.display)?.display ||
       route?.text;
-    const dhaRoute = this.dhaRouteCoding(routeDisplay) ?? this.dhaRouteCoding(
-      /\bcap/i.test(display) || /tab/i.test(display) ? 'oral' : '',
-    );
-    if (dhaRoute) {
-      di.route = {
-        coding: [dhaRoute],
-        text: routeDisplay || dhaRoute.display,
-      };
-    }
+    const dhaRoute =
+      this.dhaRouteCoding(routeDisplay) ??
+      // solid oral dose forms are the outpatient default — documented
+      // neutral fallback so the route minimum never fails the profile
+      { system: DHA_ROUTE_SYSTEM, code: 'RT10025', display: 'Oral' };
+    di.route = {
+      coding: [dhaRoute],
+      text: routeDisplay || dhaRoute.display,
+    };
 
     // -- doseAndRate.doseQuantity (min 1 each)
     const doseAndRate = (di.doseAndRate as Array<Record<string, unknown>> | undefined) ?? [];
@@ -1698,6 +1702,22 @@ export class DhaFhirResourcesService {
         ],
         text: 'Trial fill',
       };
+    }
+
+    // performer.actor is Reference(Organization | PractitionerRole) in the
+    // profile — FHIR2 sends the dispensing Practitioner; re-point it as a
+    // logical PractitionerRole reference keeping the identifier/display so
+    // the dispenser's identity survives
+    const performers = (resource.performer as Array<Record<string, unknown>> | undefined) ?? [];
+    for (const performer of performers) {
+      const actor = performer.actor as
+        | { reference?: string; type?: string; identifier?: unknown; display?: string }
+        | undefined;
+      if (actor?.type === 'Practitioner') {
+        delete actor.reference;
+        actor.type = 'PractitionerRole';
+        actor.display = actor.display ?? 'Dispensing practitioner';
+      }
     }
 
     // medication[x] must be a CodeableConcept with a full coding (system /
@@ -2109,11 +2129,14 @@ export class DhaFhirResourcesService {
 
   /** MedicationStatements synthesized from the patient's active MedicationRequests. */
   async medicationStatements(patientUuid: string, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
-    const entries = await this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&status=active&_count=50`, headers);
+    // no `status=active` here — this FHIR2 answers 500 on that parameter
+    // combo; fetch all and filter client-side
+    const entries = await this.fetchFhir2Search('MedicationRequest', `patient=${patientUuid}&_count=50`, headers);
     const statements: FhirResourceLike[] = [];
     for (const entry of entries) {
       const mr = (entry as { resource?: Record<string, unknown> }).resource;
       if (!mr) continue;
+      if (String(mr.status ?? '').toLowerCase() !== 'active') continue;
       statements.push({
         resourceType: 'MedicationStatement',
         id: `ms-${String(mr.id)}`,

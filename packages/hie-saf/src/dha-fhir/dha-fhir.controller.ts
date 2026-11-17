@@ -82,6 +82,10 @@ void LEGACY_PATIENT_PROFILE;
 const CONFIRMED_PROFILES: Record<string, string[]> = {
   Patient: [`${CANONICAL_BASE}/kenya-core-patient`],
   MedicationRequest: [`${ERX_CANONICAL_BASE}/ke-medication-request`],
+  Medication: [`${ERX_CANONICAL_BASE}/ke-medication`],
+  MedicationDispense: [`${ERX_CANONICAL_BASE}/ke-medication-dispense`],
+  MedicationAdministration: [`${ERX_CANONICAL_BASE}/ke-medication-administration`],
+  MedicationStatement: [`${ERX_CANONICAL_BASE}/ke-medication-statement`],
   Composition: [`${KPS_CANONICAL_BASE}/ke-kps-composition`],
   Encounter: [`${CANONICAL_BASE}/kenya-core-encounter`],
   Observation: [`${CANONICAL_BASE}/kenya-core-observation`],

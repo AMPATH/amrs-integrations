@@ -211,7 +211,11 @@ export class DhaFhirController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const resource = await this.resources.composition(patientUuid, locationUuid);
+    const resource = await this.resources.composition(
+      patientUuid,
+      locationUuid,
+      this.forwarded(request),
+    );
     this.stamp(resource, this.profiles());
     return resource;
   }
@@ -313,20 +317,19 @@ export class DhaFhirController {
         throw new HttpException('locationUuid is required for referral tasks', HttpStatus.BAD_REQUEST);
       }
       tasks = await this.resources.referralTasks(locationUuid);
-    } else if (focus?.startsWith('Condition/') || code === 'notify') {
+      if (!startDate || !endDate) {
+        throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
+      }
+      tasks = await this.resources.ihrTasks(startDate, endDate, this.forwarded(request));
+    } else if (code === 'notify' || focus?.startsWith('Condition/')) {
       // REP-IMM-001: notification tasks for notifiable conditions
       tasks = await this.resources.notifyTasksForPatient(
         patientUuid ?? this.resources.demoPatientUuid(),
         this.forwarded(request),
       );
-    } else if (status === 'requested' || code === 'ihr-notify') {
-      if (!startDate || !endDate) {
-        throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
-      }
-      tasks = await this.resources.ihrTasks(startDate, endDate, this.forwarded(request));
     } else {
       throw new HttpException(
-        'Use ?focus=Referral, ?code=notify&patient=, or ?status=requested&startDate=&endDate=',
+        'Use ?focus=Referral, ?code=notify&patient=, ?code=ihr-notify, or ?status=requested&startDate=&endDate=',
         HttpStatus.BAD_REQUEST,
       );
     }

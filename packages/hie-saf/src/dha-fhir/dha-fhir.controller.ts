@@ -86,7 +86,10 @@ const CONFIRMED_PROFILES: Record<string, string[]> = {
   MedicationDispense: [`${ERX_CANONICAL_BASE}/ke-medication-dispense`],
   MedicationAdministration: [`${ERX_CANONICAL_BASE}/ke-medication-administration`],
   MedicationStatement: [`${ERX_CANONICAL_BASE}/ke-medication-statement`],
-  Composition: [`${KPS_CANONICAL_BASE}/ke-kps-composition`],
+  // the kps IG pins the profile canonical to version 0.1.0 — the validator
+  // fixes meta.profile to 'ke-kps-composition|0.1.0' (verified against the
+  // local mirror of the DHA engine)
+  Composition: [`${KPS_CANONICAL_BASE}/ke-kps-composition|0.1.0`],
   Encounter: [`${CANONICAL_BASE}/kenya-core-encounter`],
   Observation: [`${CANONICAL_BASE}/kenya-core-observation`],
   Condition: [`${CANONICAL_BASE}/kenya-core-condition`],

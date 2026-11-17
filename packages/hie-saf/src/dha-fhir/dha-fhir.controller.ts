@@ -82,6 +82,10 @@ void LEGACY_PATIENT_PROFILE;
 const CONFIRMED_PROFILES: Record<string, string[]> = {
   Patient: [`${CANONICAL_BASE}/kenya-core-patient`],
   MedicationRequest: [`${ERX_CANONICAL_BASE}/ke-medication-request`],
+  Medication: [`${ERX_CANONICAL_BASE}/ke-medication`],
+  MedicationDispense: [`${ERX_CANONICAL_BASE}/ke-medication-dispense`],
+  MedicationAdministration: [`${ERX_CANONICAL_BASE}/ke-medication-administration`],
+  MedicationStatement: [`${ERX_CANONICAL_BASE}/ke-medication-statement`],
   Composition: [`${KPS_CANONICAL_BASE}/ke-kps-composition`],
   Encounter: [`${CANONICAL_BASE}/kenya-core-encounter`],
   Observation: [`${CANONICAL_BASE}/kenya-core-observation`],
@@ -313,8 +317,6 @@ export class DhaFhirController {
         throw new HttpException('locationUuid is required for referral tasks', HttpStatus.BAD_REQUEST);
       }
       tasks = await this.resources.referralTasks(locationUuid);
-    } else if (code === 'ihr-notify' || (status === 'requested' && !code)) {
-      // REP-IHR-001 — laboratory form: /Task?focus=Condition/{conditionId}&code=ihr-notify&priority=stat
       if (!startDate || !endDate) {
         throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
       }

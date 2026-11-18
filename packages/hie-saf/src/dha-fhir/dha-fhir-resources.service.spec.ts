@@ -160,6 +160,68 @@ describe('DhaFhirResourcesService enrichment depth', () => {
     });
   });
 
+  describe('enrichMedicationDispense (ke-medication-dispense type)', () => {
+    it('codes the default Trial Fill type in v3-ActCode (the VS source system)', async () => {
+      const resource: AnyResource = { resourceType: 'MedicationDispense', id: 'md-1', status: 'completed' };
+
+      await service.enrichMedicationDispense(resource);
+
+      expect(resource.type.coding).toEqual([
+        { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'TF', display: 'Trial Fill' },
+      ]);
+    });
+
+    const SR_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/medication-dispense-status-reason-cs';
+
+    it.each([
+      ['DRUG LEVEL TOO HIGH', 'CLARIFICATION-REQUIRED'],
+      ['ORDER DISCONTINUED', 'CLARIFICATION-REQUIRED'],
+      ['FACILITY STOCKED OUT OF MEDICATION', 'OUT-OF-STOCK'],
+      ['Patient refused medication', 'PATIENT-REFUSED'],
+    ])('codes statusReason %p as %p and keeps the wording on text', async (text, code) => {
+      const resource: AnyResource = {
+        resourceType: 'MedicationDispense',
+        id: 'md-2',
+        status: 'on-hold',
+        statusReasonCodeableConcept: {
+          coding: [{ code: 'db0c5937-local' }, { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '1' }],
+          text,
+        },
+      };
+
+      await service.enrichMedicationDispense(resource);
+
+      expect(resource.statusReasonCodeableConcept.text).toBe(text);
+      expect(resource.statusReasonCodeableConcept.coding).toEqual([
+        expect.objectContaining({ system: SR_SYSTEM, code }),
+      ]);
+    });
+
+    it('codes a text-only statusReason and keeps an existing DHA member as-is', async () => {
+      const textOnly: AnyResource = {
+        resourceType: 'MedicationDispense',
+        id: 'md-3',
+        statusReasonCodeableConcept: { text: 'DRUG LEVEL TOO HIGH' },
+      };
+      const member: AnyResource = {
+        resourceType: 'MedicationDispense',
+        id: 'md-4',
+        statusReasonCodeableConcept: {
+          coding: [{ system: SR_SYSTEM, code: 'FRAUD', display: 'Fraud' }, { code: 'local' }],
+        },
+      };
+
+      await service.enrichMedicationDispense(textOnly);
+      await service.enrichMedicationDispense(member);
+
+      expect(textOnly.statusReasonCodeableConcept.coding[0].code).toBe('CLARIFICATION-REQUIRED');
+      expect(member.statusReasonCodeableConcept).toEqual({
+        coding: [{ system: SR_SYSTEM, code: 'FRAUD', display: 'Fraud' }],
+        text: 'Fraud',
+      });
+    });
+  });
+
   describe('enrichCondition (kenya-core-condition)', () => {
     it('replaces statuses/category with DHA codings and normalizes the invalid unknown', async () => {
       const resource: AnyResource = {

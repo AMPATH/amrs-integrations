@@ -153,6 +153,27 @@ const DHA_ROUTE_BY_KEYWORD: Array<[RegExp, string, string]> = [
   [/sublingual|under the tongue/i, 'RT10030', 'Sublingual'],
 ];
 
+/** DHA dispense status-reason terminology (ke-medication-dispense statusReason, required binding). */
+const DHA_DISPENSE_STATUS_REASON_SYSTEM =
+  'https://fhir.dha.go.ke/terminology/CodeSystem/medication-dispense-status-reason-cs';
+/**
+ * Hold/stop reason keywords -> the CS's 7 operational members. Clinical holds
+ * (e.g. 'DRUG LEVEL TOO HIGH', 'ORDER DISCONTINUED') have no member and fall
+ * back to CLARIFICATION-REQUIRED; the original wording stays on text.
+ */
+const DHA_DISPENSE_STATUS_REASON_BY_KEYWORD: Array<[RegExp, string, string]> = [
+  [/stock/i, 'OUT-OF-STOCK', 'Out of stock'],
+  [/not available|unavailable/i, 'DRUG-NOT-AVAILABLE', 'Drug not available'],
+  [/refus/i, 'PATIENT-REFUSED', 'Patient refused'],
+  [/formulary/i, 'FORMULARY-RESTRICTION', 'Formulary restriction'],
+  [/incomplete/i, 'PRESCRIPTION-INCOMPLETE', 'Prescription incomplete'],
+  [/fraud/i, 'FRAUD', 'Fraud'],
+];
+const DHA_DISPENSE_STATUS_REASON_DEFAULT: [string, string] = [
+  'CLARIFICATION-REQUIRED',
+  'Clarification required',
+];
+
 /** DHA national formulation terminology (ke-medication form, required binding). */
 const DHA_FORMULATION_SYSTEM = 'https://fhir.dha.go.ke/terminology/CodeSystem/formulation-cs';
 /** AMRS drug-form display keywords -> DHA formulation-cs (verified members). */
@@ -1818,7 +1839,10 @@ export class DhaFhirResourcesService {
       resource.type = {
         coding: [
           {
-            system: 'http://terminology.hl7.org/CodeSystem/v3-ActPharmacySupplyType',
+            // v3-ActPharmacySupplyType is the ValueSet (is-a
+            // _ActPharmacySupplyType); its codes live in v3-ActCode — there
+            // is no CodeSystem at .../CodeSystem/v3-ActPharmacySupplyType
+            system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
             code: 'TF',
             display: 'Trial Fill',
           },
@@ -1844,23 +1868,29 @@ export class DhaFhirResourcesService {
     }
 
     // statusReason[x] is required-bound to the DHA medication-dispense-
-    // status-reason-cs (7 operational members; no clinical hold reasons).
-    // FHIR2 sends the local concept (system-less uuid + CIEL) — neither can
-    // be a member, so keep the meaning on text only (strict conformance:
-    // unmapped codings are the noise the lab reports per-coding).
+    // status-reason-cs (7 operational members; no clinical hold reasons), so
+    // a text-only reason fails 'no code provided'. FHIR2 sends the local
+    // concept (system-less uuid + CIEL) — neither can be a member. Replace
+    // non-DHA codings with the keyword-matched member (clinical holds ->
+    // CLARIFICATION-REQUIRED) and keep the original wording on text.
     const statusReason = resource.statusReasonCodeableConcept as
       | { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }
       | undefined;
-    if (statusReason?.coding?.length) {
-      const dhaMember = statusReason.coding.find((c) =>
+    if (statusReason) {
+      const dhaMember = statusReason.coding?.find((c) =>
         c.system?.startsWith(DHA_TERMINOLOGY_BASE),
       );
       if (dhaMember) {
         statusReason.coding = [dhaMember];
         statusReason.text = statusReason.text ?? dhaMember.display;
       } else {
+        const text =
+          statusReason.text ?? statusReason.coding?.find((c) => c.display)?.display ?? 'Dispense on hold';
+        const hit = DHA_DISPENSE_STATUS_REASON_BY_KEYWORD.find(([re]) => re.test(text));
+        const [code, display] = hit ? [hit[1], hit[2]] : DHA_DISPENSE_STATUS_REASON_DEFAULT;
         resource.statusReasonCodeableConcept = {
-          text: statusReason.text ?? statusReason.coding.find((c) => c.display)?.display ?? 'Dispense on hold',
+          coding: [{ system: DHA_DISPENSE_STATUS_REASON_SYSTEM, code, display }],
+          text,
         };
       }
     }

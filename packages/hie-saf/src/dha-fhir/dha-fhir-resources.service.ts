@@ -1818,7 +1818,10 @@ export class DhaFhirResourcesService {
       resource.type = {
         coding: [
           {
-            system: 'http://terminology.hl7.org/CodeSystem/v3-ActPharmacySupplyType',
+            // v3-ActPharmacySupplyType is the ValueSet (is-a
+            // _ActPharmacySupplyType); its codes live in v3-ActCode — there
+            // is no CodeSystem at .../CodeSystem/v3-ActPharmacySupplyType
+            system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
             code: 'TF',
             display: 'Trial Fill',
           },

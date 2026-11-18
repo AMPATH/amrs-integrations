@@ -160,6 +160,18 @@ describe('DhaFhirResourcesService enrichment depth', () => {
     });
   });
 
+  describe('enrichMedicationDispense (ke-medication-dispense type)', () => {
+    it('codes the default Trial Fill type in v3-ActCode (the VS source system)', async () => {
+      const resource: AnyResource = { resourceType: 'MedicationDispense', id: 'md-1', status: 'completed' };
+
+      await service.enrichMedicationDispense(resource);
+
+      expect(resource.type.coding).toEqual([
+        { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'TF', display: 'Trial Fill' },
+      ]);
+    });
+  });
+
   describe('enrichCondition (kenya-core-condition)', () => {
     it('replaces statuses/category with DHA codings and normalizes the invalid unknown', async () => {
       const resource: AnyResource = {

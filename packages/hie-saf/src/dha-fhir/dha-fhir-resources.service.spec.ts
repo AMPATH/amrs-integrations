@@ -509,6 +509,42 @@ describe('DhaFhirResourcesService enrichment depth', () => {
       ]);
     });
 
+    it('maps a FHIR2-supplied form (uuid/CIEL/AMPATH codings) to formulation-cs', async () => {
+      // staging 18 Nov: once drug.dosage_form is recorded FHIR2 sends form
+      // itself, and the raw codings failed the required binding
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'aad5fd10-1350-11df-a1f1-0026b9348838',
+        code: { coding: [{ system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '74807', display: 'DIDANOSINE' }], text: 'DIDANOSINE' },
+        form: {
+          coding: [
+            { code: 'a8a0810a-1350-11df-a1f1-0026b9348838', display: 'CAPSULE, DOSAGE FORM' },
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '1608' },
+            { system: 'https://app.openconceptlab.org/#/orgs/AMPATH/sources/AMPATH/', code: '1938' },
+          ],
+          text: 'CAPSULE, DOSAGE FORM',
+        },
+      };
+      await service.enrichMedication(resource as never);
+      expect(resource.form.coding).toEqual([
+        expect.objectContaining({ system: 'https://fhir.dha.go.ke/terminology/CodeSystem/formulation-cs' }),
+      ]);
+      expect(resource.form.text).toBe('CAPSULE, DOSAGE FORM');
+      expect(amrsDataSource.query).not.toHaveBeenCalledWith(expect.stringContaining('dosage_form'), expect.anything());
+    });
+
+    it('keeps an existing formulation-cs coding and drops the others', async () => {
+      const dhaForm = { system: 'https://fhir.dha.go.ke/terminology/CodeSystem/formulation-cs', code: 'DF10037', display: 'cap' };
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'med-df',
+        code: { coding: [{ system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '1', display: 'X' }], text: 'X' },
+        form: { coding: [{ code: 'local-uuid', display: 'Capsule' }, dhaForm], text: 'Capsule' },
+      };
+      await service.enrichMedication(resource as never);
+      expect(resource.form).toEqual({ coding: [dhaForm], text: 'Capsule' });
+    });
+
     it('keeps the CIEL identity coding when the display has no GE code', async () => {
       const resource: AnyResource = {
         resourceType: 'Medication',

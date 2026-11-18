@@ -361,6 +361,8 @@ export class DhaFhirController {
       endDate,
       this.forwarded(request),
     );
+    const profiles = this.profiles();
+    comms.forEach((c) => this.stamp(c, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: comms.length, entry: comms.map((resource) => ({ resource })) };
   }
 
@@ -373,6 +375,10 @@ export class DhaFhirController {
     const uuid = patientUuid || this.resources.demoPatientUuid();
     if (!uuid) throw new HttpException('patientUuid is required', HttpStatus.BAD_REQUEST);
     const statements = await this.resources.medicationStatements(uuid, this.forwarded(request));
+    // the lab test bed rejects resources without meta.profile before even
+    // validating (FUNC-MED-001, HTTP 400) — stamp every entry
+    const profiles = this.profiles();
+    statements.forEach((s) => this.stamp(s, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: statements.length, entry: statements.map((resource) => ({ resource })) };
   }
 
@@ -390,6 +396,8 @@ export class DhaFhirController {
     const uuid = patientUuid || this.resources.demoPatientUuid();
     if (!uuid) throw new HttpException('patientUuid is required', HttpStatus.BAD_REQUEST);
     const provs = await this.resources.provenancesForPatient(uuid);
+    const profiles = this.profiles();
+    provs.forEach((p) => this.stamp(p, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: provs.length, entry: provs.map((resource) => ({ resource })) };
   }
 

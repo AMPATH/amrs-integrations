@@ -361,6 +361,8 @@ export class DhaFhirController {
       endDate,
       this.forwarded(request),
     );
+    const profiles = this.profiles();
+    comms.forEach((c) => this.stamp(c, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: comms.length, entry: comms.map((resource) => ({ resource })) };
   }
 
@@ -373,6 +375,10 @@ export class DhaFhirController {
     const uuid = patientUuid || this.resources.demoPatientUuid();
     if (!uuid) throw new HttpException('patientUuid is required', HttpStatus.BAD_REQUEST);
     const statements = await this.resources.medicationStatements(uuid, this.forwarded(request));
+    // the lab test bed rejects resources without meta.profile before even
+    // validating (FUNC-MED-001, HTTP 400) — stamp every entry
+    const profiles = this.profiles();
+    statements.forEach((s) => this.stamp(s, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: statements.length, entry: statements.map((resource) => ({ resource })) };
   }
 
@@ -390,6 +396,8 @@ export class DhaFhirController {
     const uuid = patientUuid || this.resources.demoPatientUuid();
     if (!uuid) throw new HttpException('patientUuid is required', HttpStatus.BAD_REQUEST);
     const provs = await this.resources.provenancesForPatient(uuid);
+    const profiles = this.profiles();
+    provs.forEach((p) => this.stamp(p, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: provs.length, entry: provs.map((resource) => ({ resource })) };
   }
 
@@ -511,7 +519,13 @@ export class DhaFhirController {
           // DHA test bed validation reports, 16 Nov). Applied to top-level
           // resources AND every Bundle entry — searchsets previously shipped
           // raw entries that failed the ke profiles.
-          const enrichOne = async (resource: FhirResource): Promise<void> => {
+          // Medication-family entries that could not be mapped to the DHA
+          // HPT/generic-products terminology are EXCLUDED from searchsets:
+          // the eRx profiles require medication[x] codings from
+          // generic-products-vs and the lab rejects anything else (the
+          // excluded drugs need their HPT GE code added to the drug entry —
+          // data fix on the AMRS side).
+          const enrichOne = async (resource: FhirResource): Promise<boolean> => {
             const type = resource.resourceType;
             try {
               if (type === 'Patient') {
@@ -549,14 +563,35 @@ export class DhaFhirController {
             } catch (e) {
               this.logger.warn(`${type} enrichment skipped: ${String(e)}`);
             }
+            if (
+              type === 'MedicationRequest' ||
+              type === 'MedicationDispense' ||
+              type === 'Medication'
+            ) {
+              return this.resources.isMedicationIgMapped(resource as never);
+            }
+            return true;
           };
 
           if (parsed.resourceType === 'Bundle' && Array.isArray(parsed.entry)) {
+            const kept: { resource?: FhirResource }[] = [];
+            let excluded = 0;
             for (const entry of parsed.entry) {
-              if (entry.resource) {
-                await enrichOne(entry.resource);
+              if (!entry.resource) continue;
+              if (await enrichOne(entry.resource)) {
+                kept.push(entry);
+              } else {
+                excluded += 1;
               }
             }
+            if (excluded) {
+              this.logger.warn(
+                `${excluded} medication resource(s) excluded from the searchset — ` +
+                  'medication coding not mapped to the DHA HPT (add the GE code to the drug entry)',
+              );
+            }
+            parsed.entry = kept;
+            parsed.total = kept.length;
           } else {
             await enrichOne(parsed);
           }

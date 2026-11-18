@@ -107,7 +107,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
         id: 'mr-1',
         status: 'active',
         intent: 'order',
-        medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN TAB' },
+        medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN 81mg TAB (GE00001)' },
         subject: { reference: 'Patient/pt-1' },
         dosageInstruction: [
           {
@@ -327,7 +327,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
   });
 
   describe('medicationStatements (ke-medication-statement)', () => {
-    it('resolves the MedicationRequest reference so medication[x] is present', async () => {
+    const mockActiveOrder = (display: string) => {
       configService.get.mockImplementation((key: string) =>
         key === 'AMRS_BASE_URL' ? 'https://upstream.test' : undefined,
       );
@@ -338,31 +338,59 @@ describe('DhaFhirResourcesService enrichment depth', () => {
             status: 'active',
             subject: { reference: 'Patient/pt-1' },
             authoredOn: '2026-11-17T10:00:00+03:00',
-            medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN TAB' },
+            medicationReference: { reference: 'Medication/med-1', display },
           },
         },
       ]);
       jest.spyOn(service as any, 'fetchFhir2Read').mockResolvedValue({
         code: {
           coding: [
-            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display },
           ],
-          text: 'ASPIRIN TAB',
+          text: display,
         },
       });
+    };
+
+    it('excludes statements whose drug is not mapped to the DHA terminology (lab rejects them)', async () => {
+      mockActiveOrder('JUNIOR ASPIRIN'); // no GE code, no confident HPT match
+      const statements = await service.medicationStatements('pt-1', {});
+      expect(statements).toHaveLength(0);
+    });
+
+    it('keeps statements with a GE-coded drug and emits the HPT coding', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'AMRS_BASE_URL' ? 'https://upstream.test' : undefined,
+      );
+      jest.spyOn(service as any, 'fetchFhir2Search').mockResolvedValue([
+        {
+          resource: {
+            id: 'mr-active',
+            status: 'active',
+            subject: { reference: 'Patient/pt-1' },
+            authoredOn: '2026-11-17T10:00:00+03:00',
+            medicationReference: {
+              reference: 'Medication/med-1',
+              display: 'Aceclofenac 100 mg/Chlorzoxazone 375 mg/Paracetamol 500 mg Oral Tablet (GE10775)',
+            },
+            dosageInstruction: [
+              { text: '1 tablet once daily', timing: { repeat: { frequency: 1, period: 1, periodUnit: 'd' } } },
+            ],
+          },
+        },
+      ]);
 
       const statements = await service.medicationStatements('pt-1', {});
       expect(statements).toHaveLength(1);
       expect(statements[0].medicationCodeableConcept).toMatchObject({
         coding: [
           {
-            system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL',
-            code: '71617',
-            display: 'ASPIRIN',
+            system: 'https://fhir.dha.go.ke/terminology/CodeSystem/generic-products-cs',
+            code: 'GE10775',
           },
         ],
-        text: 'ASPIRIN TAB',
       });
+      expect(statements[0].dosage).toBeDefined(); // R4 element name
     });
   });
 
@@ -454,6 +482,58 @@ describe('DhaFhirResourcesService enrichment depth', () => {
         },
       ]);
       expect(resource.code.text).toBe('ASPIRIN');
+    });
+  });
+
+  describe('enrichPatient (kenya-core-patient — DHA lab FUNC-DEMO-001)', () => {
+    it('fixes sliced identifier use to official, strips OpenMRS extensions and null-system type codings', async () => {
+      const resource: AnyResource = {
+        resourceType: 'Patient',
+        id: 'pt-1',
+        identifier: [
+          {
+            // FHIR2-shaped: null-system type coding, OpenMRS location extension,
+            // use 'usual' — exactly what the DHA lab report rejected
+            use: 'usual',
+            type: {
+              coding: [{ code: '58a4732e-1359-11df-a1f1-0026b9348838' }],
+              text: 'National ID',
+            },
+            value: '29114760',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/patient/identifier#location', valueReference: {} },
+            ],
+          },
+        ],
+        extension: [
+          {
+            url: 'http://fhir.openmrs.org/ext/person-attribute',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/person-attribute-type', valueString: 'x' },
+            ],
+          },
+        ],
+        address: [
+          {
+            city: 'Eldoret',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/address', extension: [] },
+            ],
+          },
+        ],
+      };
+
+      await service.enrichPatient(resource as never);
+
+      const nationalId = resource.identifier.find((i: AnyResource) =>
+        String(i.system ?? '').endsWith('/nationalid'),
+      );
+      expect(nationalId.use).toBe('official'); // was 'usual' — the lab rejection
+      expect(nationalId.type.coding).toBeUndefined(); // null-system coding dropped
+      expect(nationalId.type.text).toBe('National ID');
+      expect(nationalId.extension).toBeUndefined(); // OpenMRS extension stripped
+      expect(resource.extension).toBeUndefined();
+      expect(resource.address[0].extension).toBeUndefined();
     });
   });
 

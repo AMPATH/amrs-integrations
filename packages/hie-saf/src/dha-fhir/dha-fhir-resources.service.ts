@@ -122,6 +122,15 @@ const DHA_VERIFICATION_STATUS: Record<string, string> = {
 /** Live Kenya Core IG base (ke.fhir.core v1.0.0 — verified fetchable). */
 const DHA_IG_BASE = 'https://fhir.dha.go.ke/core';
 
+/**
+ * DHA Health Product Terminology (HPT) on the DHA OCL — the terminology the
+ * DHA test harness (HPT/NHTS) resolves drugs from, and the source behind the
+ * generic-products-vs expansion the lab validator loads (v1.0.0).
+ *   https://nhts.dha.go.ke/orgs/MOH-PPB/sources/HPT/concepts/<GE-code>
+ */
+const HPT_OCL_BASE = 'https://ilm-hie.dha.go.ke/ocl';
+const HPT_SOURCE_PATH = '/orgs/MOH-PPB/sources/HPT/version%201.0.1/concepts/';
+
 /** ke-medication-request: NamingSystem-ns-prescription-identifier (preferred URI). */
 const DHA_PRESCRIPTION_IDENTIFIER_SYSTEM =
   'https://ilm-hie.dha.go.ke/fhir/NamingSystem/prescription-identifier';
@@ -1210,6 +1219,15 @@ export class DhaFhirResourcesService {
    *  - identifier systems rewritten to the DHA national systems (slices) plus a
    *    SHA-system twin (the `sha-patient-min-identifier` constraint checks the
    *    fhir.sha.go.ke host — verified from the IG FHIRPath)
+   *  - sliced identifiers get `use: 'official'` — the profile FIXES use on the
+   *    nationalId / shaNumber / householdNumber slices and the lab rejects
+   *    FHIR2's 'usual' (verified: 3 blocking errors in the FUNC-DEMO-001
+   *    test-bed report)
+   *  - OpenMRS-namespaced extensions (person-attribute, identifier#location,
+   *    address) are stripped — the IG does not define them and the test bed
+   *    reports them as unknown extensions / slice mismatches
+   *  - identifier.type null-system codings dropped (text kept) — 'Coding has
+   *    no system' warnings
    *  - telecom entries get their `system` (cpt-2)
    */
   async enrichPatient(resource: FhirResourceLike): Promise<void> {
@@ -1229,6 +1247,46 @@ export class DhaFhirResourcesService {
           ident.system = `${DHA_IDENTIFIER_BASE}/phonenumber`;
         else if (type.includes('household')) ident.system = `${DHA_IDENTIFIER_BASE}/householdnumber`;
       }
+    }
+    // kenya-core-patient FIXES use='official' on these identifier slices —
+    // FHIR2 sends 'usual' and the DHA lab test bed rejects the resource
+    const OFFICIAL_USE_SLICES = ['nationalid', 'shanumber', 'householdnumber'];
+    for (const ident of identifiers) {
+      const system = String(ident.system ?? '');
+      if (
+        OFFICIAL_USE_SLICES.some((s) => system.includes(`/${s}`)) &&
+        ident.use !== 'official'
+      ) {
+        ident.use = 'official';
+      }
+    }
+    // strict Kenya Core conformance: strip OpenMRS-namespaced extensions the
+    // IG does not define (unknown-extension + slice-mismatch noise on the lab)
+    const OPENMRS_EXT = 'http://fhir.openmrs.org/ext';
+    const stripOpenMrsExtensions = (holder: Record<string, unknown>): void => {
+      const ext = holder.extension as Array<{ url?: string }> | undefined;
+      if (Array.isArray(ext)) {
+        const kept = ext.filter((e) => !String(e.url ?? '').startsWith(OPENMRS_EXT));
+        if (kept.length) holder.extension = kept as never;
+        else delete holder.extension;
+      }
+    };
+    stripOpenMrsExtensions(resource);
+    for (const ident of identifiers) {
+      stripOpenMrsExtensions(ident);
+      // identifier.type: drop null-system codings (keep the text) — 'Coding
+      // has no system' warnings on the lab
+      const type = ident.type as
+        | { coding?: Array<{ system?: string; code?: string }>; text?: string }
+        | undefined;
+      if (type?.coding?.length) {
+        const resolvable = type.coding.filter((c) => c.system && c.code);
+        if (resolvable.length) type.coding = resolvable;
+        else delete type.coding;
+      }
+    }
+    for (const address of (resource.address as Array<Record<string, unknown>> | undefined) ?? []) {
+      stripOpenMrsExtensions(address);
     }
     // constraint twin: one identifier whose system lives on the SHA host
     const hasShaSystem = identifiers.some((i) => String(i.system ?? '').startsWith(SHA_IDENTIFIER_BASE));
@@ -1479,6 +1537,7 @@ export class DhaFhirResourcesService {
       const orderText = typeof order?.dosing_instructions === 'string' ? order.dosing_instructions : '';
       di.text = orderText || this.dosageTextFallback(resource);
     }
+    di.text = String(di.text).trim();
 
     // -- timing.repeat.periodUnit (min 1)
     const timing = (di.timing ?? {}) as {
@@ -1503,6 +1562,15 @@ export class DhaFhirResourcesService {
       }
     }
     di.timing = timing;
+
+    // timing.code carries FHIR2's local codings (null-system uuids, CIEL/
+    // AMPATH) which the IG's extensible TimingAbbreviation binding cannot
+    // resolve — keep the display text, drop the codings (each one is a lab
+    // warning; 'ONCE A DAY' etc. has no TimingAbbreviation member)
+    const timingCode = timing.code as { coding?: unknown[] } | undefined;
+    if (timingCode?.coding?.length) {
+      delete timingCode.coding;
+    }
 
     // -- route (min 1, required DHA route-of-administration-vs)
     const route = di.route as
@@ -1625,7 +1693,7 @@ export class DhaFhirResourcesService {
     const display = String(
       (resource.code as { text?: string } | undefined)?.text ??
         (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
-    );
+    ).trim();
     // The ke-medication `code` required binding points at generic-products-vs
     // (empty in the published IG). Prefer the HPT coding by GE code (the
     // terminology the DHA harness searches) when the display carries one,
@@ -1633,13 +1701,19 @@ export class DhaFhirResourcesService {
     // exactly the canonical CIEL coding (the drug's real identity); the
     // display stays on code.text.
     const code = resource.code as { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string } | undefined;
-    const genericProduct = this.hptCodingFor(display) ?? this.dhaGenericProductCoding(display);
+    const genericProduct = (await this.hptCodingFor(display)) ?? this.dhaGenericProductCoding(display);
     if (genericProduct && code) {
       code.coding = [genericProduct];
       code.text = code.text ?? display;
     } else if (code?.coding?.length) {
       const ciel = code.coding.find((c) => c.system?.includes('/CIEL')) ?? code.coding.find((c) => c.system) ?? code.coding[0];
-      code.coding = [{ system: ciel.system ?? OCL_AMPATH_SYSTEM, code: ciel.code!, display: ciel.display }];
+      code.coding = [
+        {
+          system: ciel.system ?? OCL_AMPATH_SYSTEM,
+          code: ciel.code!,
+          display: String(ciel.display ?? '').trim(),
+        },
+      ];
       code.text = code.text ?? display;
     }
     if (!resource.form) {
@@ -1730,20 +1804,24 @@ export class DhaFhirResourcesService {
     }
 
     // statusReason[x] is required-bound to the DHA medication-dispense-
-    // status-reason-cs (7 operational members). FHIR2 sends the local
-    // concept (system-less uuid + CIEL). Drop the unresolvable uuid coding
-    // and keep the resolvable CIEL one + text: DHA's CS has no clinical
-    // hold-reason members ('DRUG LEVEL TOO HIGH' etc.) — disclosed DHA gap.
+    // status-reason-cs (7 operational members; no clinical hold reasons).
+    // FHIR2 sends the local concept (system-less uuid + CIEL) — neither can
+    // be a member, so keep the meaning on text only (strict conformance:
+    // unmapped codings are the noise the lab reports per-coding).
     const statusReason = resource.statusReasonCodeableConcept as
       | { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }
       | undefined;
     if (statusReason?.coding?.length) {
-      const resolvable = statusReason.coding.filter((c) => c.system && c.code);
-      if (resolvable.length) {
-        statusReason.coding = resolvable;
-        statusReason.text = statusReason.text ?? resolvable[0].display;
+      const dhaMember = statusReason.coding.find((c) =>
+        c.system?.startsWith(DHA_TERMINOLOGY_BASE),
+      );
+      if (dhaMember) {
+        statusReason.coding = [dhaMember];
+        statusReason.text = statusReason.text ?? dhaMember.display;
       } else {
-        resource.statusReasonCodeableConcept = { text: statusReason.text ?? 'Dispense on hold' };
+        resource.statusReasonCodeableConcept = {
+          text: statusReason.text ?? statusReason.coding.find((c) => c.display)?.display ?? 'Dispense on hold',
+        };
       }
     }
 
@@ -1828,10 +1906,10 @@ export class DhaFhirResourcesService {
       coding?: Array<{ system?: string; code?: string; display?: string }>;
       text?: string;
     };
-    const display = medCode.text ?? medRef.display ?? 'Unknown medication';
+    const display = String(medCode.text ?? medRef.display ?? 'Unknown medication').trim();
 
     // 1) HPT by the GE code in the display — deterministic, no lookup
-    const hpt = this.hptCodingFor(display);
+    const hpt = await this.hptCodingFor(display);
     if (hpt) {
       return { coding: [hpt], text: display };
     }
@@ -1844,7 +1922,7 @@ export class DhaFhirResourcesService {
 
     const codings = (medCode.coding ?? [])
       .filter((c) => c.code)
-      .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: c.display }));
+      .map((c) => ({ system: c.system ?? OCL_AMPATH_SYSTEM, code: c.code!, display: String(c.display ?? '').trim() }));
     const canonical = codings.length
       ? [codings.find((c) => c.system?.includes('/CIEL')) ?? codings[0]]
       : [
@@ -1904,20 +1982,97 @@ export class DhaFhirResourcesService {
    * NHTS): standard drugs carry their HPT generic-product code in the
    * display — 'Aceclofenac … Oral Tablet (GE10775)' — and that code IS the
    * HPT identifier (https://nhts.dha.go.ke/orgs/MOH-PPB/sources/HPT/concepts/GE10775).
-   * No lookup is needed: emit the coding directly with the generic-products-cs
-   * system (the required binding's ValueSet include) and the GE code. The
-   * HPT product name equals the drug display without the bracket suffix.
-   * Non-standard drugs (no bracket code) return null — callers keep the
-   * CIEL identity coding.
+   * Deterministic for bracket-coded drugs: emit generic-products-cs#GE-code
+   * with the HPT product name (the display without the bracket suffix).
+   * Non-standard drugs (no bracket code) fall back to a confidence-gated
+   * HPT name search; null when nothing matches confidently — callers keep
+   * the CIEL identity coding.
    */
-  private hptCodingFor(display: string): FhirCoding | null {
+  private hptNameSearchCache = new Map<string, FhirCoding | null>();
+  private hptSearchWarned = false;
+
+  private hptCodingFor(display: string): Promise<FhirCoding | null> {
     const m = /\((GE\d+)\)/.exec(display ?? '');
-    if (!m) return null;
-    return {
-      system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
-      code: m[1],
-      display: (display ?? '').replace(/\s*\(GE\d+\)\s*$/, '').trim(),
-    };
+    if (m) {
+      return Promise.resolve({
+        system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
+        code: m[1],
+        display: (display ?? '').replace(/\s*\(GE\d+\)\s*$/, '').trim(),
+      });
+    }
+    const normalized = (display ?? '').trim().toLowerCase();
+    if (!normalized) return Promise.resolve(null);
+    if (this.hptNameSearchCache.has(normalized)) {
+      return Promise.resolve(this.hptNameSearchCache.get(normalized)!);
+    }
+    return this.hptSearchByName(normalized, display).then((coding) => {
+      this.hptNameSearchCache.set(normalized, coding);
+      return coding;
+    });
+  }
+
+  /**
+   * Confidence-gated HPT name search for drugs whose display carries no GE
+   * code. A candidate is accepted only when its name contains EVERY
+   * generic-name token (>=4 chars, dosage-form words excluded) AND every
+   * strength value of the order (e.g. '81 mg'); otherwise null — a near-miss
+   * brand (Asp-81 for Junior Aspirin) must not be asserted. Misses are
+   * cached so each distinct drug triggers at most one OCL query.
+   */
+  private async hptSearchByName(
+    normalized: string,
+    original: string,
+  ): Promise<FhirCoding | null> {
+    const stop = new Set([
+      'tablet', 'tablets', 'tab', 'tabs', 'capsule', 'capsules', 'cap', 'caps',
+      'oral', 'syrup', 'suspension', 'injection', 'cream', 'ointment',
+      'ampoule', 'dispersible', 'juvenile',
+    ]);
+    const strengths = [...normalized.matchAll(/(\d+(?:\.\d+)?)\s*(?:mg|mcg|g|ml|%)/g)].map(
+      (m) => m[1],
+    );
+    const tokens = normalized
+      .replace(/\(ge\d+\)/g, ' ')
+      .replace(/\d+(?:\.\d+)?\s*(?:mg|mcg|g|ml|%)/g, ' ')
+      .split(/[^a-z]+/)
+      .filter((t) => t.length >= 4 && !stop.has(t));
+    if (!tokens.length) return null;
+    try {
+      const resp = await fetch(
+        `${HPT_OCL_BASE}${HPT_SOURCE_PATH}?q=${encodeURIComponent(tokens.join(' '))}&limit=25`,
+        { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(15000) },
+      );
+      if (!resp.ok) {
+        if (!this.hptSearchWarned) {
+          this.hptSearchWarned = true;
+          this.logger.warn(
+            `HPT name search -> ${resp.status} — non-GE medication codings keep the CIEL identity (disclosed gap)`,
+          );
+        }
+        return null;
+      }
+      const results = (await resp.json()) as Array<{ id?: string; display_name?: string }>;
+      for (const c of Array.isArray(results) ? results : []) {
+        const candidate = String(c.display_name ?? '').toLowerCase();
+        if (!c.id || !candidate) continue;
+        if (tokens.every((t) => candidate.includes(t)) && strengths.every((s) => candidate.includes(s))) {
+          return {
+            system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
+            code: c.id,
+            display: String(c.display_name).trim(),
+          };
+        }
+      }
+      return null;
+    } catch (e) {
+      if (!this.hptSearchWarned) {
+        this.hptSearchWarned = true;
+        this.logger.warn(
+          `HPT name search failed (${String(e)}) — non-GE medication codings keep the CIEL identity (disclosed gap)`,
+        );
+      }
+      return null;
+    }
   }
 
   private async refreshGenericProducts(): Promise<void> {
@@ -1943,6 +2098,32 @@ export class DhaFhirResourcesService {
       // pod egress to fhir.dha.go.ke is intermittent — silent by design;
       // the CIEL identity coding (disclosed gap) is served meanwhile
     }
+  }
+
+  /**
+   * True when the resource's medication coding was mapped to the DHA
+   * generic-products terminology (HPT GE code or a published concept).
+   * Unmapped resources are excluded from searchsets — the eRx profiles
+   * require medication[x] from generic-products-vs and the lab rejects
+   * anything else.
+   */
+  isMedicationIgMapped(resource: FhirResourceLike): boolean {
+    const isMedicationFamily = [
+      'MedicationRequest',
+      'MedicationDispense',
+      'MedicationStatement',
+      'Medication',
+    ].includes(resource.resourceType);
+    if (!isMedicationFamily) return true;
+    const coding =
+      (resource.medicationCodeableConcept as
+        | { coding?: FhirCoding[] }
+        | undefined)?.coding ??
+      (resource.code as { coding?: FhirCoding[] } | undefined)?.coding;
+    return (
+      Array.isArray(coding) &&
+      coding.some((c) => c.system?.includes('generic-products-cs'))
+    );
   }
 
   /** Single-resource FHIR2 read (used to resolve dispense medication refs). */
@@ -2339,6 +2520,13 @@ export class DhaFhirResourcesService {
               headers,
             )
           : undefined);
+      // statements whose drug could not be mapped to the DHA terminology are
+      // excluded — the lab rejects non-generic-products codings (the drug
+      // needs its HPT GE code added on the AMRS side; it reappears then)
+      const mapped = (medication as { coding?: FhirCoding[] } | undefined)?.coding?.some(
+        (c) => c.system?.includes('generic-products-cs'),
+      );
+      if (!mapped) continue;
       // qty-3 on the copied dosage: FHIR2 doseQuantity codes are OpenMRS
       // uuids without a system — strip the bare code, keep value + unit
       const dosage = mr.dosageInstruction as Array<Record<string, unknown>> | undefined;

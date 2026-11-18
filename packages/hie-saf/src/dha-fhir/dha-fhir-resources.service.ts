@@ -1777,9 +1777,21 @@ export class DhaFhirResourcesService {
       ];
       code.text = code.text ?? display;
     }
-    if (!resource.form) {
-      // 1) authoritative source: the AMRS drug row's dosage form concept
-      const dosageForm = await this.drugDosageForm(String(resource.id));
+    // form is required-bound to formulation-cs. FHIR2 sends the drug's
+    // dosage-form concept when one is recorded (system-less uuid + CIEL +
+    // AMPATH codings — none can be members), so map unless a DHA coding is
+    // already there; otherwise the raw codings fail the binding.
+    const form = resource.form as
+      | { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }
+      | undefined;
+    const dhaForm = form?.coding?.find((c) => c.system === DHA_FORMULATION_SYSTEM);
+    if (dhaForm) {
+      resource.form = { coding: [dhaForm], text: form?.text ?? dhaForm.display };
+    } else {
+      // 1) FHIR2's own form display, 2) the AMRS drug row's dosage form
+      //    concept, 3) the drug name
+      const fhir2Form = form?.text ?? form?.coding?.find((c) => c.display)?.display;
+      const dosageForm = fhir2Form || (await this.drugDosageForm(String(resource.id)));
       const formCoding =
         this.dhaFormCoding(dosageForm) ?? this.dhaFormCoding(display);
       resource.form = formCoding

@@ -351,16 +351,39 @@ export class DhaFhirController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    void about;
+    // category accepted for query-shape parity — every outbreak
+    // Communication is an alert (v3-ActCode#ALERT)
     void category;
-    if (!startDate || !endDate) {
-      throw new HttpException('startDate and endDate are required', HttpStatus.BAD_REQUEST);
+    // resolve the reporting window: explicit params win; else derive it from
+    // the referenced DetectedIssue id (outbreak-<disease>-<start>-<end>-<n>),
+    // so `?about=DetectedIssue/{id}&category=alert` works standalone per the
+    // lab feedback
+    let start = startDate;
+    let end = endDate;
+    if ((!start || !end) && about) {
+      const dates = about.match(/\d{4}-\d{2}-\d{2}/g);
+      if (dates && dates.length >= 2) {
+        start = start ?? dates[0];
+        end = end ?? dates[1];
+      }
     }
-    const comms = await this.resources.communicationsForOutbreak(
-      startDate,
-      endDate,
+    if (!start || !end) {
+      throw new HttpException(
+        'startDate and endDate are required (or about=DetectedIssue/{issueId} carrying them)',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    let comms = await this.resources.communicationsForOutbreak(
+      start,
+      end,
       this.forwarded(request),
+      this.resources.demoPatientUuid() || undefined,
     );
+    if (about) {
+      comms = comms.filter(
+        (c) => (c.about as Array<{ reference?: string }> | undefined)?.[0]?.reference === about,
+      );
+    }
     const profiles = this.profiles();
     comms.forEach((c) => this.stamp(c, profiles));
     return { resourceType: 'Bundle', type: 'searchset', total: comms.length, entry: comms.map((resource) => ({ resource })) };

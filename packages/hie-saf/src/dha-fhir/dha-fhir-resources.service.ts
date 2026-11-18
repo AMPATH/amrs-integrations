@@ -1586,13 +1586,30 @@ export class DhaFhirResourcesService {
     }
     di.timing = timing;
 
-    // timing.code carries FHIR2's local codings (null-system uuids, CIEL/
-    // AMPATH) which the IG's extensible TimingAbbreviation binding cannot
-    // resolve — keep the display text, drop the codings (each one is a lab
-    // warning; 'ONCE A DAY' etc. has no TimingAbbreviation member)
-    const timingCode = timing.code as { coding?: unknown[] } | undefined;
-    if (timingCode?.coding?.length) {
-      delete timingCode.coding;
+    // timing.code: the extensible TimingAbbreviation binding requires a
+    // member code when the element is present ('No code provided, and a code
+    // should be provided' — FUNC-EPRES-001 lab report). FHIR2's local codings
+    // (null-system uuids, CIEL/AMPATH) are not members — replace with the
+    // v3-GTSAbbreviation member mapped from the frequency text, keeping the
+    // original display as text.
+    const GTS = 'http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation';
+    const gtsByKeyword: Array<[RegExp, string]> = [
+      [/four times|4 times|qds|qid/i, 'QID'],
+      [/three times|3 times|tds|tid/i, 'TID'],
+      [/twice|two times|bd\b|bid/i, 'BID'],
+      [/once|daily|qd\b|od\b/i, 'QD'],
+      [/weekly|once a week/i, 'QWK'],
+    ];
+    if (timing.code || timing.repeat) {
+      const timingCode = timing.code as { coding?: FhirCoding[]; text?: string } | undefined;
+      const timingText = String(
+        timingCode?.text ?? timingCode?.coding?.find((c) => c.display)?.display ?? di.text ?? '',
+      );
+      const gts = gtsByKeyword.find(([re]) => re.test(timingText))?.[1] ?? 'QD';
+      timing.code = {
+        coding: [{ system: GTS, code: gts, display: gts }],
+        text: timingText || gts,
+      } as never;
     }
 
     // -- route (min 1, required DHA route-of-administration-vs)
@@ -1929,7 +1946,16 @@ export class DhaFhirResourcesService {
       coding?: Array<{ system?: string; code?: string; display?: string }>;
       text?: string;
     };
-    const display = String(medCode.text ?? medRef.display ?? 'Unknown medication').trim();
+    // prefer the display that carries the strength — the Medication READ's
+    // code.text can be a bare name ('ENALAPRIL') while the order reference
+    // carries 'ENALAPRIL 2.5mg TAB'; the HPT name-search strength gate needs
+    // the strength or it will match a wrong-strength product
+    const displays = [medCode.text, medRef.display].filter(
+      (d): d is string => Boolean(d && String(d).trim()),
+    );
+    const display = String(
+      displays.find((d) => /\d+(\.\d+)?\s*(mg|mcg|g|ml|%)/i.test(d)) ?? displays[0] ?? 'Unknown medication',
+    ).trim();
 
     // 1) HPT by the GE code in the display — deterministic, no lookup
     const hpt = await this.hptCodingFor(display);
@@ -1979,15 +2005,18 @@ export class DhaFhirResourcesService {
     }
     if (!this.genericProductCache.length || !display.trim()) return null;
     const d = display.trim().toLowerCase();
+    // GE codes only — see isMedicationIgMapped (lab expansion carries GE*)
+    const products = this.genericProductCache.filter((c) => /^GE\d+$/.test(c.code));
+    if (!products.length) return null;
     // generic products are INN-named (aspirin is published as Acetylsalicylic
     // Acid) — reuse the active-components synonym table for the first hop
     const synonym = ACTIVE_COMPONENT_SYNONYMS[d];
     const byDisplay = (name: string) =>
-      this.genericProductCache!.find((c) => c.display.toLowerCase() === name.toLowerCase());
+      products.find((c) => c.display.toLowerCase() === name.toLowerCase());
     const hit =
       (synonym && byDisplay(synonym)) ??
       byDisplay(d) ??
-      this.genericProductCache.find((c) => {
+      products.find((c) => {
         const cd = c.display.toLowerCase();
         return cd.includes(d) || d.includes(cd);
       });
@@ -2076,8 +2105,12 @@ export class DhaFhirResourcesService {
       }
       const results = (await resp.json()) as Array<{ id?: string; display_name?: string }>;
       for (const c of Array.isArray(results) ? results : []) {
+        // GE codes only — the lab's pre-calculated generic-products-vs|1.0.0
+        // expansion carries generic products (GE*), not ingredients (AC*) or
+        // brand products (PH*): AC10485 was rejected as an unknown code
+        if (!c.id || !/^GE\d+$/.test(c.id)) continue;
         const candidate = String(c.display_name ?? '').toLowerCase();
-        if (!c.id || !candidate) continue;
+        if (!candidate) continue;
         if (tokens.every((t) => candidate.includes(t)) && strengths.every((s) => candidate.includes(s))) {
           return {
             system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
@@ -2143,9 +2176,12 @@ export class DhaFhirResourcesService {
         | { coding?: FhirCoding[] }
         | undefined)?.coding ??
       (resource.code as { coding?: FhirCoding[] } | undefined)?.coding;
+    // GE codes only — the lab's pre-calculated generic-products-vs|1.0.0
+    // expansion carries generic products (GE*), not AC*/PH* concepts
+    // (AC10485 was rejected as an unknown code, FUNC-EPRES-001 18 Nov)
     return (
       Array.isArray(coding) &&
-      coding.some((c) => c.system?.includes('generic-products-cs'))
+      coding.some((c) => c.system?.includes('generic-products-cs') && /^GE\d+$/.test(String(c.code)))
     );
   }
 
@@ -2562,7 +2598,7 @@ export class DhaFhirResourcesService {
       // excluded — the lab rejects non-generic-products codings (the drug
       // needs its HPT GE code added on the AMRS side; it reappears then)
       const mapped = (medication as { coding?: FhirCoding[] } | undefined)?.coding?.some(
-        (c) => c.system?.includes('generic-products-cs'),
+        (c) => c.system?.includes('generic-products-cs') && /^GE\d+$/.test(String(c.code)),
       );
       if (!mapped) continue;
       // qty-3 on the copied dosage: FHIR2 doseQuantity codes are OpenMRS

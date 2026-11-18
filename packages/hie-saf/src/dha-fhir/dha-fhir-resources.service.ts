@@ -633,12 +633,35 @@ export class DhaFhirResourcesService {
           resourceType: 'DetectedIssue',
           id: `outbreak-${disease}-${startDate}-${endDate}-${issues.length + 1}`,
           status: 'preliminary',
-          code: { text: 'public-health-event-cluster' },
-          severity: 'substantial',
+          // kenya-core-detectedissue requires code.coding (min 1); the
+          // binding is preferred detectedissue-category — emit the
+          // facade-defined public-health code (same pattern the passing
+          // CDS issues use)
+          code: {
+            coding: [
+              {
+                system: 'https://fhir.dha.go.ke/terminology/CodeSystem/detectedissue-cs',
+                code: 'public-health-event-cluster',
+                display: 'Public health event cluster',
+              },
+            ],
+            text: 'public-health-event-cluster',
+          },
+          // R4 DetectedIssue.severity VS is high|moderate|low — an
+          // immediately-notifiable cluster exceeding single-case
+          // expectation is 'high'
+          severity: 'high',
           identifiedPeriod: { start: startDate, end: endDate },
           detail: `${count} case(s) of ${disease.replace(/_/g, ' ')} recorded between ${startDate} and ${endDate} — exceeds single-case expectation for an immediately-notifiable disease; public-health alert workflow applies.`,
+          // evidence.detail is the Reference array — display sits on the
+          // reference, not on evidence itself (validator: Unrecognized
+          // property 'display')
           evidence: [
-            { display: `MOH 705A aggregate (${disease.replace(/_/g, ' ')} = ${count})` },
+            {
+              detail: [
+                { display: `MOH 705A aggregate (${disease.replace(/_/g, ' ')} = ${count})` },
+              ],
+            },
           ],
         });
       }
@@ -2477,7 +2500,12 @@ export class DhaFhirResourcesService {
   /* -------------------------------------- Communications (REP-PHE alerting) */
 
   /** Alert notifications derived from the outbreak DetectedIssues. */
-  async communicationsForOutbreak(startDate: string, endDate: string, headers: ForwardHeaders): Promise<FhirResourceLike[]> {
+  async communicationsForOutbreak(
+    startDate: string,
+    endDate: string,
+    headers: ForwardHeaders,
+    subjectPatientUuid?: string,
+  ): Promise<FhirResourceLike[]> {
     const issues = await this.detectedIssuesForOutbreak(startDate, endDate, headers);
     return issues.map((issue) => ({
       resourceType: 'Communication',
@@ -2485,10 +2513,20 @@ export class DhaFhirResourcesService {
       status: 'completed',
       category: [
         {
-          coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'ALERT', display: 'Alert' }],
+          // the profile's example binding: communication-category#alert
+          coding: [
+            {
+              system: 'http://terminology.hl7.org/CodeSystem/communication-category',
+              code: 'alert',
+              display: 'Alert',
+            },
+          ],
           text: 'Public health event alert',
         },
       ],
+      // kenya-core-communication requires subject (Reference kenya-core-
+      // patient) — the reported case-patient of the cluster
+      subject: subjectPatientUuid ? { reference: `Patient/${subjectPatientUuid}` } : undefined,
       sent: new Date().toISOString(),
       about: [{ reference: `DetectedIssue/${String(issue.id)}`, display: String((issue.detail as string) ?? '').slice(0, 120) }],
       sender: { display: 'AMRS Public Health Surveillance — MTRH' },

@@ -137,6 +137,13 @@ describe('DhaFhirResourcesService enrichment depth', () => {
       });
       const repeat = resource.dosageInstruction[0].timing.repeat;
       expect(repeat).toMatchObject({ frequency: 1, period: 1, periodUnit: 'd' });
+      // timing.code must carry a TimingAbbreviation member (lab rejects
+      // 'no code provided'); 'ONCE A DAY' maps to v3-GTSAbbreviation#QD
+      expect(resource.dosageInstruction[0].timing.code.coding[0]).toMatchObject({
+        system: 'http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation',
+        code: 'QD',
+      });
+      expect(resource.dosageInstruction[0].timing.code.text).toBe('ONCE A DAY');
       expect(resource.dosageInstruction[0].route.coding[0]).toMatchObject({
         system: 'https://fhir.dha.go.ke/terminology/CodeSystem/route-of-administration-cs',
         code: 'RT10025',
@@ -460,7 +467,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
 
     it('maps to the DHA coding the moment concepts are published (no redeploy)', async () => {
       (service as any).genericProductCache = [
-        { code: 'GP0001', display: 'Acetylsalicylic Acid' },
+        { code: 'GE00999', display: 'Acetylsalicylic Acid' },
       ];
 
       const resource: AnyResource = {
@@ -477,7 +484,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
       expect(resource.code.coding).toEqual([
         {
           system: 'https://fhir.dha.go.ke/terminology/CodeSystem/generic-products-cs',
-          code: 'GP0001',
+          code: 'GE00999',
           display: 'Acetylsalicylic Acid',
         },
       ]);

@@ -1804,20 +1804,24 @@ export class DhaFhirResourcesService {
     }
 
     // statusReason[x] is required-bound to the DHA medication-dispense-
-    // status-reason-cs (7 operational members). FHIR2 sends the local
-    // concept (system-less uuid + CIEL). Drop the unresolvable uuid coding
-    // and keep the resolvable CIEL one + text: DHA's CS has no clinical
-    // hold-reason members ('DRUG LEVEL TOO HIGH' etc.) — disclosed DHA gap.
+    // status-reason-cs (7 operational members; no clinical hold reasons).
+    // FHIR2 sends the local concept (system-less uuid + CIEL) — neither can
+    // be a member, so keep the meaning on text only (strict conformance:
+    // unmapped codings are the noise the lab reports per-coding).
     const statusReason = resource.statusReasonCodeableConcept as
       | { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }
       | undefined;
     if (statusReason?.coding?.length) {
-      const resolvable = statusReason.coding.filter((c) => c.system && c.code);
-      if (resolvable.length) {
-        statusReason.coding = resolvable;
-        statusReason.text = statusReason.text ?? resolvable[0].display;
+      const dhaMember = statusReason.coding.find((c) =>
+        c.system?.startsWith(DHA_TERMINOLOGY_BASE),
+      );
+      if (dhaMember) {
+        statusReason.coding = [dhaMember];
+        statusReason.text = statusReason.text ?? dhaMember.display;
       } else {
-        resource.statusReasonCodeableConcept = { text: statusReason.text ?? 'Dispense on hold' };
+        resource.statusReasonCodeableConcept = {
+          text: statusReason.text ?? statusReason.coding.find((c) => c.display)?.display ?? 'Dispense on hold',
+        };
       }
     }
 
@@ -2094,6 +2098,32 @@ export class DhaFhirResourcesService {
       // pod egress to fhir.dha.go.ke is intermittent — silent by design;
       // the CIEL identity coding (disclosed gap) is served meanwhile
     }
+  }
+
+  /**
+   * True when the resource's medication coding was mapped to the DHA
+   * generic-products terminology (HPT GE code or a published concept).
+   * Unmapped resources are excluded from searchsets — the eRx profiles
+   * require medication[x] from generic-products-vs and the lab rejects
+   * anything else.
+   */
+  isMedicationIgMapped(resource: FhirResourceLike): boolean {
+    const isMedicationFamily = [
+      'MedicationRequest',
+      'MedicationDispense',
+      'MedicationStatement',
+      'Medication',
+    ].includes(resource.resourceType);
+    if (!isMedicationFamily) return true;
+    const coding =
+      (resource.medicationCodeableConcept as
+        | { coding?: FhirCoding[] }
+        | undefined)?.coding ??
+      (resource.code as { coding?: FhirCoding[] } | undefined)?.coding;
+    return (
+      Array.isArray(coding) &&
+      coding.some((c) => c.system?.includes('generic-products-cs'))
+    );
   }
 
   /** Single-resource FHIR2 read (used to resolve dispense medication refs). */
@@ -2490,6 +2520,13 @@ export class DhaFhirResourcesService {
               headers,
             )
           : undefined);
+      // statements whose drug could not be mapped to the DHA terminology are
+      // excluded — the lab rejects non-generic-products codings (the drug
+      // needs its HPT GE code added on the AMRS side; it reappears then)
+      const mapped = (medication as { coding?: FhirCoding[] } | undefined)?.coding?.some(
+        (c) => c.system?.includes('generic-products-cs'),
+      );
+      if (!mapped) continue;
       // qty-3 on the copied dosage: FHIR2 doseQuantity codes are OpenMRS
       // uuids without a system — strip the bare code, keep value + unit
       const dosage = mr.dosageInstruction as Array<Record<string, unknown>> | undefined;

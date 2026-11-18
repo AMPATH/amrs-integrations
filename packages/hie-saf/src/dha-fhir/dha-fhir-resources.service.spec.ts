@@ -107,7 +107,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
         id: 'mr-1',
         status: 'active',
         intent: 'order',
-        medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN TAB' },
+        medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN 81mg TAB (GE00001)' },
         subject: { reference: 'Patient/pt-1' },
         dosageInstruction: [
           {
@@ -327,7 +327,7 @@ describe('DhaFhirResourcesService enrichment depth', () => {
   });
 
   describe('medicationStatements (ke-medication-statement)', () => {
-    it('resolves the MedicationRequest reference so medication[x] is present', async () => {
+    const mockActiveOrder = (display: string) => {
       configService.get.mockImplementation((key: string) =>
         key === 'AMRS_BASE_URL' ? 'https://upstream.test' : undefined,
       );
@@ -338,31 +338,59 @@ describe('DhaFhirResourcesService enrichment depth', () => {
             status: 'active',
             subject: { reference: 'Patient/pt-1' },
             authoredOn: '2026-11-17T10:00:00+03:00',
-            medicationReference: { reference: 'Medication/med-1', display: 'ASPIRIN TAB' },
+            medicationReference: { reference: 'Medication/med-1', display },
           },
         },
       ]);
       jest.spyOn(service as any, 'fetchFhir2Read').mockResolvedValue({
         code: {
           coding: [
-            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display },
           ],
-          text: 'ASPIRIN TAB',
+          text: display,
         },
       });
+    };
+
+    it('excludes statements whose drug is not mapped to the DHA terminology (lab rejects them)', async () => {
+      mockActiveOrder('JUNIOR ASPIRIN'); // no GE code, no confident HPT match
+      const statements = await service.medicationStatements('pt-1', {});
+      expect(statements).toHaveLength(0);
+    });
+
+    it('keeps statements with a GE-coded drug and emits the HPT coding', async () => {
+      configService.get.mockImplementation((key: string) =>
+        key === 'AMRS_BASE_URL' ? 'https://upstream.test' : undefined,
+      );
+      jest.spyOn(service as any, 'fetchFhir2Search').mockResolvedValue([
+        {
+          resource: {
+            id: 'mr-active',
+            status: 'active',
+            subject: { reference: 'Patient/pt-1' },
+            authoredOn: '2026-11-17T10:00:00+03:00',
+            medicationReference: {
+              reference: 'Medication/med-1',
+              display: 'Aceclofenac 100 mg/Chlorzoxazone 375 mg/Paracetamol 500 mg Oral Tablet (GE10775)',
+            },
+            dosageInstruction: [
+              { text: '1 tablet once daily', timing: { repeat: { frequency: 1, period: 1, periodUnit: 'd' } } },
+            ],
+          },
+        },
+      ]);
 
       const statements = await service.medicationStatements('pt-1', {});
       expect(statements).toHaveLength(1);
       expect(statements[0].medicationCodeableConcept).toMatchObject({
         coding: [
           {
-            system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL',
-            code: '71617',
-            display: 'ASPIRIN',
+            system: 'https://fhir.dha.go.ke/terminology/CodeSystem/generic-products-cs',
+            code: 'GE10775',
           },
         ],
-        text: 'ASPIRIN TAB',
       });
+      expect(statements[0].dosage).toBeDefined(); // R4 element name
     });
   });
 

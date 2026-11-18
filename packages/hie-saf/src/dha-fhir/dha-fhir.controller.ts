@@ -201,6 +201,17 @@ export class DhaFhirController {
     };
   }
 
+  /**
+   * Normalize a date query param to ISO YYYY-MM-DD — callers send single-digit
+   * forms ('2026-1-01') which downstream date comparisons mis-handle.
+   */
+  private normalizeDate(value: string | undefined): string | undefined {
+    if (!value) return undefined;
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(value.trim());
+    if (!m) return value;
+    return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  }
+
   /** FUNC-SUMM-001 — clinical summary as a Composition (in-process case-summary). */
   @Get('Composition')
   async composition(
@@ -243,8 +254,8 @@ export class DhaFhirController {
         );
       }
       const issues = await this.resources.detectedIssuesForOutbreak(
-        startDate,
-        endDate,
+        this.normalizeDate(startDate)!,
+        this.normalizeDate(endDate)!,
         this.forwarded(request),
       );
       issues.forEach((i) => this.stamp(i, profiles));
@@ -325,7 +336,11 @@ export class DhaFhirController {
       if (!startDate || !endDate) {
         throw new HttpException('startDate and endDate are required for the IHR queue', HttpStatus.BAD_REQUEST);
       }
-      tasks = await this.resources.ihrTasks(startDate, endDate, this.forwarded(request));
+      tasks = await this.resources.ihrTasks(
+        this.normalizeDate(startDate)!,
+        this.normalizeDate(endDate)!,
+        this.forwarded(request),
+      );
     } else if (code === 'notify' || focus?.startsWith('Condition/')) {
       // REP-IMM-001: notification tasks for notifiable conditions
       tasks = await this.resources.notifyTasksForPatient(
@@ -357,9 +372,9 @@ export class DhaFhirController {
     // resolve the reporting window: explicit params win; else derive it from
     // the referenced DetectedIssue id (outbreak-<disease>-<start>-<end>-<n>),
     // so `?about=DetectedIssue/{id}&category=alert` works standalone per the
-    // lab feedback
-    let start = startDate;
-    let end = endDate;
+    // lab feedback. Single-digit date forms ('2026-1-01') are normalized.
+    let start = this.normalizeDate(startDate);
+    let end = this.normalizeDate(endDate);
     if ((!start || !end) && about) {
       const dates = about.match(/\d{4}-\d{2}-\d{2}/g);
       if (dates && dates.length >= 2) {
@@ -380,9 +395,17 @@ export class DhaFhirController {
       this.resources.demoPatientUuid() || undefined,
     );
     if (about) {
-      comms = comms.filter(
-        (c) => (c.about as Array<{ reference?: string }> | undefined)?.[0]?.reference === about,
+      const filtered = comms.filter(
+        (c) =>
+          (c.about as Array<{ reference?: string }> | undefined)?.[0]?.reference === about ||
+          c.id === `alert-${about.split('/').pop()}`,
       );
+      // tolerate non-issue `about` values (e.g. about=DetectedIssue/alert-1 —
+      // an id from an earlier sweep): when nothing matches, serve the
+      // window's alerts rather than an empty set
+      if (filtered.length || /^outbreak-/.test(about.split('/').pop() ?? '')) {
+        comms = filtered;
+      }
     }
     const profiles = this.profiles();
     comms.forEach((c) => this.stamp(c, profiles));

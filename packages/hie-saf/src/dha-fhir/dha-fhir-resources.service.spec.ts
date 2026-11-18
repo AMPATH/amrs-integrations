@@ -457,6 +457,58 @@ describe('DhaFhirResourcesService enrichment depth', () => {
     });
   });
 
+  describe('enrichPatient (kenya-core-patient — DHA lab FUNC-DEMO-001)', () => {
+    it('fixes sliced identifier use to official, strips OpenMRS extensions and null-system type codings', async () => {
+      const resource: AnyResource = {
+        resourceType: 'Patient',
+        id: 'pt-1',
+        identifier: [
+          {
+            // FHIR2-shaped: null-system type coding, OpenMRS location extension,
+            // use 'usual' — exactly what the DHA lab report rejected
+            use: 'usual',
+            type: {
+              coding: [{ code: '58a4732e-1359-11df-a1f1-0026b9348838' }],
+              text: 'National ID',
+            },
+            value: '29114760',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/patient/identifier#location', valueReference: {} },
+            ],
+          },
+        ],
+        extension: [
+          {
+            url: 'http://fhir.openmrs.org/ext/person-attribute',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/person-attribute-type', valueString: 'x' },
+            ],
+          },
+        ],
+        address: [
+          {
+            city: 'Eldoret',
+            extension: [
+              { url: 'http://fhir.openmrs.org/ext/address', extension: [] },
+            ],
+          },
+        ],
+      };
+
+      await service.enrichPatient(resource as never);
+
+      const nationalId = resource.identifier.find((i: AnyResource) =>
+        String(i.system ?? '').endsWith('/nationalid'),
+      );
+      expect(nationalId.use).toBe('official'); // was 'usual' — the lab rejection
+      expect(nationalId.type.coding).toBeUndefined(); // null-system coding dropped
+      expect(nationalId.type.text).toBe('National ID');
+      expect(nationalId.extension).toBeUndefined(); // OpenMRS extension stripped
+      expect(resource.extension).toBeUndefined();
+      expect(resource.address[0].extension).toBeUndefined();
+    });
+  });
+
   describe('composition (ke-kps-composition slices)', () => {
     it('uses the Patient summary Document LOINC pattern and slice-exact section codes', async () => {
       configService.get.mockImplementation((key: string) =>

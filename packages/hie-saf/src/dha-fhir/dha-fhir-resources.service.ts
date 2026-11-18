@@ -1210,6 +1210,15 @@ export class DhaFhirResourcesService {
    *  - identifier systems rewritten to the DHA national systems (slices) plus a
    *    SHA-system twin (the `sha-patient-min-identifier` constraint checks the
    *    fhir.sha.go.ke host — verified from the IG FHIRPath)
+   *  - sliced identifiers get `use: 'official'` — the profile FIXES use on the
+   *    nationalId / shaNumber / householdNumber slices and the lab rejects
+   *    FHIR2's 'usual' (verified: 3 blocking errors in the FUNC-DEMO-001
+   *    test-bed report)
+   *  - OpenMRS-namespaced extensions (person-attribute, identifier#location,
+   *    address) are stripped — the IG does not define them and the test bed
+   *    reports them as unknown extensions / slice mismatches
+   *  - identifier.type null-system codings dropped (text kept) — 'Coding has
+   *    no system' warnings
    *  - telecom entries get their `system` (cpt-2)
    */
   async enrichPatient(resource: FhirResourceLike): Promise<void> {
@@ -1229,6 +1238,46 @@ export class DhaFhirResourcesService {
           ident.system = `${DHA_IDENTIFIER_BASE}/phonenumber`;
         else if (type.includes('household')) ident.system = `${DHA_IDENTIFIER_BASE}/householdnumber`;
       }
+    }
+    // kenya-core-patient FIXES use='official' on these identifier slices —
+    // FHIR2 sends 'usual' and the DHA lab test bed rejects the resource
+    const OFFICIAL_USE_SLICES = ['nationalid', 'shanumber', 'householdnumber'];
+    for (const ident of identifiers) {
+      const system = String(ident.system ?? '');
+      if (
+        OFFICIAL_USE_SLICES.some((s) => system.includes(`/${s}`)) &&
+        ident.use !== 'official'
+      ) {
+        ident.use = 'official';
+      }
+    }
+    // strict Kenya Core conformance: strip OpenMRS-namespaced extensions the
+    // IG does not define (unknown-extension + slice-mismatch noise on the lab)
+    const OPENMRS_EXT = 'http://fhir.openmrs.org/ext';
+    const stripOpenMrsExtensions = (holder: Record<string, unknown>): void => {
+      const ext = holder.extension as Array<{ url?: string }> | undefined;
+      if (Array.isArray(ext)) {
+        const kept = ext.filter((e) => !String(e.url ?? '').startsWith(OPENMRS_EXT));
+        if (kept.length) holder.extension = kept as never;
+        else delete holder.extension;
+      }
+    };
+    stripOpenMrsExtensions(resource);
+    for (const ident of identifiers) {
+      stripOpenMrsExtensions(ident);
+      // identifier.type: drop null-system codings (keep the text) — 'Coding
+      // has no system' warnings on the lab
+      const type = ident.type as
+        | { coding?: Array<{ system?: string; code?: string }>; text?: string }
+        | undefined;
+      if (type?.coding?.length) {
+        const resolvable = type.coding.filter((c) => c.system && c.code);
+        if (resolvable.length) type.coding = resolvable;
+        else delete type.coding;
+      }
+    }
+    for (const address of (resource.address as Array<Record<string, unknown>> | undefined) ?? []) {
+      stripOpenMrsExtensions(address);
     }
     // constraint twin: one identifier whose system lives on the SHA host
     const hasShaSystem = identifiers.some((i) => String(i.system ?? '').startsWith(SHA_IDENTIFIER_BASE));

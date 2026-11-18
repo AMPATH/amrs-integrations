@@ -389,6 +389,47 @@ describe('DhaFhirResourcesService enrichment depth', () => {
       });
     });
 
+    it('uses the HPT GE-code coding when the drug display carries one (DHA harness terminology)', async () => {
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'med-ge',
+        code: {
+          coding: [
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '17284', display: 'Aceclofenac 100 mg/Chlorzoxazone 375 mg/Paracetamol 500 mg Oral Tablet (GE10775)' },
+          ],
+          text: 'Aceclofenac 100 mg/Chlorzoxazone 375 mg/Paracetamol 500 mg Oral Tablet (GE10775)',
+        },
+      };
+      await service.enrichMedication(resource as never);
+      // deterministic from the naming convention — no OCL lookup needed
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(resource.code.coding).toEqual([
+        {
+          system: 'https://fhir.dha.go.ke/terminology/CodeSystem/generic-products-cs',
+          code: 'GE10775',
+          display: 'Aceclofenac 100 mg/Chlorzoxazone 375 mg/Paracetamol 500 mg Oral Tablet',
+        },
+      ]);
+    });
+
+    it('keeps the CIEL identity coding when the display has no GE code', async () => {
+      const resource: AnyResource = {
+        resourceType: 'Medication',
+        id: 'med-noge',
+        code: {
+          coding: [
+            { system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL', code: '71617', display: 'ASPIRIN' },
+          ],
+          text: 'ASPIRIN',
+        },
+      };
+      await service.enrichMedication(resource as never);
+      expect(resource.code.coding[0]).toMatchObject({
+        system: 'https://openconceptlab.org/orgs/CIEL/sources/CIEL',
+        code: '71617',
+      });
+    });
+
     it('maps to the DHA coding the moment concepts are published (no redeploy)', async () => {
       (service as any).genericProductCache = [
         { code: 'GP0001', display: 'Acetylsalicylic Acid' },

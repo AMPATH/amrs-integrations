@@ -1627,12 +1627,13 @@ export class DhaFhirResourcesService {
         (resource.code as { coding?: Array<{ display?: string }> } | undefined)?.coding?.[0]?.display ?? '',
     );
     // The ke-medication `code` required binding points at generic-products-vs
-    // (empty in the published IG). Prefer the DHA generic-products coding when
-    // concepts have been published (self-healing), else keep exactly the
-    // canonical CIEL coding (the drug's real identity) so the noise is
-    // minimal; the display stays on code.text.
+    // (empty in the published IG). Prefer the HPT coding by GE code (the
+    // terminology the DHA harness searches) when the display carries one,
+    // else a published generic-products concept (self-healing), else keep
+    // exactly the canonical CIEL coding (the drug's real identity); the
+    // display stays on code.text.
     const code = resource.code as { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string } | undefined;
-    const genericProduct = this.dhaGenericProductCoding(display);
+    const genericProduct = this.hptCodingFor(display) ?? this.dhaGenericProductCoding(display);
     if (genericProduct && code) {
       code.coding = [genericProduct];
       code.text = code.text ?? display;
@@ -1728,6 +1729,24 @@ export class DhaFhirResourcesService {
       }
     }
 
+    // statusReason[x] is required-bound to the DHA medication-dispense-
+    // status-reason-cs (7 operational members). FHIR2 sends the local
+    // concept (system-less uuid + CIEL). Drop the unresolvable uuid coding
+    // and keep the resolvable CIEL one + text: DHA's CS has no clinical
+    // hold-reason members ('DRUG LEVEL TOO HIGH' etc.) — disclosed DHA gap.
+    const statusReason = resource.statusReasonCodeableConcept as
+      | { coding?: Array<{ system?: string; code?: string; display?: string }>; text?: string }
+      | undefined;
+    if (statusReason?.coding?.length) {
+      const resolvable = statusReason.coding.filter((c) => c.system && c.code);
+      if (resolvable.length) {
+        statusReason.coding = resolvable;
+        statusReason.text = statusReason.text ?? resolvable[0].display;
+      } else {
+        resource.statusReasonCodeableConcept = { text: statusReason.text ?? 'Dispense on hold' };
+      }
+    }
+
     // medication[x] must be a CodeableConcept with a full coding (system /
     // code / display min 1). Resolve the referenced Medication for the real
     // codings; fall back to the reference display when unreachable.
@@ -1742,9 +1761,31 @@ export class DhaFhirResourcesService {
       delete resource.medicationReference;
     }
 
-    const qty = resource.quantity as
+    // quantity is min 1 in ke-medication-dispense; FHIR2 omits it on e.g.
+    // on-hold dispenses — take the ordered quantity from the authorizing
+    // prescription when present, else a neutral unit (disclosed enrichment)
+    let qty = resource.quantity as
       | { code?: string; system?: string; unit?: string; value?: number }
       | undefined;
+    if (!qty) {
+      const prescriptionRef = (
+        resource.authorizingPrescription as
+          | Array<{ reference?: string }>
+          | undefined
+      )?.[0]?.reference;
+      const prescriptionId = prescriptionRef?.split('/')?.pop();
+      const prescription = prescriptionId
+        ? await this.fetchFhir2Read('MedicationRequest', prescriptionId, headers)
+        : null;
+      const ordered = (prescription?.dispenseRequest as
+        | { quantity?: { value?: number; unit?: string } }
+        | undefined)?.quantity;
+      qty = ordered?.value
+        ? { value: ordered.value, unit: ordered.unit ?? 'unit not recorded' }
+        : { value: 1, unit: 'unit not recorded' };
+      resource.quantity = qty;
+    }
+
     if (qty?.code && !qty.system) {
       const ucum: Record<string, string> = {
         mg: 'mg',
@@ -1789,6 +1830,13 @@ export class DhaFhirResourcesService {
     };
     const display = medCode.text ?? medRef.display ?? 'Unknown medication';
 
+    // 1) HPT by the GE code in the display — deterministic, no lookup
+    const hpt = this.hptCodingFor(display);
+    if (hpt) {
+      return { coding: [hpt], text: display };
+    }
+
+    // 2) a populated generic-products-cs (once DHA publishes concepts there)
     const generic = this.dhaGenericProductCoding(display);
     if (generic) {
       return { coding: [generic], text: display };
@@ -1849,6 +1897,27 @@ export class DhaFhirResourcesService {
           display: hit.display,
         }
       : null;
+  }
+
+  /**
+   * HPT (MOH-PPB) coding for a drug display. Naming convention (DHA HPT /
+   * NHTS): standard drugs carry their HPT generic-product code in the
+   * display — 'Aceclofenac … Oral Tablet (GE10775)' — and that code IS the
+   * HPT identifier (https://nhts.dha.go.ke/orgs/MOH-PPB/sources/HPT/concepts/GE10775).
+   * No lookup is needed: emit the coding directly with the generic-products-cs
+   * system (the required binding's ValueSet include) and the GE code. The
+   * HPT product name equals the drug display without the bracket suffix.
+   * Non-standard drugs (no bracket code) return null — callers keep the
+   * CIEL identity coding.
+   */
+  private hptCodingFor(display: string): FhirCoding | null {
+    const m = /\((GE\d+)\)/.exec(display ?? '');
+    if (!m) return null;
+    return {
+      system: `${DHA_TERMINOLOGY_BASE}/CodeSystem/generic-products-cs`,
+      code: m[1],
+      display: (display ?? '').replace(/\s*\(GE\d+\)\s*$/, '').trim(),
+    };
   }
 
   private async refreshGenericProducts(): Promise<void> {

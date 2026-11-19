@@ -395,6 +395,32 @@ describe('DhaFhirResourcesService enrichment depth', () => {
     });
   });
 
+  describe('notifyTasksForPatient (kenya-core-task)', () => {
+    it('emits Task.code.coding (kenya-core-task requires min 1)', async () => {
+      jest.spyOn(service as any, 'fetchFhir2Search').mockResolvedValue([
+        {
+          resource: {
+            id: 'cond-1',
+            code: { text: 'Cholera' },
+            subject: { reference: 'Patient/pt-1' },
+            recordedDate: '2026-09-15',
+          },
+        },
+      ]);
+      jest.spyOn(service as any, 'isNotifiable').mockReturnValue(true);
+      const tasks = await service.notifyTasksForPatient('pt-1', {});
+      expect(tasks).toHaveLength(1);
+      const code = (tasks[0] as AnyResource).code;
+      expect(code.text).toBe('notify');
+      expect(code.coding).toEqual([
+        expect.objectContaining({
+          system: 'https://fhir.dha.go.ke/terminology/CodeSystem/task-cs',
+          code: 'notify',
+        }),
+      ]);
+    });
+  });
+
   describe('medicationStatements (ke-medication-statement)', () => {
     const mockActiveOrder = (display: string) => {
       configService.get.mockImplementation((key: string) =>

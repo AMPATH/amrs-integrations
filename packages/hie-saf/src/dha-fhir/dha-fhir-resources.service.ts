@@ -2760,7 +2760,18 @@ export class DhaFhirResourcesService {
         id: `notify-${String(condition.id)}-${tasks.length + 1}`,
         status: 'completed',
         intent: 'order',
-        code: { text: 'notify' },
+        // kenya-core-task requires code.coding (min 1, system + code); same
+        // facade task-cs system as the ihr-notify / referral Tasks
+        code: {
+          coding: [
+            {
+              system: 'https://fhir.dha.go.ke/terminology/CodeSystem/task-cs',
+              code: 'notify',
+              display: 'Notifiable disease notification',
+            },
+          ],
+          text: 'notify',
+        },
         priority: 'stat',
         focus: { reference: `Condition/${String(condition.id)}`, display: display },
         for: condition.subject,

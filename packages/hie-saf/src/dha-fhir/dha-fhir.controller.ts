@@ -127,9 +127,10 @@ const CONFIRMED_PROFILES: Record<string, string[]> = {
  *   GET /dha-fhir/Condition?patient={uuid}&category=problem-list-item
  *   GET /dha-fhir/metadata            (passthrough — CapabilityStatement)
  *
- * Same authorization model as the ETL gateway: Basic validated against
- * OpenMRS by BasicAuthGuard; the caller's session cookie is forwarded to
- * FHIR2 alongside the original Authorization header.
+ * Same authorization model as the ETL gateway (BasicAuthGuard): an OpenMRS
+ * JSESSIONID cookie is preferred (ESM apps); otherwise Basic is validated
+ * against OpenMRS. The session cookie is forwarded to FHIR2, plus the
+ * Authorization header on the Basic path.
  */
 @Controller('dha-fhir')
 @UseGuards(BasicAuthGuard)
@@ -184,7 +185,7 @@ export class DhaFhirController {
   info(@Req() request: GatewayRequest) {
     return {
       service: 'dha-fhir',
-      auth: 'Authorization: Basic (validated against OpenMRS)',
+      auth: 'OpenMRS JSESSIONID cookie (preferred) or Authorization: Basic — validated against OpenMRS',
       usage:
         'GET /dha-fhir/<FHIR2 path>?<query> — proxied to OpenMRS FHIR2 R4 with the DHA Kenya Core meta.profile stamped (single, fixed) and Conditions enriched with ICD-11 + DHA terminology codings. Assembled resources: /Composition, /DetectedIssue, /AuditEvent, /Task, /Communication, /MedicationStatement, /Provenance, /MedicationAdministration. Validation: POST /$validate, GET /validation-status, /validation-examples. Published guides: https://fhir.dha.go.ke/ig/core, /ig/erx, /ig/kps',
       stampedProfiles: this.profiles(),

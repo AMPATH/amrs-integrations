@@ -49,7 +49,7 @@ export class EtlProxyController {
   info(@Req() request: GatewayRequest) {
     return {
       service: 'dha-etl-gateway',
-      auth: 'Authorization: Basic <user>:<password> (validated against OpenMRS)',
+      auth: 'OpenMRS JSESSIONID cookie (preferred) or Authorization: Basic <user>:<password> — validated against OpenMRS',
       usage:
         'GET /etl-gateway/<etl-route>?<query> — forwarded 1:1 to the cookie-auth ETL with the caller session',
       authenticatedAs: request.dhaEtlUser ?? null,

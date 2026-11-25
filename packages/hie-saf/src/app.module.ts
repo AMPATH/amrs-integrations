@@ -29,6 +29,7 @@ import { DhaFhirModule } from './dha-fhir/dha-fhir.module';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { ClaimsReportModule } from './reports/claims/claims-report.module';
 import { HealthFacilityModule } from './health-facility/health-facility.module';
+import { RegistrationBillableServiceModule } from './registration-billable-services/registration-billable-service.module';
 @Module({
   imports: [
     HieAuthModule,
@@ -81,6 +82,7 @@ import { HealthFacilityModule } from './health-facility/health-facility.module';
     HealthFacilityModule,
     EtlGatewayModule,
     DhaFhirModule,
+    RegistrationBillableServiceModule,
   ],
   controllers: [AppController],
   providers: [

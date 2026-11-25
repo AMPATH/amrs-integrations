@@ -15,6 +15,7 @@ import { ClaimProviderStateTransitionEntity } from './entities/claim-provider-st
 import { PreauthProviderStateTransitionEntity } from './entities/preauth-provider-state-transition.entity';
 import { ShrConsentSession } from './entities/shr-consent-session.entity';
 import { HealthFacility } from './entities/health-facility.entity';
+import { RegistrationBillableService } from './entities/registration-billable-services.entity';
 
 /** Name of the read-only AMRS OpenMRS connection — see `CaseSummaryModule`. */
 export const AMRS_CONNECTION = 'amrsConnection';
@@ -46,6 +47,7 @@ export const AMRS_CONNECTION = 'amrsConnection';
           PreauthProviderStateTransitionEntity,
           ShrConsentSession,
           HealthFacility,
+          RegistrationBillableService,
         ],
         poolSize: configService.get<number>('DATABASE_POOL_SIZE'),
         synchronize: false,
